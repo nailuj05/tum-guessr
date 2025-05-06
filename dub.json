@@ -1,0 +1,10 @@
+{
+	"authors": [
+		"Bruno Hoffmann"
+	],
+	"dependencies": {
+		"serverino": "~>0.7.16"
+	},
+	"license": "proprietary",
+	"name": "tum-guessr"
+}
