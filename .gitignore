@@ -1,6 +1,5 @@
 *~
-db/test.db
-db/test
+*.db*
 photos/*
 .dub
 docs.json
