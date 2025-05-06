@@ -6,9 +6,15 @@ pragma(lib, "sqlite3");
 // Simple interface to execute raw and parameterized SQL statements.
 // Type-safe variadic bindings (int, float, double, strings)
 
-public struct Request {
+public struct Stmt {
 	import etc.c.sqlite3 : sqlite3_stmt;
 	sqlite3_stmt* stmt;
+}
+
+enum OpenFlags : int {
+		READONLY  = 0x00000001,
+    READWRITE = 0x00000002,
+    CREATE    = 0x00000004,
 }
 
 class Database {
@@ -30,7 +36,6 @@ class Database {
 	
 	private {
 		sqlite3* handle;
-		char* err;
 	}
 
 	private enum allowedBind(T) = (is(T == int) || is(T == float) || is(T == double) || isSomeString!T);
@@ -39,8 +44,8 @@ class Database {
 public:
 
 	// Constructor to open db file
-  this(string filename) {	
-		int rc = sqlite3_open(toStringz(filename), &handle);
+  this(string filename, OpenFlags flags = OpenFlags.READWRITE | OpenFlags.CREATE) {
+		int rc = sqlite3_open_v2(toStringz(filename), &handle, flags, null);
 		if (rc) {
 			printf("Can't open database: %s\n", sqlite3_errmsg(handle));
 			throw new DBException("Database opening failed");
@@ -54,6 +59,7 @@ public:
 
 	// Execute a plain string SQL Query on the database
 	void exec_imm(string sql) {
+		char *err;
 		int rc = sqlite3_exec(handle, toStringz(sql), null, null, &err);
 		if (rc != SQLITE_OK) {
 			string em = format("SQL exec error: %s\n", to!string(err));
@@ -64,8 +70,8 @@ public:
 	}
 
 	// Binds values to sql string to create request to be executed or queried
-	Request prepare_bind(T...)(string sql, T binds) if (allSatisfy!(allowedBind, T)) {
-		Request r;
+	Stmt prepare_bind(T...)(string sql, T binds) if (allSatisfy!(allowedBind, T)) {
+		Stmt r;
 		
 		int rc = sqlite3_prepare_v2(handle, toStringz(sql), -1, &r.stmt, null);
 		if (rc != SQLITE_OK) {
@@ -91,8 +97,8 @@ public:
 		return r;
 	}
 
-	// Executes Request (no return)
-	void exec(Request r) {
+	// Executes Stmt (no return)
+	void exec(Stmt r) {
 		int rc = sqlite3_step(r.stmt);
 		scope(exit) sqlite3_finalize(r.stmt);
 		
@@ -104,12 +110,12 @@ public:
 
 	// Query plain string SQL
 	auto query_imm(RetTypes...)(string sql) if(allSatisfy!(allowedBind, RetTypes)) {
-		Request r = prepare_bind(sql);
+		Stmt r = prepare_bind(sql);
 		return query!RetTypes(r);
 	}
 
-	// Queries Request
-	auto query(RetTypes...)(Request r) if(allSatisfy!(allowedBind, RetTypes)) {
+	// Queries Stmt
+	auto query(RetTypes...)(Stmt r) if(allSatisfy!(allowedBind, RetTypes)) {
 		enum N = RetTypes.length;	
 		assert(N == sqlite3_column_count(r.stmt), "Column count mismatch");
 

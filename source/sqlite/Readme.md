@@ -52,3 +52,26 @@ class Database
 
 struct Request
 	Internal wrapper around `sqlite3_stmt*` for prepared statements.
+
+
+Example:
+
+```D
+import std.stdio;
+import std.format;
+import sqlite : Database, Stmt;
+
+void main(string[] args) {
+	Database db = new Database("test.db");
+	Stmt s;
+
+	db.exec_imm("INSERT INTO test (line) VALUES ('oke?')");
+	s = db.prepare_bind("INSERT INTO test (line) VALUES (?)", "nice");
+	db.exec(s);
+
+	auto rows = db.query_imm!(int, string)("SELECT * FROM test WHERE id < 10");
+	foreach(row; rows) {
+		writeln(format("Line %d: %s", row[0], row[1]));
+	}
+}
+```
