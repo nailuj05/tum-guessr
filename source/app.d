@@ -15,6 +15,37 @@ mixin ServerinoMain;
 @onServerInit ServerinoConfig configure(string[] args)
 {
 	scope Database db = new Database("test.db");
+  try {
+    db.exec_imm("CREATE TABLE IF NOT EXISTS users (
+      user_id INTEGER PRIMARY KEY, 
+      username TEXT NOT NULL UNIQUE, 
+      email TEXT NOT NULL UNIQUE, 
+      isAdmin INTEGER NOT NULL DEFAULT FALSE   
+    )"); 
+    db.exec_imm("CREATE TABLE IF NOT EXISTS photos ( 
+      photo_id INTEGER PRIMARY KEY, 
+      path TEXT NOT NULL UNIQUE,  
+      latitude REAL NOT NULL, 
+      longitude REAL NOT NULL, 
+      user_id INTEGER, 
+      FOREIGN KEY(user_id) 
+        REFERENCES users(user_id) 
+          ON DELETE SET NULL 
+          ON UPDATE CASCADE 
+    )"); 
+    db.exec_imm("CREATE TABLE IF NOT EXISTS sessions ( 
+      session_token INTEGER PRIMARY KEY, 
+      user_id INTEGER NOT NULL, 
+      expiration INTEGER NOT NULL, 
+      FOREIGN KEY(user_id) 
+        REFERENCES users(user_id)  
+          ON DELETE CASCADE 
+          ON UPDATE CASCADE 
+    )");
+  } catch (Database.DBException e){
+    writeln("An exception occurred during database initialization: ", e.msg);
+  }
+      
 	db.exec_imm("CREATE TABLE IF NOT EXISTS test (id INTEGER PRIMARY KEY, line TEXT)");
 	return ServerinoConfig.create().addListener("0.0.0.0", 8080);
 }
