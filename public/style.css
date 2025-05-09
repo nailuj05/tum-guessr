@@ -2,6 +2,7 @@
 :root {
 		--background: #121416;
 		--accent: #2e6eb1;
+		--hightlight: #3f7fef;
 }
 body {
 		font-family: sans-serif;
@@ -11,12 +12,39 @@ body {
 }
 
 header {
-      background: var(--accent);
-      color: white;
-      padding: 1rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    background: var(--accent);
+    color: white;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.center {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		min-height: 100vh;
+		padding-top: 4rem;
+		box-sizing: border-box;
+}
+form {
+		padding: 1em;
+		outline: 2px solid var(--accent);
+		border-radius: 5px;
+		outline-offset: 4px;
+		text-align: center;
+}
+input {
+		color: white;
+		padding: 5px;
+		margin: 5px;
+		font-size: 1.1em;
+		background-color: var(--background);
+		border: 1px solid var(--accent);
+		border-radius: 5px;
+}
+input:hover {
+		border-color: var(--highlight) 
 }
 
 /* Photo View CSS */
