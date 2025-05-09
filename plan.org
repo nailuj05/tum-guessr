@@ -1,0 +1,28 @@
+* User Experience
+- Landing Page
+  - Account Page
+    - Photo Upload
+    - (Admin Panel)
+  - Game Page
+    - Result Page
+      
+* DB Layout
+** Photos
+- path of image
+- coords
+- userid
+
+** User
+- userid
+- username
+- user mail
+- isAdmin
+
+** Login
+- logintoken
+- userid
+- expiration
+
+* Backend Endpoints
+
+

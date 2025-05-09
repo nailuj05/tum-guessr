@@ -14,7 +14,7 @@ mixin ServerinoMain;
 
 @onServerInit ServerinoConfig configure(string[] args)
 {
-	Database db = new Database("test.db");
+	scope Database db = new Database("test.db");
 	db.exec_imm("CREATE TABLE IF NOT EXISTS test (id INTEGER PRIMARY KEY, line TEXT)");
 	return ServerinoConfig.create().addListener("0.0.0.0", 8080);
 }
@@ -24,7 +24,7 @@ void data(Request request, Output output)
 {
 	output ~= "Data:<br>";
 	
-	Database db = new Database("test.db", OpenFlags.READONLY);
+	scope Database db = new Database("test.db", OpenFlags.READONLY);
 	auto rows = db.query_imm!(int, string)("SELECT * FROM test");
 	foreach (row; rows) {
 		string f = format("%d: %s", row[0], row[1]);
