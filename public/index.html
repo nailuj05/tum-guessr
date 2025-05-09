@@ -3,29 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Landing Page</title>
+  <title>TUM Guessr</title>
 	<link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header>
-    <div>MySite</div>
-    <button class="btn" onclick="toggleLogin()">Login</button>
+    <div>TUM Guessr</div>
   </header>
 
-  <div id="login" class="login-form">
-    <h2>Login</h2>
-    <form>
-      <input type="text" placeholder="Username" required />
-      <input type="password" placeholder="Password" required />
-      <input type="submit" value="Log In" class="btn" />
-    </form>
+	<div class="content">
+    <h1>Welcome to TUM Guessr</h1>
+    <div class="wip">🚧 This vsite is a work in progress 🚧</div>
   </div>
-
-  <script>
-    function toggleLogin() {
-      const loginBox = document.getElementById('login');
-      loginBox.style.display = loginBox.style.display === 'block' ? 'none' : 'block';
-    }
-  </script>
 </body>
 </html>

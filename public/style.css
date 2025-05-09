@@ -2,12 +2,21 @@
 :root {
 		--background: #121416;
 		--accent: #2e6eb1;
-		 }
+}
 body {
 		font-family: sans-serif;
 		text-align: center;
 		background-color: var(--background);
 		color: var(--accent);
+}
+
+header {
+      background: var(--accent);
+      color: white;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
 }
 
 /* Photo View CSS */
