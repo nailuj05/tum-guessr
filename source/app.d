@@ -32,13 +32,25 @@ void data(Request request, Output output)
 	}
 }
 
+@endpoint
+void router(Request request, Output output) {
+	string path = "public";
+	if(request.path == "/")
+		path ~= "/index.html";
+	else
+		path ~= request.path;
 
-@endpoint @route!("/")
-void index(Request request, Output output) {
-  SimpleSession session = SimpleSession(request, output, 60.minutes);
-  JSONValue session_data = session.load();
-  // retrieve and set session data here
-  session.save(session_data);
+	// if we don't want to use serve File we will need to set the mime manually (check the code for serveFile for a good example on that)
+	if(exists(path))
+		output.serveFile(path);
+}
 
-  output.serveFile("public/index.html");
+@endpoint @priority(-1)
+void page404(Output output)
+{
+	// Set the status code to 404
+	output.status = 404;
+	output.addHeader("Content-Type", "text/plain");
+
+	output.write("Page not found!");
 }
