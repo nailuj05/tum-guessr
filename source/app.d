@@ -3,6 +3,7 @@ module app;
 import std;
 import std.stdio;
 import std.format;
+import std.file;
 import simplesession;
 import serverino;
 import core.sync.mutex;
@@ -10,8 +11,9 @@ import passwd;
 import passwd.bcrypt;
 
 import sqlite;
+import upload;
 
-mixin ServerinoMain;
+mixin ServerinoMain!(upload);
 
 
 @onServerInit ServerinoConfig configure(string[] args)
