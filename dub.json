@@ -1,11 +1,14 @@
 {
-		"authors": [
-				"Bruno Hoffmann"
-		],
-		"dependencies": {
-				"serverino": "~>0.7.16"
-		},
-		"libs": ["sqlite3"],
-		"license": "proprietary",
-		"name": "tum-guessr"
+	"authors": [
+		"Bruno Hoffmann"
+	],
+	"dependencies": {
+		"passwd": "~>0.3.1",
+		"serverino": "~>0.7.16"
+	},
+	"libs": [
+		"sqlite3"
+	],
+	"license": "proprietary",
+	"name": "tum-guessr"
 }
