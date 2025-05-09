@@ -56,7 +56,7 @@ mixin ServerinoMain;
 @endpoint @route!("/sign_up")
 void sign_up(Request request, Output output) {
   if (request.method == Request.Method.Get) {
-    output.serveFile("sign_up.html");
+    output.serveFile("public/sign_up.html");
     return;
   } else if (request.method == Request.Method.Post){
     if (!request.post.has("username") || !request.post.has("email") ||
@@ -97,7 +97,10 @@ void sign_up(Request request, Output output) {
       ", email, username, password_hash);
     db.exec(insert_user_stmt);
 
-    output ~= "Signed up successfully!";
+    output.status = 302;
+    output.addHeader("Location", "/");
+    output ~= "Signed up successfully!" ~ "\n" ~ "You are being redirected.";
+    return;
   }
   output.status = 405;
 }
@@ -105,7 +108,7 @@ void sign_up(Request request, Output output) {
 @endpoint @route!("/login")
 void login(Request request, Output output){
   if (request.method == Request.Method.Get) {
-    output.serveFile("login.html");
+    output.serveFile("public/login.html");
     return;
   } else if (request.method == Request.Method.Post) {
     if (!request.post.has("email_or_username") ||
@@ -129,7 +132,9 @@ void login(Request request, Output output){
       string password_hash = query_result[0][1];
 
       if (password.canCryptTo(password_hash)) {
-        output ~= "Logged in successfully!";
+        output.status = 302;
+        output.addHeader("Location", "/");
+        output ~= "Logged in successfully!" ~ "\n" ~ "You are being redirected.";
         return;
       }
     }
