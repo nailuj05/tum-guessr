@@ -16,8 +16,7 @@ void upload(Request request, Output output) {
 	
 	const Request.FormData fd = request.form.read("image");
 	if (fd.isFile) {
-		info("File name: ", fd.filename);
-		info("File path: ", fd.path);
+		info("File ", fd.filename, " uploaded at ", fd.path);
 	}
 
 	// Make sure file doesnt override (even if 2 files are uploaded the same second
