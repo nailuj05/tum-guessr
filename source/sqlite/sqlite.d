@@ -131,8 +131,8 @@ public:
 			static foreach (i; 0..N) {
 				static if (is(RetTypes[i] == int))
 					row[i] = sqlite3_column_int(r.stmt, i);
-				else static if (is(T[i] == long))
-				  row[i] = sqlite3_column_int64(r.stmt, i + 1, bind);
+				else static if (is(RetTypes[i] == long))
+				  row[i] = sqlite3_column_int64(r.stmt, i);
 				else static if (is(RetTypes[i] == double))
 					row[i] = sqlite3_column_double(r.stmt, i);
 				else static if (isSomeString!(RetTypes[i])) {

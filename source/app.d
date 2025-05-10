@@ -4,7 +4,7 @@ import std;
 import std.stdio;
 import std.format;
 import std.file;
-import simplesession;
+import session;
 import serverino;
 import core.sync.mutex;
 import passwd;
@@ -39,7 +39,7 @@ mixin ServerinoMain!(upload);
           ON UPDATE CASCADE 
     )"); 
     db.exec_imm("CREATE TABLE IF NOT EXISTS sessions ( 
-      session_token INTEGER PRIMARY KEY, 
+      session_token TEXT PRIMARY KEY, 
       user_id INTEGER NOT NULL, 
       expiration INTEGER NOT NULL, 
       FOREIGN KEY(user_id) 
@@ -93,11 +93,19 @@ void sign_up(Request request, Output output) {
 
     string password_hash = to!(string)(password.crypt(Bcrypt.genSalt()));
     
-    auto insert_user_stmt = db.prepare_bind!(string, string, string)("
+    db.exec(db.prepare_bind!(string, string, string)("
         INSERT INTO users (email, username, password_hash)
         VALUES (?, ?, ?)
-      ", email, username, password_hash);
-    db.exec(insert_user_stmt);
+      ", email, username, password_hash));
+
+    int user_id = db.query!(int)(db.prepare_bind!(string, string, string)("
+        SELECT user_id
+        FROM users
+        WHERE email=? AND username=? AND password_hash=?
+      ", email, username, password_hash))[0][0];
+
+    Session session = Session(request, output, "test.db");
+    session.save(user_id);
 
     output.status = 302;
     output.addHeader("Location", "/");
@@ -109,6 +117,7 @@ void sign_up(Request request, Output output) {
 
 @endpoint @route!("/login")
 void login(Request request, Output output){
+  Session session = Session(request, output, "test.db");
   if (request.method == Request.Method.Get) {
     output.serveFile("public/login.html");
     return;
@@ -134,6 +143,7 @@ void login(Request request, Output output){
       string password_hash = query_result[0][1];
 
       if (password.canCryptTo(password_hash)) {
+        session.save(user_id);
         output.status = 302;
         output.addHeader("Location", "/");
         output ~= "Logged in successfully!" ~ "\n" ~ "You are being redirected.";
@@ -163,6 +173,11 @@ void data(Request request, Output output)
 
 @endpoint
 void router(Request request, Output output) {
+  Session session = Session(request, output, "test.db");
+  int user_id = session.load();
+  if (user_id >= 0) {
+    writeln("Logged in as user with id ", user_id, "\n");
+  }
 	string path = "public";
 	if(request.path == "/")
 		path ~= "/index.html";
