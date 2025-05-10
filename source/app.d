@@ -10,8 +10,9 @@ import serverino;
 import sqlite;
 import upload;
 import login;
+import profile;
 
-mixin ServerinoMain!(upload, login);
+mixin ServerinoMain!(upload, login, profile);
 
 @onServerInit ServerinoConfig configure(string[] args)
 {
