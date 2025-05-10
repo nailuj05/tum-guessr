@@ -114,3 +114,16 @@ void login(Request request, Output output){
   }
   output.status = 405;
 }
+
+@endpoint @route!("/logout")
+void logout(Request request, Output output) {
+	import std.experimental.logger;
+  Session session = Session(request, output, "test.db");
+	session.remove();
+
+	info("user logged out");
+	
+	output.status = 302;
+	output.addHeader("Location", "/");
+	output ~= "Logged out!" ~ "\n" ~ "You are being redirected.";
+}
