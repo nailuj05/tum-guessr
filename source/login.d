@@ -10,11 +10,17 @@ import passwd.bcrypt;
 
 import sqlite;
 import session;
+import mustache;
+
+alias MustacheEngine!(string) Mustache;
 
 @endpoint @route!("/sign_up")
 void sign_up(Request request, Output output) {
+  Mustache mustache;
+  mustache.ext("html");
+  scope auto mustache_context = new Mustache.Context;
   if (request.method == Request.Method.Get) {
-    output.serveFile("public/sign_up.html");
+    output ~= mustache.render("public/sign_up", mustache_context);
     return;
   } else if (request.method == Request.Method.Post){
     if (!request.post.has("username") || !request.post.has("email") ||
@@ -27,6 +33,7 @@ void sign_up(Request request, Output output) {
     string username = request.post.read("username");
     string password = request.post.read("password");
 
+
 	  scope Database db = new Database("test.db", OpenFlags.READWRITE);
     if (db.query!(int)(db.prepare_bind!(string)("
       SELECT count(*) 
@@ -34,7 +41,8 @@ void sign_up(Request request, Output output) {
       WHERE email=?
     ", email))[0][0] > 0) {
       output.status = 400;
-			output ~= readText("public/sign_up.html").replace("<!-- ERROR -->", "<div class=\"error-container\">Email already in use</div>");
+      mustache_context["error_message"] = "Email already in use";
+			output ~= mustache.render("public/sign_up", mustache_context);
       return;
     }
     if (db.query!(int)(db.prepare_bind!(string)("
@@ -43,7 +51,8 @@ void sign_up(Request request, Output output) {
       WHERE username=?
     ", username))[0][0] > 0) {
       output.status = 400;
-			output ~= readText("public/sign_up.html").replace("<!-- ERROR -->", "<div class=\"error-container\">Username already in use</div>");
+      mustache_context["error_message"] = "Username already in use";
+			output ~= mustache.render("public/sign_up", mustache_context);
       return;
     }
 
@@ -107,9 +116,13 @@ void login(Request request, Output output){
       }
     }
 
-    output.status = 400;
-    output ~= readText("public/login.html").replace("<!-- ERROR -->", "<div class=\"error-container\">Wrong Username or Password</div>");
 
+    output.status = 400;
+    Mustache mustache;
+    mustache.ext("html");
+    scope auto mustache_context = new Mustache.Context;
+    mustache_context["error_message"] = "Wrong Username or Password";
+    output ~= mustache.render("public/login", mustache_context);
     return;
   }
   output.status = 405;
