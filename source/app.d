@@ -2,6 +2,7 @@ module app;
 
 import std.stdio;
 import std.format;
+import std.algorithm;
 import std.file;
 import session;
 import serverino;
@@ -65,7 +66,7 @@ void router(Request request, Output output) {
 		path ~= request.path;
 
 	// if we don't want to use serve File we will need to set the mime manually (check the code for serveFile for a good example on that)
-	if(exists(path))
+	if(exists(path) && !path.endsWith(".html"))
 		output.serveFile(path);
 }
 
