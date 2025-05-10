@@ -51,20 +51,6 @@ mixin ServerinoMain!(upload, login);
 	return ServerinoConfig.create().addListener("0.0.0.0", 8080);
 }
 
-
-@endpoint @route!("/data")
-void data(Request request, Output output)
-{
-	output ~= "Data:<br>";
-	
-	scope Database db = new Database("test.db", OpenFlags.READONLY);
-	auto rows = db.query_imm!(int, string)("SELECT * FROM test");
-	foreach (row; rows) {
-		string f = format("%d: %s", row[0], row[1]);
-		output ~= f ~ "<br>";
-	}
-}
-
 @endpoint
 void router(Request request, Output output) {
   Session session = Session(request, output, "test.db");
