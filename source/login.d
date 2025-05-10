@@ -17,7 +17,6 @@ alias MustacheEngine!(string) Mustache;
 @endpoint @route!("/sign_up")
 void sign_up(Request request, Output output) {
   Mustache mustache;
-  mustache.ext("html");
   scope auto mustache_context = new Mustache.Context;
   if (request.method == Request.Method.Get) {
     output ~= mustache.render("public/sign_up", mustache_context);
@@ -82,9 +81,11 @@ void sign_up(Request request, Output output) {
 
 @endpoint @route!("/login")
 void login(Request request, Output output){
+  Mustache mustache;
+  scope auto mustache_context = new Mustache.Context;
   Session session = Session(request, output, "test.db");
   if (request.method == Request.Method.Get) {
-    output.serveFile("public/login.html");
+    output ~= mustache.render("public/login", mustache_context);
     return;
   } else if (request.method == Request.Method.Post) {
     if (!request.post.has("email_or_username") ||
@@ -116,11 +117,7 @@ void login(Request request, Output output){
       }
     }
 
-
     output.status = 400;
-    Mustache mustache;
-    mustache.ext("html");
-    scope auto mustache_context = new Mustache.Context;
     mustache_context["error_message"] = "Wrong Username or Password";
     output ~= mustache.render("public/login", mustache_context);
     return;

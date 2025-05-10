@@ -50,7 +50,6 @@ mixin ServerinoMain!(upload, login, profile);
     writeln("An exception occurred during database initialization: ", e.msg);
   }
       
-	db.exec_imm("CREATE TABLE IF NOT EXISTS test (id INTEGER PRIMARY KEY, line TEXT)");
 	return ServerinoConfig.create().addListener("0.0.0.0", 8080);
 }
 
