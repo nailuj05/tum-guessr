@@ -2,6 +2,8 @@ module login;
 
 import std.conv;
 import std.format;
+import std.array;
+import std.file;
 import serverino;
 import passwd;
 import passwd.bcrypt;
@@ -32,7 +34,7 @@ void sign_up(Request request, Output output) {
       WHERE email=?
     ", email))[0][0] > 0) {
       output.status = 400;
-      output ~= "Email already exists";
+			output ~= readText("public/sign_up.html").replace("<!-- ERROR -->", "<div class=\"error-container\">Email already in use</div>");
       return;
     }
     if (db.query!(int)(db.prepare_bind!(string)("
@@ -41,7 +43,7 @@ void sign_up(Request request, Output output) {
       WHERE username=?
     ", username))[0][0] > 0) {
       output.status = 400;
-      output ~= "Username already exists";
+			output ~= readText("public/sign_up.html").replace("<!-- ERROR -->", "<div class=\"error-container\">Username already in use</div>");
       return;
     }
 
@@ -106,7 +108,8 @@ void login(Request request, Output output){
     }
 
     output.status = 400;
-    output ~= "Wrong email_or_username or password";
+    output ~= readText("public/login.html").replace("<!-- ERROR -->", "<div class=\"error-container\">Wrong Username or Password</div>");
+
     return;
   }
   output.status = 405;

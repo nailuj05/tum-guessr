@@ -3,6 +3,7 @@
 		--background: #121416;
 		--accent: #2e6eb1;
 		--hightlight: #3f7fef;
+		--error: #ee1111;
 }
 body {
 		font-family: sans-serif;
@@ -26,6 +27,16 @@ header {
 		min-height: 100vh;
 		padding-top: 4rem;
 		box-sizing: border-box;
+}
+.error-container {
+		color: var(--error);
+    justify-content: center;
+		display: flex;
+		padding: 5px;
+		margin: 5px;
+		font-size: 1.1em;
+		border: 1px solid var(--error);
+		border-radius: 5px;
 }
 form {
 		padding: 1em;

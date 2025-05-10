@@ -52,6 +52,11 @@ mixin ServerinoMain!(upload, login);
 	return ServerinoConfig.create().addListener("0.0.0.0", 8080);
 }
 
+@endpoint @route!("/")
+void index(Request request, Output output) {
+	output.serveFile("public/index.html");
+}
+
 @endpoint
 void router(Request request, Output output) {
   Session session = Session(request, output, "test.db");
@@ -59,15 +64,15 @@ void router(Request request, Output output) {
   if (user_id >= 0) {
     writeln("Logged in as user with id ", user_id, "\n");
   }
-	string path = "public";
-	if(request.path == "/")
-		path ~= "/index.html";
-	else
-		path ~= request.path;
+	string path = "public" ~ request.path;
 
 	// if we don't want to use serve File we will need to set the mime manually (check the code for serveFile for a good example on that)
-	if(exists(path) && !path.endsWith(".html"))
+	if(exists(path) && (path.endsWith(".js") || path.endsWith(".css")))
 		output.serveFile(path);
+	else {
+		output.status = 302;
+		output.addHeader("Location", "/");
+	}
 }
 
 @endpoint @priority(-1)
