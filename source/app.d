@@ -35,7 +35,7 @@ mixin ServerinoMain!(upload, login);
           ON UPDATE CASCADE 
     )"); 
     db.exec_imm("CREATE TABLE IF NOT EXISTS sessions ( 
-      session_token TEXT PRIMARY KEY, 
+      session_id TEXT PRIMARY KEY, 
       user_id INTEGER NOT NULL, 
       expiration INTEGER NOT NULL, 
       FOREIGN KEY(user_id) 
