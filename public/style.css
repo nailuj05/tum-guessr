@@ -10,6 +10,10 @@ body {
 		text-align: center;
 		background-color: var(--background);
 		color: var(--accent);
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
 }
 
 header {
@@ -20,13 +24,25 @@ header {
     justify-content: space-between;
     align-items: center;
 }
+.btn {
+		color: white;
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    border-radius: 5px;
+		border: 1px solid white;
+    display: inline-block;
+}
+.home {
+		color: white;
+		font-size: 1.5rem;
+    text-decoration: none;
+}
 .center {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		min-height: 100vh;
-		padding-top: 4rem;
-		box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+    box-sizing: border-box;
 }
 .error-container {
 		color: var(--error);
@@ -54,7 +70,7 @@ input {
 		border: 1px solid var(--accent);
 		border-radius: 5px;
 }
-input:hover {
+input:hover .btn:hover {
 		border-color: var(--highlight) 
 }
 

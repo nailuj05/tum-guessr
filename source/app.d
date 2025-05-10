@@ -44,6 +44,7 @@ mixin ServerinoMain!(upload, login);
           ON DELETE CASCADE 
           ON UPDATE CASCADE 
     )");
+		// TODO: Games table for tracking played games, wins, losses, ...
   } catch (Database.DBException e){
     writeln("An exception occurred during database initialization: ", e.msg);
   }
@@ -57,7 +58,7 @@ void index(Request request, Output output) {
 	output.serveFile("public/index.html");
 }
 
-@endpoint
+@endpoint @priority(-1)
 void router(Request request, Output output) {
   Session session = Session(request, output, "test.db");
   int user_id = session.load();
@@ -75,7 +76,7 @@ void router(Request request, Output output) {
 	}
 }
 
-@endpoint @priority(-1)
+@endpoint @priority(-10)
 void page404(Output output)
 {
 	// Set the status code to 404
