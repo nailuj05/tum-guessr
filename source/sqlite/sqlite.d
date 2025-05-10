@@ -38,7 +38,7 @@ class Database {
 		sqlite3* handle;
 	}
 
-	private enum allowedBind(T) = (is(T == int) || is(T == float) || is(T == double) || isSomeString!T);
+	private enum allowedBind(T) = (is(T == int) || is(T == long) || is(T == float) || is(T == double) || isSomeString!T);
 	
 	
 public:
@@ -84,6 +84,8 @@ public:
 				rc = sqlite3_bind_double(r.stmt, i + 1, cast(double)bind);
 			else static if (is(T[i] == int))
 				rc = sqlite3_bind_int(r.stmt, i + 1, bind);
+			else static if (is(T[i] == long))
+				rc = sqlite3_bind_int64(r.stmt, i + 1, bind);
 			else static if (isSomeString!(T[i]))
 				rc = sqlite3_bind_text(r.stmt, i + 1, toStringz(bind), -1, SQLITE_TRANSIENT);
 			
@@ -129,6 +131,8 @@ public:
 			static foreach (i; 0..N) {
 				static if (is(RetTypes[i] == int))
 					row[i] = sqlite3_column_int(r.stmt, i);
+				else static if (is(T[i] == long))
+				  row[i] = sqlite3_column_int64(r.stmt, i + 1, bind);
 				else static if (is(RetTypes[i] == double))
 					row[i] = sqlite3_column_double(r.stmt, i);
 				else static if (isSomeString!(RetTypes[i])) {
