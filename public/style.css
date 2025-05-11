@@ -111,6 +111,7 @@ input[type="submit"]:disabled {
 		height: 55vh;
 		margin-bottom: 1em;
 }
+/* Do styling based on landscape/portrait modes using CSS media queries */
 #mapContainer {
 		position: fixed;
 		bottom: 20px;

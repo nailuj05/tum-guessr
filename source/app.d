@@ -80,7 +80,8 @@ void router(Request request, Output output) {
 	string path = "public" ~ request.path;
 
 	// if we don't want to use serve File we will need to set the mime manually (check the code for serveFile for a good example on that)
-	if(exists(path) && (path.endsWith(".js") || path.endsWith(".css")))
+	string[] ftypes = [".js", ".css", ".ico", ".png", ".jpg", ".jpeg"];
+	if(exists(path) && ftypes.any!(suffix => path.endsWith(suffix)))
 		output.serveFile(path);
 	else {
 		output.status = 302;
