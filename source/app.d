@@ -12,8 +12,9 @@ import sqlite;
 import upload;
 import login;
 import profile;
+import game;
 
-mixin ServerinoMain!(upload, login, profile);
+mixin ServerinoMain!(upload, login, profile, game);
 
 @onServerInit ServerinoConfig configure(string[] args)
 {
