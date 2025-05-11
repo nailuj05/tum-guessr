@@ -39,6 +39,7 @@ header {
 }
 .center {
     display: flex;
+		flex-direction: column;
     justify-content: center;
     align-items: center;
     min-height: 80vh;
@@ -70,6 +71,10 @@ input {
 		border: 1px solid var(--accent);
 		border-radius: 5px;
 }
+input.disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}
 input:hover .btn:hover {
 		border-color: var(--highlight) 
 }
@@ -97,6 +102,11 @@ input:hover .btn:hover {
 }
 
 /* Map CSS */
+#mapEmbed {
+		width: 100vw;
+		height: 60vh;
+		margin-bottom: 1em;
+}
 #mapContainer {
 		position: fixed;
 		bottom: 20px;
