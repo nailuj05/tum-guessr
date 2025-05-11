@@ -14,11 +14,13 @@ body {
     padding: 0;
     height: 100%;
     overflow: hidden;
+		overflow-x: hidden;
 }
 
 header {
     background: var(--accent);
     color: white;
+		max-width: 100%;
     padding: 1rem;
     display: flex;
     justify-content: space-between;
@@ -87,17 +89,17 @@ input[type="submit"]:disabled {
 .carousel {
     position: relative;
     width: 100%;
-		aspect-ratio: 16/9;
+		aspect-ratio: 16/10;
     display: flex;
     justify-content: center;
     align-items: top;
-		margin: 2rem;
+		margin-top: 2rem;
     overflow: hidden;
 }
 .card {
     position: absolute;
     width: 40%;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: 16 / 10;
     transition: transform 0.5s, z-index 0.25s;
     border-radius: 5px;
     overflow: hidden;
@@ -119,6 +121,12 @@ input[type="submit"]:disabled {
 		font-weight: bold;
 		text-shadow: 3px 3px 5px rgba(0,0,0,0.7);
 		z-index: 1;
+}
+@media (max-width: 600px) {
+		.card h2 {
+				top: 60%;
+				font-size: 4vw;
+		}
 }
 .cleft {
     transform: translateX(-70%) scale(0.8);
@@ -145,6 +153,11 @@ img#disabled {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+@media (orientation: portrait) {
+		#photoContainer {
+				height: 50vh;
+		}
 }
 .image-wrapper {
     position: absolute;
@@ -179,9 +192,19 @@ img#disabled {
 
 		transition: all 0.1s ease;
 }
-#mapContainer:hover {
-		width: 60%;
-		height: 60%;
+@media (orientation: landscape) {
+		#mapContainer:hover {
+				width: 60%;
+				height: 60%;
+		}
+}
+@media (orientation: portrait) {
+		#mapContainer {
+				bottom: 0px;
+				right: 0px;
+				width: 100%;
+				height: 45%;
+		}
 }
 #map {
 		width: 100%;
