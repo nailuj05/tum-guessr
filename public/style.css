@@ -115,7 +115,7 @@ input[type="submit"]:disabled {
 		left: 50%;
 		transform: translate(-50%, -50%);
 		color: white;
-		font-size: 2.5rem;
+		font-size: 2vw;
 		font-weight: bold;
 		text-shadow: 3px 3px 5px rgba(0,0,0,0.7);
 		z-index: 1;
