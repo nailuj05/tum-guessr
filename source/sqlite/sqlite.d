@@ -50,6 +50,7 @@ public:
 			printf("Can't open database: %s\n", sqlite3_errmsg(handle));
 			throw new DBException("Database opening failed");
 		}
+    exec_imm("PRAGMA foreign_keys = ON");
 	}
 
 	// Destructor closes db
