@@ -83,6 +83,59 @@ input[type="submit"]:disabled {
 		cursor: not-allowed;
 }
 
+/* Index Page */
+.carousel {
+    position: relative;
+    width: 100%;
+		aspect-ratio: 16/9;
+    display: flex;
+    justify-content: center;
+    align-items: top;
+		margin: 2rem;
+    overflow: hidden;
+}
+.card {
+    position: absolute;
+    width: 40%;
+    aspect-ratio: 16 / 9;
+    transition: transform 0.5s, z-index 0.25s;
+    border-radius: 5px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+		align-items: center;
+}
+.card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.card h2 {
+		position: absolute;
+		top: 70%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		color: white;
+		font-size: 2.5rem;
+		font-weight: bold;
+		text-shadow: 3px 3px 5px rgba(0,0,0,0.7);
+		z-index: 1;
+}
+.cleft {
+    transform: translateX(-70%) scale(0.8);
+    z-index: 1;
+}
+.ccenter {
+    transform: translateX(0) scale(1);
+    z-index: 2;
+}
+.cright {
+    transform: translateX(70%) scale(0.8);
+    z-index: 1;
+}
+img#disabled {
+		filter: grayscale(100%);
+}
+
 /* Photo View CSS */
 #photoContainer {
 		width: 100%;
