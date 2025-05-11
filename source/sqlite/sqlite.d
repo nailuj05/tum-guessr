@@ -129,6 +129,7 @@ public:
 		while ((rc = sqlite3_step(r.stmt)) == SQLITE_ROW) {
 			Tuple!RetTypes row;
 			
+      const(char)* ptr;
 			static foreach (i; 0..N) {
 				static if (is(RetTypes[i] == int))
 					row[i] = sqlite3_column_int(r.stmt, i);
@@ -137,7 +138,7 @@ public:
 				else static if (is(RetTypes[i] == double))
 					row[i] = sqlite3_column_double(r.stmt, i);
 				else static if (isSomeString!(RetTypes[i])) {
-					auto ptr = cast(const(char)*)sqlite3_column_text(r.stmt, i);
+					ptr = cast(const(char)*)sqlite3_column_text(r.stmt, i);
 					row[i] = ptr ? to!string(ptr) : "";
 				}
 				else static assert(0, "Unsupported return type");
