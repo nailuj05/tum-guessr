@@ -15,14 +15,19 @@ void upload(Request request, Output output) {
 		// TODO: Replace this with proper templating
 		import std.experimental.logger;
 		info(user_id);
-		if(user_id >= 0)
+		if(user_id >= 0) {
 			output.serveFile("public/upload.html");
-		else
-			output ~= readText("public/upload.html").replace("<!-- ERROR -->", "<div class=\"error-container\">Not logged in</div>");
+		} else {
+			output.status = 302;
+			output.addHeader("Location", "/");
+			output ~= "No access!" ~ "\n" ~ "You are being redirected.";
+		}
 	} else {
-		
 		if (user_id == -1) {
-			
+			output.status = 302;
+			output.addHeader("Location", "/");
+			output ~= "No access!" ~ "\n" ~ "You are being redirected.";
+			return;
 		}
 		
 		import std.experimental.logger;
@@ -44,10 +49,10 @@ void upload(Request request, Output output) {
 			
 			img.copy(target);
 			info("copied file to: ", target);
+
+			// TODO: Add to database here
 			
-			output ~= "received :)\n";
-		} else {
-			output ~= "Not a valid file";
+			output ~= "image received\n";
 		}
 	}
 }

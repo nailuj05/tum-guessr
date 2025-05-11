@@ -56,7 +56,7 @@ header {
 		border-radius: 5px;
 }
 form {
-		padding: 1em;
+		padding: 10px;
 		outline: 2px solid var(--accent);
 		border-radius: 5px;
 		outline-offset: 4px;
@@ -108,7 +108,7 @@ input[type="submit"]:disabled {
 /* Map CSS */
 #mapEmbed {
 		width: 100vw;
-		height: 60vh;
+		height: 55vh;
 		margin-bottom: 1em;
 }
 #mapContainer {
