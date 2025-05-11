@@ -99,7 +99,7 @@ void login(Request request, Output output){
     string email_or_username = request.post.read("email_or_username");
     string password = request.post.read("password");
 
-	  scope Database db = new Database("test.db", OpenFlags.READWRITE);
+	  scope Database db = new Database("test.db", OpenFlags.READONLY);
     auto query_result = db.query!(int, string)(db.prepare_bind!(string, string)("
       SELECT user_id, password_hash 
       FROM users

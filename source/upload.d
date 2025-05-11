@@ -54,7 +54,7 @@ void upload(Request request, Output output) {
 			temp_path.copy(target_path);
 			info("copied file to: ", target_path);
 
-      scope Database db = new Database("test.db", OpenFlag.READWRITE);
+      scope Database db = new Database("test.db", OpenFlags.READWRITE);
       try {
         db.exec(db.prepare_bind!(string, float, float, int)("
           INSERT INTO photos (path, latitude, longitude, user_id)
