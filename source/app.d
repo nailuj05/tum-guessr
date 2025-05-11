@@ -4,6 +4,7 @@ import std.stdio;
 import std.format;
 import std.algorithm;
 import std.file;
+import std.range;
 import session;
 import serverino;
 import mustache;
@@ -64,12 +65,30 @@ mixin ServerinoMain!(upload, login, profile, game);
 void index(Request request, Output output) {
   Mustache mustache;
   mustache.path("public");
-  scope auto mustache_context = new Mustache.Context;
-  Session session = Session(request, output, "test.db");
+
+	scope auto mustache_context = new Mustache.Context;
+
+	Session session = Session(request, output, "test.db");
   int user_id = session.load();
   if (user_id > 0) {
     mustache_context.useSection("logged_in");
   }
+
+	int[] milestones = [10, 25, 50, 100, 250, 500, 750, 1000, 2000, 5000];
+	scope Database db = new Database("test.db", OpenFlags.READONLY);
+	int users = db.query_imm!(int)("SELECT COUNT(*) FROM users")[0][0];
+	int photos = db.query_imm!(int)("SELECT COUNT(*) FROM photos")[0][0];
+
+	int nextBigger(int[] arr, int num) {
+		int i = 0;
+		while (arr[i] < num) i++;
+		return arr[i];
+	}
+	mustache_context["user_cur"] = users;
+	mustache_context["user_max"] = nextBigger(milestones, users);
+	mustache_context["photo_cur"] = photos;
+	mustache_context["photo_max"] = nextBigger(milestones, photos);
+
 	output ~= mustache.render("index", mustache_context);
 }
 

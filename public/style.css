@@ -16,6 +16,12 @@ body {
     overflow: hidden;
 		overflow-x: hidden;
 }
+p {
+		color: white;
+}
+h1,h2,h3,h4,h5,h6 {
+  color: var(--accent);
+}
 
 header {
     background: var(--accent);
@@ -89,10 +95,9 @@ input[type="submit"]:disabled {
 .carousel {
     position: relative;
     width: 100%;
-		aspect-ratio: 16/10;
+		aspect-ratio: 32/9;
     display: flex;
     justify-content: center;
-    align-items: top;
 		margin-top: 2rem;
     overflow: hidden;
 }
@@ -143,6 +148,23 @@ input[type="submit"]:disabled {
 }
 img#disabled {
 		filter: grayscale(100%);
+}
+progress {
+		width: 50vh;
+		heigth: 30px;
+		border-radius: 5px;
+		background-color: var(--background);
+		border: 1px solid var(--accent);
+}
+#spanprogress {
+  height: 100%;
+  display: block;
+  width: 0;
+  color: white;
+  line-height: 30px;
+  position: absolute;
+  text-align: end;
+  padding-right: 5px;
 }
 
 /* Photo View CSS */
