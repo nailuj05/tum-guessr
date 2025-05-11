@@ -15,11 +15,13 @@
 								<div id="map"></div>
 						</div>
 						<form action="upload" method="POST" enctype="multipart/form-data">
+								<div style="text-align: right">
 								<label>Latitude:</label>
 								<input type="text" name="lat" placeholder="Latitude" id="lat"><br>
 								<label>Longitude:</label>
 								<input type="text" name="long" placeholder="Longitude" id="long"><br>
-
+								</div>
+								<hr>
 								<label class="btn">
 										📷 Take or Upload Image
 										<input name="image" type="file" accept="image/*" capture="environment" required hidden>
@@ -29,6 +31,22 @@
 				</div>
 				<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 				<script>
+				 const latitudeInput = document.getElementById('lat');
+				 const longitudeInput = document.getElementById('long');
+				 const fileInput = document.querySelector('input[name="image"]');
+				 const submitButton = document.querySelector('input[type="submit"]');
+
+				 function validateForm() {
+						 const lat = parseFloat(latitudeInput.value);
+						 const lng = parseFloat(longitudeInput.value);
+						 const hasCoords = !isNaN(lat) && !isNaN(lng);
+						 const hasFile = fileInput.files.length > 0;
+
+						 submitButton.disabled = !(hasCoords && hasFile);
+				 }
+
+				 fileInput.addEventListener('change', validateForm);
+				 
 				 const map = L.map('map').setView([48.2621, 11.6676], 16);
 				 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 						 attribution: '© OpenStreetMap contributors'
@@ -46,7 +64,7 @@
 						 document.getElementById('long').value = lng;
 
 						 const form = document.querySelector('form');
-						 form.querySelector('input[type="submit"]').disabled = false;
+						 validateForm();
 				 });
 
 				 function updateMarker(lat, lng) {
@@ -66,9 +84,7 @@
 								 const lng = parseFloat(document.getElementById('long').value);
 								 if (!isNaN(lat) && !isNaN(lng)) {
 										 updateMarker(lat, lng);
-										 form.querySelector('input[type="submit"]').disabled = false;
-								 } else {
-										 form.querySelector('input[type="submit"]').disabled = true;
+										 validateForm();
 								 }
 						 });
 						 input.addEventListener('keydown', (e) => {
@@ -77,6 +93,8 @@
 								 }
 						 });
 				 });
+				</script>
+				<script>
 				</script>
 		</body>
 </html>

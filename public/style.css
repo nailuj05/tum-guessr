@@ -78,6 +78,10 @@ input.disabled {
 input:hover .btn:hover {
 		border-color: var(--highlight) 
 }
+input[type="submit"]:disabled {
+		border-color: var(--error);
+		cursor: not-allowed;
+}
 
 /* Photo View CSS */
 #photoContainer {
