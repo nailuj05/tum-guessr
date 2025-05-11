@@ -64,7 +64,7 @@ form {
 		outline-offset: 4px;
 		text-align: center;
 }
-input {
+input, textarea {
 		color: white;
 		padding: 5px;
 		margin: 5px;
