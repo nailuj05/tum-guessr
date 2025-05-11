@@ -8,18 +8,15 @@
 		<link rel="stylesheet" href="style.css">
 </head>
 <body>		
-		<h1>TUM Guessr</h1>
-
+    {{> header}}
 		<div id="photoContainer">
 				<div class="image-wrapper">
-						<img id="photo" src="photos/photo1.jpg">
+						<img id="photo" src="res/garching.jpg">
 				</div>
 		</div>
-		
 		<div id="mapContainer">
 				<div id="map"></div>
 		</div>
-
 		<script src="js/dragimage.js"></script>
 		<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 		<script>
