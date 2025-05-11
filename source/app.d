@@ -17,6 +17,9 @@ mixin ServerinoMain!(upload, login, profile);
 
 @onServerInit ServerinoConfig configure(string[] args)
 {
+	if(!exists("photos"))
+		 mkdir("photos");
+
 	scope Database db = new Database("test.db");
   try {
     db.exec_imm("CREATE TABLE IF NOT EXISTS users (
