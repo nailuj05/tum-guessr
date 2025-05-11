@@ -17,10 +17,12 @@ mixin ServerinoMain!(upload, login, profile);
 
 @onServerInit ServerinoConfig configure(string[] args)
 {
+  import std.logger;
 	if(!exists("photos"))
 		 mkdir("photos");
 
-	scope Database db = new Database("test.db");
+	scope Database db = new Database("test.db", OpenFlags.READWRITE
+      | OpenFlags.CREATE);
   try {
     db.exec_imm("CREATE TABLE IF NOT EXISTS users (
       user_id INTEGER PRIMARY KEY, 
@@ -51,7 +53,7 @@ mixin ServerinoMain!(upload, login, profile);
     )");
 		// TODO: Games table for tracking played games, wins, losses, ...
   } catch (Database.DBException e){
-    writeln("An exception occurred during database initialization: ", e.msg);
+    error("An exception occurred during database initialization: ", e.msg);
   }
       
 	return ServerinoConfig.create().addListener("0.0.0.0", 8080);
