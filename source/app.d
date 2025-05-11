@@ -14,8 +14,11 @@ import upload;
 import login;
 import profile;
 import game;
+import admin;
 
-mixin ServerinoMain!(upload, login, profile, game);
+mixin ServerinoMain!(upload, login, profile, game, admin);
+
+alias MustacheEngine!(string) Mustache;
 
 @onServerInit ServerinoConfig configure(string[] args)
 {

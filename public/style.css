@@ -1,8 +1,8 @@
-/* Define Variables for consisten styling here */
+/* Define Variables for consistent styling here */
 :root {
 		--background: #121416;
 		--accent: #2e6eb1;
-		--hightlight: #3f7fef;
+		--highlight: #3f7fef;
 		--error: #ee1111;
 }
 body {
@@ -35,6 +35,7 @@ header {
 .btn {
 		color: white;
     padding: 0.5rem 1rem;
+    margin: 0 0.25rem;
     text-decoration: none;
     border-radius: 5px;
 		border: 1px solid white;
@@ -89,6 +90,52 @@ input:hover .btn:hover {
 input[type="submit"]:disabled {
 		border-color: var(--error);
 		cursor: not-allowed;
+}
+.nav-bar {
+    display: flex;
+    background-color: var(--background);
+    padding: 0.5rem;
+    justify-content: center;
+}
+.nav-bar .btn {
+  background: var(--accent);
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 20px 0;
+  font-family: Arial, sans-serif;
+}
+th, td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+th {
+  background-color: #f2f2f2;
+  cursor: pointer;
+  position: relative;
+}
+th:hover {
+  background-color: #ddd;
+}
+th::after {
+  content: "";
+  position: absolute;
+  right: 8px;
+  color: #aaa;
+}
+th.asc::after {
+  content: "▲";
+}
+th.desc::after {
+  content: "▼";
+}
+tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+tr:hover {
+  background-color: #f1f1f1;
 }
 
 /* Index Page */

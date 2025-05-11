@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard</title>
+	<link rel="stylesheet" href="/style.css">	
+</head>
+<body>
+    {{> header}}
+    <div class="nav-bar">
+      <a class="btn active" href="/admin/users">Users</a>
+      <a class="btn" href="/admin/photos">Photos</a>
+      <a class="btn" href="/admin/server_log">Server Log</a>      
+    </div>
+    <h1>Users</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>isAdmin</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#users}}
+            <tr>
+                <td>{{user_id}}</td>
+                <td>{{username}}</td>
+                <td>{{email}}</td>
+                <td>{{isAdmin}}</td>
+            </tr>
+            {{/users}}
+        </tbody>
+    </table>
+</body>
+</html>
