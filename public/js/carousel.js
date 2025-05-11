@@ -21,12 +21,14 @@ function rotateLeft() {
 }
 cards.forEach((card, i) => {
 		card.addEventListener('click', (event) => {
-				if (card.classList.contains("cleft"))
+				if (card.classList.contains("cleft")) {
 						rotateRight();
-				else if (card.classList.contains("cright"))
+				} else if (card.classList.contains("cright")) {
 						rotateLeft();
-				else
-						window.location.href = "/game";
+				} else {
+						if(["garching"].includes(card.dataset.name))
+								window.location.href = "/game?location="+card.dataset.name;
+				}
 		});
 });
 
