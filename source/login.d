@@ -17,9 +17,10 @@ alias MustacheEngine!(string) Mustache;
 @endpoint @route!("/sign_up")
 void sign_up(Request request, Output output) {
   Mustache mustache;
+  mustache.path("public");
   scope auto mustache_context = new Mustache.Context;
   if (request.method == Request.Method.Get) {
-    output ~= mustache.render("public/sign_up", mustache_context);
+    output ~= mustache.render("sign_up", mustache_context);
     return;
   } else if (request.method == Request.Method.Post){
     if (!request.post.has("username") || !request.post.has("email") ||
@@ -41,7 +42,7 @@ void sign_up(Request request, Output output) {
     ", email))[0][0] > 0) {
       output.status = 400;
       mustache_context["error_message"] = "Email already in use";
-			output ~= mustache.render("public/sign_up", mustache_context);
+			output ~= mustache.render("sign_up", mustache_context);
       return;
     }
     if (db.query!(int)(db.prepare_bind!(string)("
@@ -51,7 +52,7 @@ void sign_up(Request request, Output output) {
     ", username))[0][0] > 0) {
       output.status = 400;
       mustache_context["error_message"] = "Username already in use";
-			output ~= mustache.render("public/sign_up", mustache_context);
+			output ~= mustache.render("sign_up", mustache_context);
       return;
     }
 
@@ -82,10 +83,11 @@ void sign_up(Request request, Output output) {
 @endpoint @route!("/login")
 void login(Request request, Output output){
   Mustache mustache;
+  mustache.path("public");
   scope auto mustache_context = new Mustache.Context;
   Session session = Session(request, output, "test.db");
   if (request.method == Request.Method.Get) {
-    output ~= mustache.render("public/login", mustache_context);
+    output ~= mustache.render("login", mustache_context);
     return;
   } else if (request.method == Request.Method.Post) {
     if (!request.post.has("email_or_username") ||
@@ -119,7 +121,7 @@ void login(Request request, Output output){
 
     output.status = 400;
     mustache_context["error_message"] = "Wrong Username or Password";
-    output ~= mustache.render("public/login", mustache_context);
+    output ~= mustache.render("login", mustache_context);
     return;
   }
   output.status = 405;

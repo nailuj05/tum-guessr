@@ -1,0 +1,15 @@
+<header>
+  <h1>TUM Guessr</h1>
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      {{#logged_in}}
+      <li><a href="/profile">Profile</a></li>
+      {{/logged_in}}
+      {{^logged_in}}
+      <li><a href="/login">Login</a></li>
+      <li><a href="/sign_up">Sign Up</a></li>
+      {{/logged_in}}
+    </ul>
+  </nav>
+</header>

@@ -6,6 +6,7 @@ import std.algorithm;
 import std.file;
 import session;
 import serverino;
+import mustache;
 
 import sqlite;
 import upload;
@@ -55,7 +56,10 @@ mixin ServerinoMain!(upload, login, profile);
 
 @endpoint @route!("/")
 void index(Request request, Output output) {
-	output.serveFile("public/index.html");
+  Mustache mustache;
+  mustache.path("public");
+  scope auto mustache_context = new Mustache.Context;
+	output ~= mustache.render("index", mustache_context);
 }
 
 @endpoint @priority(-1)
