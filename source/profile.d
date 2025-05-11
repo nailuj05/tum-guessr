@@ -77,7 +77,6 @@ void profile_username(Request request, Output output) {
   int session_user_id = session.load();
 
   Mustache mustache;
-  mustache.ext("html");
   scope auto mustache_context = new Mustache.Context;
   mustache_context["username"] = username;
   if (session_user_id == user_id) {
