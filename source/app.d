@@ -76,9 +76,6 @@ void index(Request request, Output output) {
 void router(Request request, Output output) {
   Session session = Session(request, output, "test.db");
   int user_id = session.load();
-  if (user_id >= 0) {
-    writeln("Logged in as user with id ", user_id, "\n");
-  }
 	string path = "public" ~ request.path;
 
 	// if we don't want to use serve File we will need to set the mime manually (check the code for serveFile for a good example on that)

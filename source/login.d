@@ -7,6 +7,7 @@ import std.file;
 import serverino;
 import passwd;
 import passwd.bcrypt;
+import std.logger;
 
 import sqlite;
 import session;
@@ -69,6 +70,8 @@ void sign_up(Request request, Output output) {
         WHERE email=? AND username=? AND password_hash=?
       ", email, username, password_hash))[0][0];
 
+    info("User " ~ to!string(user_id) ~ " aka '" ~ username ~ "' signed up.");
+
     Session session = Session(request, output, "test.db");
     session.save(user_id);
 
@@ -112,6 +115,13 @@ void login(Request request, Output output){
 
       if (password.canCryptTo(password_hash)) {
         session.save(user_id);
+        string username = db.query!string(db.prepare_bind!int("
+          SELECT username
+          FROM users
+          WHERE user_id=?    
+        ", user_id))[0][0];
+        info("User " ~ to!string(user_id) ~ " aka '" ~ username ~ "' logged in.");
+
         output.status = 302;
         output.addHeader("Location", "/");
         output ~= "Logged in successfully!" ~ "\n" ~ "You are being redirected.";
@@ -129,11 +139,21 @@ void login(Request request, Output output){
 
 @endpoint @route!("/logout")
 void logout(Request request, Output output) {
-	import std.experimental.logger;
   Session session = Session(request, output, "test.db");
+  int user_id = session.load();
 	session.remove();
 
-	info("user logged out");
+  if (user_id > 0) {
+    scope Database db = new Database("test.db", OpenFlags.READONLY);
+    string username = db.query!string(db.prepare_bind!int("
+      SELECT username
+      FROM users
+      WHERE user_id=?    
+    ", user_id))[0][0];
+    info("User " ~ to!string(user_id) ~ " aka '" ~ username ~ "' logged out.");
+  } else {
+    info("User attempted logout without being logged in.");
+  }
 	
 	output.status = 302;
 	output.addHeader("Location", "/");
