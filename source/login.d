@@ -42,7 +42,7 @@ void sign_up(Request request, Output output) {
       WHERE email=?
     ", email))[0][0] > 0) {
       output.status = 400;
-      mustache_context["error_message"] = "Email already in use";
+			mustache_context["error_message"] = "<div class=\"error\">Email already in use</div>";
 			output ~= mustache.render("sign_up", mustache_context);
       return;
     }
@@ -52,7 +52,7 @@ void sign_up(Request request, Output output) {
       WHERE username=?
     ", username))[0][0] > 0) {
       output.status = 400;
-      mustache_context["error_message"] = "Username already in use";
+			mustache_context["error_message"] = "<div class=\"error\">Username already in use</div>";
 			output ~= mustache.render("sign_up", mustache_context);
       return;
     }
@@ -130,7 +130,7 @@ void login(Request request, Output output){
     }
 
     output.status = 400;
-    mustache_context["error_message"] = "Wrong Username or Password";
+		mustache_context["error_message"] = "<div class=\"error\">Wrong username or password</div>";
     output ~= mustache.render("login", mustache_context);
     return;
   }

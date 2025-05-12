@@ -5,12 +5,13 @@
 		<div class="right">
 				<a class="btn" href="/about">About</a>
 				{{#logged_in}}
-				<a class="btn" href="/profile">Profile</a>
-				<a class="btn" href="/logout">Logout</a>
+						<a class="btn" href="/upload">📷</a>
+						<a class="btn" href="/profile">Profile</a>
+						<a class="btn" href="/logout">Logout</a>
 				{{/logged_in}}
 				{{^logged_in}}
-				<a class="btn" href="/login">Login</a>
-				<a class="btn" href="/sign_up">Sign Up</a>
+						<a class="btn" href="/login">Login</a>
+						<a class="btn" href="/sign_up">Sign Up</a>
 				{{/logged_in}}
 		</div>
 </header>

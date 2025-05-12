@@ -6,25 +6,32 @@ import std.array;
 import std.algorithm;
 import std.regex;
 import serverino;
+
+import mustache;
 import session;
 import sqlite;
 
+alias MustacheEngine!(string) Mustache;
+
 @endpoint @route!("/upload")
 void upload(Request request, Output output) {
+	Mustache mustache;
+	mustache.path("public");
+	scope auto mustache_context = new Mustache.Context;
+		
 	Session session = Session(request, output, "test.db");
 	int user_id = session.load();
-  if (request.method == Request.Method.Get) {
-		// TODO: Replace this with proper templating
-		import std.logger;
-		info(user_id);
+
+	if (request.method == Request.Method.Get) {
 		if(user_id >= 0) {
-			output.serveFile("public/upload.html");
+			mustache_context.useSection("logged_in");
 		} else {
 			output.status = 302;
 			output.addHeader("Location", "/");
 			output ~= "No access!" ~ "\n" ~ "You are being redirected.";
 		}
-	} else if (request.method == Request.Method.Post) {
+	}
+	else if (request.method == Request.Method.Post) {
 		if (user_id == -1) {
 			output.status = 302;
 			output.addHeader("Location", "/");
@@ -58,14 +65,15 @@ void upload(Request request, Output output) {
       try {
         db.exec(db.prepare_bind!(string, float, float, int)("
           INSERT INTO photos (path, latitude, longitude, user_id)
-          VALUES (?, ?, ?, ?) 
-        ", target_path, latitude, longitude, user_id));
+          VALUES (?, ?, ?, ?)", target_path, latitude, longitude, user_id));
+				mustache_context["info_message"] = "<div class=\"info\">Photo received</div>";
       } catch (Database.DBException e) {
         error("An exception occured during insertion of photo in database:
             ", e.msg);
+				mustache_context["error_message"] = "<div class=\"error\">Database error</div>";
       }
-			output ~= "image received\n";
 		}
 	}
-  output.status = 405;
+	output ~= mustache.render("upload", mustache_context);
+  output.status = 200;
 }
