@@ -5,6 +5,8 @@ import std.format;
 import std.algorithm;
 import std.file;
 import std.range;
+import std.logger;
+import std.conv;
 import session;
 import serverino;
 import mustache;
@@ -22,7 +24,6 @@ alias MustacheEngine!(string) Mustache;
 
 @onServerInit ServerinoConfig configure(string[] args)
 {
-  import std.logger;
 	if(!exists("photos"))
 		 mkdir("photos");
 
@@ -41,10 +42,10 @@ alias MustacheEngine!(string) Mustache;
       path TEXT NOT NULL UNIQUE,  
       latitude REAL NOT NULL, 
       longitude REAL NOT NULL, 
-      user_id INTEGER, 
+      user_id INTEGER NOT NULL, 
       FOREIGN KEY(user_id) 
         REFERENCES users(user_id) 
-          ON DELETE SET NULL 
+          ON DELETE CASCADE 
           ON UPDATE CASCADE 
     )"); 
     db.exec_imm("CREATE TABLE IF NOT EXISTS sessions ( 
@@ -62,7 +63,7 @@ alias MustacheEngine!(string) Mustache;
       score INTEGER NOT NULL DEFAULT 0,
       FOREIGN KEY(user_id) 
         REFERENCES users(user_id) 
-          ON DELETE SET NULL 
+          ON DELETE CASCADE 
           ON UPDATE CASCADE
     )");
 		db.exec_imm("CREATE TABLE IF NOT EXISTS rounds (
@@ -71,12 +72,16 @@ alias MustacheEngine!(string) Mustache;
       photo_id INTEGER NOT NULL,
       guess_lat REAL DEFAULT 0,
       guess_long REAL DEFAULT 0,
+      score INTEGER NOT NULL DEFAULT 0,
       FOREIGN KEY(game_id) 
         REFERENCES games(game_id) 
           ON DELETE CASCADE
+          ON UPDATE CASCADE,
+      FOREIGN KEY(photo_id)
+        REFERENCES photos(photo_id)
+          ON DELETE CASCADE
           ON UPDATE CASCADE
     )");
-		// TODO: Games table for tracking played games, wins, losses, ...
   } catch (Database.DBException e){
     error("An exception occurred during database initialization: ", e.msg);
   }
@@ -97,14 +102,14 @@ void index(Request request, Output output) {
     mustache_context.useSection("logged_in");
   }
 
-	int[] milestones = [10, 25, 50, 100, 250, 500, 750, 1000, 2000, 5000];
+	int[] milestones = [10, 25, 50, 100, 250, 500, 750, 1000, 1500, 2000, 3000, 5000];
 	scope Database db = new Database("test.db", OpenFlags.READONLY);
 	int users = db.query_imm!(int)("SELECT COUNT(*) FROM users")[0][0];
 	int photos = db.query_imm!(int)("SELECT COUNT(*) FROM photos")[0][0];
 
 	int nextBigger(int[] arr, int num) {
 		int i = 0;
-		while (arr[i] < num) i++;
+		while (arr[i] < num && i < (arr.length - 1)) i++;
 		return arr[i];
 	}
 	mustache_context["user_cur"] = users;
@@ -136,9 +141,11 @@ void router(Request request, Output output) {
 
 	// if we don't want to use serve File we will need to set the mime manually (check the code for serveFile for a good example on that)
 	string[] ftypes = [".js", ".css", ".ico", ".png", ".jpg", ".jpeg"];
-	if(exists(path) && ftypes.any!(suffix => path.endsWith(suffix)))
+	if(exists(path) && ftypes.any!(suffix => path.endsWith(suffix))) {
+    //info("Router served resource at " ~ path);
 		output.serveFile(path);
-	else {
+  } else {
+    warning("Router refused to serve resource at " ~ path);
 		output.status = 302;
 		output.addHeader("Location", "/");
 	}
