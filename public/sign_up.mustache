@@ -10,7 +10,9 @@
 				<header>
 						<div>TUM Guessr</div>
 				</header>
-        {{{error_message}}}
+        {{#error_messages}}
+        {{>error_message}}
+        {{/error_messages}}
 				<div class="center">
 						<form action="/sign_up" method="post">
 								<b>Sign Up</b><br>

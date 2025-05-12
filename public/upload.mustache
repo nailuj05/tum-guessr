@@ -9,8 +9,12 @@
 		</head>
 		<body>
 			{{> header}}
-			{{{error_message}}}
-			{{{info_message}}}
+      {{#error_messages}}
+      {{>error_message}}
+      {{/error_messages}}
+      {{#info_messages}}
+      {{>info_message}}
+      {{/info_messages}}
 			<div class="center">
 				<p>Click on the map to select a coordinate</p>
 				<div id="mapEmbed">

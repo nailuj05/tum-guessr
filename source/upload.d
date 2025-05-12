@@ -27,14 +27,15 @@ void upload(Request request, Output output) {
 			mustache_context.useSection("logged_in");
 		} else {
 			output.status = 302;
-			output.addHeader("Location", "/");
+			output.addHeader("Location", "/login");
 			output ~= "No access!" ~ "\n" ~ "You are being redirected.";
+      return;
 		}
 	}
 	else if (request.method == Request.Method.Post) {
 		if (user_id == -1) {
 			output.status = 302;
-			output.addHeader("Location", "/");
+			output.addHeader("Location", "/login");
 			output ~= "No access!" ~ "\n" ~ "You are being redirected.";
 			return;
 		}
@@ -66,11 +67,11 @@ void upload(Request request, Output output) {
         db.exec(db.prepare_bind!(string, float, float, int)("
           INSERT INTO photos (path, latitude, longitude, user_id)
           VALUES (?, ?, ?, ?)", target_path, latitude, longitude, user_id));
-				mustache_context["info_message"] = "<div class=\"info\">Photo received</div>";
+        mustache_context.addSubContext("info_messages")["info_message"] = "Photo received";
       } catch (Database.DBException e) {
         error("An exception occured during insertion of photo in database:
             ", e.msg);
-				mustache_context["error_message"] = "<div class=\"error\">Database error</div>";
+        mustache_context.addSubContext("error_messages")["info_message"] = "Database error";
       }
 		}
 	}

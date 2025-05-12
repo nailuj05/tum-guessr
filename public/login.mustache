@@ -7,7 +7,9 @@
 		<link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    {{{error_message}}}
+    {{#error_messages}}
+    {{>error_message}}
+    {{/error_messages}}
 		<div class="center">
 				<form action="/login" method="post">
 						<b>Login</b><br>
