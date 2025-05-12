@@ -56,6 +56,26 @@ alias MustacheEngine!(string) Mustache;
           ON DELETE CASCADE 
           ON UPDATE CASCADE 
     )");
+		db.exec_imm("CREATE TABLE IF NOT EXISTS games (
+      game_id INTEGER PRIMARY KEY,
+      user_id INTEGER NOT NULL,
+      score INTEGER NOT NULL DEFAULT 0,
+      FOREIGN KEY(user_id) 
+        REFERENCES users(user_id) 
+          ON DELETE SET NULL 
+          ON UPDATE CASCADE
+    )");
+		db.exec_imm("CREATE TABLE IF NOT EXISTS rounds (
+      round_id INTEGER PRIMARY KEY,
+      game_id INTEGER NOT NULL,
+      photo_id INTEGER NOT NULL,
+      guess_lat REAL DEFAULT 0,
+      guess_long REAL DEFAULT 0,
+      FOREIGN KEY(game_id) 
+        REFERENCES games(game_id) 
+          ON DELETE CASCADE
+          ON UPDATE CASCADE
+    )");
 		// TODO: Games table for tracking played games, wins, losses, ...
   } catch (Database.DBException e){
     error("An exception occurred during database initialization: ", e.msg);

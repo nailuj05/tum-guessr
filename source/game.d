@@ -21,3 +21,4 @@ void game(Request request, Output output) {
 		output ~= mustache.render("game", mustache_context);
 	}
 }
+
