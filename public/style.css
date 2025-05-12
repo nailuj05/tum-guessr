@@ -54,7 +54,7 @@ header {
     min-height: 80vh;
     box-sizing: border-box;
 }
-.error-container {
+.error {
 		color: var(--error);
     justify-content: center;
 		display: flex;
@@ -64,6 +64,32 @@ header {
 		border: 1px solid var(--error);
 		border-radius: 5px;
 }
+.info {
+		color: var(--accent);
+    justify-content: center;
+		display: flex;
+		padding: 5px;
+		margin: 5px;
+		font-size: 1.1em;
+		border: 1px solid var(--accent);
+		border-radius: 5px;
+		animation:
+				fadeOut 2s 4s forwards,
+				hide 0s 4s forwards;
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes hide {
+  to {
+    display: none;
+  }
+}
+
 form {
 		padding: 10px;
 		outline: 2px solid var(--accent);
