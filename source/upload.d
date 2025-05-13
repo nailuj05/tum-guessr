@@ -19,8 +19,8 @@ void upload(Request request, Output output) {
 	mustache.path("public");
 	scope auto mustache_context = new Mustache.Context;
 		
-	Session session = Session(request, output, "test.db");
-	int user_id = session.load();
+	
+	int user_id = session_load(request, output);
 
 	if (request.method == Request.Method.Get) {
 		if(user_id >= 0) {

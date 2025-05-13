@@ -15,8 +15,8 @@ void profile(Request request, Output output) {
     output.status = 405;
     return;
   }
-  Session session = Session(request, output, "test.db");
-  int session_user_id = session.load();
+  
+  int session_user_id = session_load(request, output);
   if (session_user_id < 0) {
     output.status = 302;
     output.addHeader("Location", "/login");
@@ -73,8 +73,8 @@ void profile_username(Request request, Output output) {
   int user_id = query_result[0][0];
   string email = query_result[0][1];
 
-  Session session = Session(request, output, "test.db");
-  int session_user_id = session.load();
+  
+  int session_user_id = session_load(request, output);
 
   Mustache mustache;
   mustache.path("public");
