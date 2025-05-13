@@ -60,7 +60,6 @@ alias MustacheEngine!(string) Mustache;
 		db.exec_imm("CREATE TABLE IF NOT EXISTS games (
       game_id INTEGER PRIMARY KEY,
       user_id INTEGER NOT NULL,
-      score INTEGER NOT NULL DEFAULT 0,
       FOREIGN KEY(user_id) 
         REFERENCES users(user_id) 
           ON DELETE CASCADE 
