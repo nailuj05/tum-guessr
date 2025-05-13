@@ -97,9 +97,7 @@ alias MustacheEngine!(string) Mustache;
 @onDaemonStart
 void daemon_start() {
 	ubyte[] random_bytes = cast(ubyte[])read("/dev/urandom", 64);
-	info(random_bytes);
 	environment["cookie_hmac_key"] = random_bytes.toHexString!(LetterCase.lower);
-	info(environment["cookie_hmac_key"]);
 }
 
 @endpoint @route!("/")
@@ -108,7 +106,6 @@ void index(Request request, Output output) {
   mustache.path("public");
 
 	scope auto mustache_context = new Mustache.Context;
-
 	
   int user_id = session_load(request, output);
   if (user_id > 0) {

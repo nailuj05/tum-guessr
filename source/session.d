@@ -21,12 +21,10 @@ void session_save(ref Output output, int user_id, Duration maxAge = 15.minutes)
 {
 		long expiration = Clock.currTime.toUnixTime + maxAge.total!"seconds";
 		ubyte[] hmac_key = environment["cookie_hmac_key"].fromHexString;
-		info(hmac_key);
 		string salt = (cast(ubyte[])read("/dev/urandom", 32)).toHexString!(LetterCase.lower);
 		string cookie_info = to!string(user_id) ~ ":" ~ to!string(expiration) ~ ":" ~ salt;
 		string hmac = cookie_info.representation.hmac!SHA256(hmac_key).toHexString!(LetterCase.lower).dup;
 		string session_cookie = cookie_info ~ ":" ~ hmac;
-		info(session_cookie);
 		output.setCookie(Cookie("session", session_cookie).httpOnly(true));
 }
 
@@ -35,11 +33,11 @@ void session_save(ref Output output, int user_id, Duration maxAge = 15.minutes)
 int session_load(const Request request, ref Output output)
 {
 		string session_cookie = request.cookie.read("session");
-		info("loading cookie: " ~ session_cookie);
+		info("loading session with cookie: " ~ session_cookie);
 		auto match = matchFirst(session_cookie, ctRegex!`^((\d+):(\d+):([0-9a-f]+)):([0-9a-f]+)$`);
 		
 		if (!match) {
-			warning("cookie has invalid format: " ~ session_cookie);
+			warning("cookie has invalid format");
 			session_remove(output);
 			return -1;
 		}
@@ -53,10 +51,12 @@ int session_load(const Request request, ref Output output)
 		string hmac = cookie_info.representation.hmac!SHA256(hmac_key).toHexString!(LetterCase.lower).dup;
 
 		if (cookie_hmac != hmac) {
-			warning("cookie has invalid hmac: { expected: " ~ hmac ~ ", got: " ~ cookie_hmac);
+			warning("cookie has invalid hmac: { expected: " ~ hmac ~ ", got: " ~ cookie_hmac ~ " }");
 			session_remove(output);
 			return -1;
 		}
+
+		info("cookie hmac OK");
 
 		int user_id = to!int(match[2]);
 		long expiration = to!long(match[3]);
@@ -64,10 +64,12 @@ int session_load(const Request request, ref Output output)
 		info("cookie expiration: " ~ to!string(expiration));
 
 		if (expiration < Clock.currTime.toUnixTime) {
-			warning("session expired");
+			warning("session expired, removing");
 			session_remove(output);
 			return -1;
 		}
+
+		info("session loaded successfully");
 		
 		return user_id;
 }
