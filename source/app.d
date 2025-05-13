@@ -33,25 +33,31 @@ alias MustacheEngine!(string) Mustache;
 {
   bool showHelp = false;
 	bool verbose = false;
+	string db_filename = "prod.db";
 
-	try { showHelp = getopt(args, "verbose",  &verbose).helpWanted; }
+	try { showHelp = getopt(args,
+													"verbose",  &verbose,
+													"database", &db_filename)
+			.helpWanted; }
 	catch (Exception e) { showHelp = true; }
 
 	if (showHelp)
 	{
 		writeln("Usage: ", baseName(args[0]), " [OPTIONS]");
     writeln("Options:");
-    writeln("  --help       Show this help message");
-    writeln("  --verbose    Enable verbose output");
+    writeln("  --help             Show this help message");
+    writeln("  --verbose          Enable verbose output");
+    writeln("  --database=FILE    Path to database file");
 		return ServerinoConfig.create().setReturnCode(1);
 	}
 
 	environment["verbose"] = verbose.to!string;
+	environment["db_filename"] = db_filename;
 
 	if(!exists("photos"))
 		 mkdir("photos");
 
-	scope Database db = new Database("test.db", OpenFlags.READWRITE
+	scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE
       | OpenFlags.CREATE);
   try {
     db.exec_imm("CREATE TABLE IF NOT EXISTS users (
@@ -131,7 +137,7 @@ void index(Request request, Output output) {
   }
 
 	int[] milestones = [10, 25, 50, 100, 250, 500, 750, 1000, 1500, 2000, 3000, 5000];
-	scope Database db = new Database("test.db", OpenFlags.READONLY);
+	scope Database db = new Database(environment["db_filename"], OpenFlags.READONLY);
 	int users = db.query_imm!(int)("SELECT COUNT(*) FROM users")[0][0];
 	int photos = db.query_imm!(int)("SELECT COUNT(*) FROM photos")[0][0];
 

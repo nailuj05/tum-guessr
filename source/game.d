@@ -4,6 +4,7 @@ import serverino;
 import session;
 import mustache;
 import sqlite;
+import std.process : environment;
 
 alias MustacheEngine!(string) Mustache;
 

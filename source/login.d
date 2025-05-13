@@ -8,6 +8,7 @@ import serverino;
 import passwd;
 import passwd.bcrypt;
 import std.logger;
+import std.process : environment;
 
 import sqlite;
 import session;
@@ -34,7 +35,7 @@ void sign_up(Request request, Output output) {
     string username = request.post.read("username");
     string password = request.post.read("password");
 
-	  scope Database db = new Database("test.db", OpenFlags.READWRITE);
+	  scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE);
     if (db.query!(int)(db.prepare_bind!(string)("
       SELECT count(*) 
       FROM users
@@ -100,7 +101,7 @@ void login(Request request, Output output){
     string email_or_username = request.post.read("email_or_username");
     string password = request.post.read("password");
 
-	  scope Database db = new Database("test.db", OpenFlags.READONLY);
+	  scope Database db = new Database(environment["db_filename"], OpenFlags.READONLY);
     auto query_result = db.query!(int, string, string)(db.prepare_bind!(string, string)("
       SELECT user_id, username, password_hash 
       FROM users
@@ -137,7 +138,7 @@ void logout(Request request, Output output) {
 	session_remove(output);
 
   if (user_id > 0) {
-    scope Database db = new Database("test.db", OpenFlags.READONLY);
+    scope Database db = new Database(environment["db_filename"], OpenFlags.READONLY);
     string username = db.query!string(db.prepare_bind!int("
       SELECT username
       FROM users
