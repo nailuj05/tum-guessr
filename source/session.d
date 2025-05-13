@@ -86,7 +86,7 @@ struct Session
           }
           return user_id;
       }
-      catch(Exception e) { warning("Error loading session, removing."); remove(); }
+      catch(Exception e) { warning("Error loading session, removing.", e); remove(); }
       return -1;
    }
 

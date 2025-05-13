@@ -23,7 +23,7 @@ void profile(Request request, Output output) {
     return;
   }
 
-  scope Database db = new Database("test.db");
+  scope Database db = new Database("test.db", OpenFlags.READONLY);
   auto query_result = db.query!(string)(db.prepare_bind!(int)("
     SELECT username
     FROM users
@@ -57,7 +57,7 @@ void profile_username(Request request, Output output) {
 
   string username = username_match[1];
 
-  scope Database db = new Database("test.db");
+  scope Database db = new Database("test.db", OpenFlags.READONLY);
   auto query_result = db.query!(int, string)(db.prepare_bind!(string)("
     SELECT user_id, email
     FROM users
