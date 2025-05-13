@@ -41,7 +41,8 @@ alias MustacheEngine!(string) Mustache;
       photo_id INTEGER PRIMARY KEY, 
       path TEXT NOT NULL UNIQUE,  
       latitude REAL NOT NULL, 
-      longitude REAL NOT NULL, 
+      longitude REAL NOT NULL,
+      location STRING NOT NULL,
       user_id INTEGER NOT NULL, 
       FOREIGN KEY(user_id) 
         REFERENCES users(user_id) 

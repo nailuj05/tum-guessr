@@ -64,9 +64,9 @@ void upload(Request request, Output output) {
 
       scope Database db = new Database("test.db", OpenFlags.READWRITE);
       try {
-        db.exec(db.prepare_bind!(string, float, float, int)("
-          INSERT INTO photos (path, latitude, longitude, user_id)
-          VALUES (?, ?, ?, ?)", target_path, latitude, longitude, user_id));
+        db.exec(db.prepare_bind!(string, float, float, string, int)("
+          INSERT INTO photos (path, latitude, longitude, location, user_id)
+          VALUES (?, ?, ?, ?, ?)", target_path, latitude, longitude, "garching", user_id));
         mustache_context.addSubContext("info_messages")["info_message"] = "Photo received";
       } catch (Database.DBException e) {
         error("An exception occured during insertion of photo in database:
