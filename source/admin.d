@@ -12,8 +12,7 @@ alias MustacheEngine!(string) Mustache;
 
 @endpoint @route!(r => r.path.startsWith("/admin")) @priority(999) 
 void admin_access_authorization(Request request, Output output) {
-  Session session = Session(request, output, "test.db");
-  int user_id = session.load();
+  int user_id = session_load(request, output);
   scope Database db = new Database("test.db", OpenFlags.READONLY);
   auto query_result = db.query!(string, int)(db.prepare_bind!int("
     SELECT username, isAdmin

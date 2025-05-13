@@ -34,7 +34,6 @@ void sign_up(Request request, Output output) {
     string username = request.post.read("username");
     string password = request.post.read("password");
 
-
 	  scope Database db = new Database("test.db", OpenFlags.READWRITE);
     if (db.query!(int)(db.prepare_bind!(string)("
       SELECT count(*) 
@@ -72,8 +71,7 @@ void sign_up(Request request, Output output) {
 
     info("User " ~ to!string(user_id) ~ " aka '" ~ username ~ "' signed up.");
 
-    Session session = Session(request, output, "test.db");
-    session.save(user_id);
+    session_save(output, user_id);
 
     output.status = 302;
     output.addHeader("Location", "/");
@@ -88,7 +86,7 @@ void login(Request request, Output output){
   Mustache mustache;
   mustache.path("public");
   scope auto mustache_context = new Mustache.Context;
-  Session session = Session(request, output, "test.db");
+  
   if (request.method == Request.Method.Get) {
     output ~= mustache.render("login", mustache_context);
     return;
@@ -103,23 +101,19 @@ void login(Request request, Output output){
     string password = request.post.read("password");
 
 	  scope Database db = new Database("test.db", OpenFlags.READONLY);
-    auto query_result = db.query!(int, string)(db.prepare_bind!(string, string)("
-      SELECT user_id, password_hash 
+    auto query_result = db.query!(int, string, string)(db.prepare_bind!(string, string)("
+      SELECT user_id, username, password_hash 
       FROM users
       WHERE email=? OR username=?
     ", email_or_username, email_or_username));
     
     if (query_result.length > 0) {
       int user_id = query_result[0][0];
-      string password_hash = query_result[0][1];
+			string username = query_result[0][1];
+      string password_hash = query_result[0][2];
 
       if (password.canCryptTo(password_hash)) {
-        session.save(user_id);
-        string username = db.query!string(db.prepare_bind!int("
-          SELECT username
-          FROM users
-          WHERE user_id=?    
-        ", user_id))[0][0];
+				session_save(output, user_id);
         info("User " ~ to!string(user_id) ~ " aka '" ~ username ~ "' logged in.");
 
         output.status = 302;
@@ -139,9 +133,8 @@ void login(Request request, Output output){
 
 @endpoint @route!("/logout")
 void logout(Request request, Output output) {
-  Session session = Session(request, output, "test.db");
-  int user_id = session.load();
-	session.remove();
+  int user_id = session_load(request, output);
+	session_remove(output);
 
   if (user_id > 0) {
     scope Database db = new Database("test.db", OpenFlags.READONLY);

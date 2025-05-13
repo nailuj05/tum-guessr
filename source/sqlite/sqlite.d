@@ -20,6 +20,8 @@ enum OpenFlags : int {
 class Database {
 	import std.format;
 	import std.string;
+	import std.stdio;
+	import std.logger;
 	import std.conv : to;
 	import etc.c.sqlite3;
 	import core.stdc.stdio;
@@ -50,12 +52,14 @@ public:
 			printf("Can't open database: %s\n", sqlite3_errmsg(handle));
 			throw new DBException("Database opening failed");
 		}
+		info("Database opened");
     exec_imm("PRAGMA foreign_keys = ON");
 	}
 
 	// Destructor closes db
 	~this() {
 		sqlite3_close(handle);
+		info("Database closed");
 	}
 
 	// Execute a plain string SQL Query on the database
