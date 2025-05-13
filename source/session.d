@@ -19,12 +19,14 @@ import sqlite;
 // saves user_id and expiration to cookie
 void session_save(ref Output output, int user_id, Duration maxAge = 15.minutes)
 {
+		bool verbose = environment["verbose"].to!bool;
 		long expiration = Clock.currTime.toUnixTime + maxAge.total!"seconds";
 		ubyte[] hmac_key = environment["cookie_hmac_key"].fromHexString;
-		string salt = (cast(ubyte[])read("/dev/urandom", 32)).toHexString!(LetterCase.lower);
-		string cookie_info = to!string(user_id) ~ ":" ~ to!string(expiration) ~ ":" ~ salt;
+		string cookie_info = to!string(user_id) ~ ":" ~ to!string(expiration);
 		string hmac = cookie_info.representation.hmac!SHA256(hmac_key).toHexString!(LetterCase.lower).dup;
 		string session_cookie = cookie_info ~ ":" ~ hmac;
+		if (verbose)
+			info("Setting cookie: " ~ session_cookie);
 		output.setCookie(Cookie("session", session_cookie).httpOnly(true));
 }
 
@@ -32,49 +34,60 @@ void session_save(ref Output output, int user_id, Duration maxAge = 15.minutes)
 // returns -1 otherwise
 int session_load(const Request request, ref Output output)
 {
+		bool verbose = environment["verbose"].to!bool;
 		string session_cookie = request.cookie.read("session");
-		info("loading session with cookie: " ~ session_cookie);
-		auto match = matchFirst(session_cookie, ctRegex!`^((\d+):(\d+):([0-9a-f]+)):([0-9a-f]+)$`);
+		if (verbose)
+				info("Loading session with cookie: " ~ session_cookie);
+		auto match = matchFirst(session_cookie, ctRegex!`^((\d+):(\d+)):([0-9a-f]+)$`);
 		
 		if (!match) {
-			warning("cookie has invalid format");
+			warning("Cookie has invalid format: " ~ session_cookie);
 			session_remove(output);
 			return -1;
 		}
 
 		string cookie_info = match[1];
-		string cookie_hmac = match[5];
-		info("cookie info: " ~ cookie_info);
-		info("cookie hmac: " ~ cookie_hmac);
+		string cookie_hmac = match[4];
+		if (verbose) {
+			info("Cookie info: " ~ cookie_info);
+			info("Cookie hmac: " ~ cookie_hmac);
+		}
 
 		ubyte[] hmac_key = environment["cookie_hmac_key"].fromHexString;
 		string hmac = cookie_info.representation.hmac!SHA256(hmac_key).toHexString!(LetterCase.lower).dup;
 
 		if (cookie_hmac != hmac) {
-			warning("cookie has invalid hmac: { expected: " ~ hmac ~ ", got: " ~ cookie_hmac ~ " }");
+			warning("Cookie " ~ session_cookie ~ " has invalid hmac: { expected: " ~ hmac ~ ", got: " ~ cookie_hmac ~ " }");
 			session_remove(output);
 			return -1;
 		}
 
-		info("cookie hmac OK");
 
 		int user_id = to!int(match[2]);
 		long expiration = to!long(match[3]);
-		info("cookie user_id: " ~ to!string(user_id));
-		info("cookie expiration: " ~ to!string(expiration));
+		if (verbose) {
+			info("Cookie hmac OK");
+			info("Cookie user_id: " ~ to!string(user_id));
+			info("Cookie expiration: " ~ to!string(expiration));
+		}
 
 		if (expiration < Clock.currTime.toUnixTime) {
-			warning("session expired, removing");
+			if (verbose)
+				warning("Session expired, removing");
 			session_remove(output);
 			return -1;
 		}
 
-		info("session loaded successfully");
+		if (verbose)
+				info("Session loaded successfully");
 		
 		return user_id;
 }
 
 void session_remove(ref Output output)
 {
-		output.setCookie(Cookie("session", "invalid").httpOnly(true).invalidate());
+	bool verbose = environment["verbose"].to!bool;
+	if (verbose)
+		info("Removing cookie");
+	output.setCookie(Cookie("session", "invalid").httpOnly(true).invalidate());
 }

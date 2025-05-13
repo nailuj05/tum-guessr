@@ -5,6 +5,7 @@ import std.stdio;
 import std.format;
 import std.algorithm;
 import std.file;
+import std.getopt;
 import std.range;
 import std.logger;
 import std.conv;
@@ -13,6 +14,7 @@ import std.uni : toLower;
 import std.process : environment;
 import std.string : representation;
 import session;
+import std.path : baseName;
 import serverino;
 import mustache;
 
@@ -29,6 +31,23 @@ alias MustacheEngine!(string) Mustache;
 
 @onServerInit ServerinoConfig configure(string[] args)
 {
+  bool showHelp = false;
+	bool verbose = false;
+
+	try { showHelp = getopt(args, "verbose",  &verbose).helpWanted; }
+	catch (Exception e) { showHelp = true; }
+
+	if (showHelp)
+	{
+		writeln("Usage: ", baseName(args[0]), " [OPTIONS]");
+    writeln("Options:");
+    writeln("  --help       Show this help message");
+    writeln("  --verbose    Enable verbose output");
+		return ServerinoConfig.create().setReturnCode(1);
+	}
+
+	environment["verbose"] = verbose.to!string;
+
 	if(!exists("photos"))
 		 mkdir("photos");
 
@@ -149,7 +168,8 @@ void router(Request request, Output output) {
 	// if we don't want to use serve File we will need to set the mime manually (check the code for serveFile for a good example on that)
 	string[] ftypes = [".js", ".css", ".ico", ".png", ".jpg", ".jpeg"];
 	if(exists(path) && ftypes.any!(suffix => path.endsWith(suffix))) {
-    //info("Router served resource at " ~ path);
+		if (environment["verbose"] == true.to!string)
+				info("Router served resource at " ~ path);
 		output.serveFile(path);
   } else {
     warning("Router refused to serve resource at " ~ path);
