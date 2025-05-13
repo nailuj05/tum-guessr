@@ -5,6 +5,7 @@ import std.conv;
 import std.array;
 import std.algorithm;
 import std.regex;
+import std.process : environment;
 import serverino;
 
 import mustache;
@@ -19,8 +20,8 @@ void upload(Request request, Output output) {
 	mustache.path("public");
 	scope auto mustache_context = new Mustache.Context;
 		
-	Session session = Session(request, output, "test.db");
-	int user_id = session.load();
+	
+	int user_id = session_load(request, output);
 
 	if (request.method == Request.Method.Get) {
 		if(user_id >= 0) {
@@ -62,7 +63,7 @@ void upload(Request request, Output output) {
 			temp_path.copy(target_path);
 			info("copied file to: ", target_path);
 
-      scope Database db = new Database("test.db", OpenFlags.READWRITE);
+      scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE);
       try {
         db.exec(db.prepare_bind!(string, float, float, string, int)("
           INSERT INTO photos (path, latitude, longitude, location, user_id)

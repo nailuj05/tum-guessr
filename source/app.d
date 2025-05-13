@@ -1,13 +1,20 @@
 module app;
 
+import std.ascii : LetterCase;
 import std.stdio;
 import std.format;
 import std.algorithm;
 import std.file;
+import std.getopt;
 import std.range;
 import std.logger;
 import std.conv;
+import std.digest : toHexString;
+import std.uni : toLower;
+import std.process : environment;
+import std.string : representation;
 import session;
+import std.path : baseName;
 import serverino;
 import mustache;
 
@@ -24,10 +31,33 @@ alias MustacheEngine!(string) Mustache;
 
 @onServerInit ServerinoConfig configure(string[] args)
 {
+  bool showHelp = false;
+	bool verbose = false;
+	string db_filename = "prod.db";
+
+	try { showHelp = getopt(args,
+													"verbose",  &verbose,
+													"database", &db_filename)
+			.helpWanted; }
+	catch (Exception e) { showHelp = true; }
+
+	if (showHelp)
+	{
+		writeln("Usage: ", baseName(args[0]), " [OPTIONS]");
+    writeln("Options:");
+    writeln("  --help             Show this help message");
+    writeln("  --verbose          Enable verbose output");
+    writeln("  --database=FILE    Path to database file");
+		return ServerinoConfig.create().setReturnCode(1);
+	}
+
+	environment["verbose"] = verbose.to!string;
+	environment["db_filename"] = db_filename;
+
 	if(!exists("photos"))
 		 mkdir("photos");
 
-	scope Database db = new Database("test.db", OpenFlags.READWRITE
+	scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE
       | OpenFlags.CREATE);
   try {
     db.exec_imm("CREATE TABLE IF NOT EXISTS users (
@@ -61,7 +91,6 @@ alias MustacheEngine!(string) Mustache;
 		db.exec_imm("CREATE TABLE IF NOT EXISTS games (
       game_id INTEGER PRIMARY KEY,
       user_id INTEGER NOT NULL,
-      score INTEGER NOT NULL DEFAULT 0,
       FOREIGN KEY(user_id) 
         REFERENCES users(user_id) 
           ON DELETE CASCADE 
@@ -90,21 +119,26 @@ alias MustacheEngine!(string) Mustache;
 	return ServerinoConfig.create().addListener("0.0.0.0", 8080);
 }
 
+@onDaemonStart
+void daemon_start() {
+	ubyte[] random_bytes = cast(ubyte[])read("/dev/urandom", 64);
+	environment["cookie_hmac_key"] = random_bytes.toHexString!(LetterCase.lower);
+}
+
 @endpoint @route!("/")
 void index(Request request, Output output) {
   Mustache mustache;
   mustache.path("public");
 
 	scope auto mustache_context = new Mustache.Context;
-
-	Session session = Session(request, output, "test.db");
-  int user_id = session.load();
+	
+  int user_id = session_load(request, output);
   if (user_id > 0) {
     mustache_context.useSection("logged_in");
   }
 
 	int[] milestones = [10, 25, 50, 100, 250, 500, 750, 1000, 1500, 2000, 3000, 5000];
-	scope Database db = new Database("test.db", OpenFlags.READONLY);
+	scope Database db = new Database(environment["db_filename"], OpenFlags.READONLY);
 	int users = db.query_imm!(int)("SELECT COUNT(*) FROM users")[0][0];
 	int photos = db.query_imm!(int)("SELECT COUNT(*) FROM photos")[0][0];
 
@@ -126,8 +160,8 @@ void about(Request request, Output output) {
   Mustache mustache;
   mustache.path("public");
   scope auto mustache_context = new Mustache.Context;
-  Session session = Session(request, output, "test.db");
-  int user_id = session.load();
+  
+  int user_id = session_load(request, output);
   if (user_id > 0) {
     mustache_context.useSection("logged_in");
   }
@@ -136,19 +170,16 @@ void about(Request request, Output output) {
 
 @endpoint @priority(-1)
 void router(Request request, Output output) {
-  Session session = Session(request, output, "test.db");
-  int user_id = session.load();
 	string path = "public" ~ request.path;
 
 	// if we don't want to use serve File we will need to set the mime manually (check the code for serveFile for a good example on that)
 	string[] ftypes = [".js", ".css", ".ico", ".png", ".jpg", ".jpeg"];
 	if(exists(path) && ftypes.any!(suffix => path.endsWith(suffix))) {
-    //info("Router served resource at " ~ path);
+		if (environment["verbose"] == true.to!string)
+				info("Router served resource at " ~ path);
 		output.serveFile(path);
   } else {
     warning("Router refused to serve resource at " ~ path);
-		output.status = 302;
-		output.addHeader("Location", "/");
 	}
 }
 

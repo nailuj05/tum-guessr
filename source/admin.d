@@ -7,14 +7,14 @@ import serverino;
 import mustache;
 import sqlite;
 import std.logger;
+import std.process : environment;
 
 alias MustacheEngine!(string) Mustache;
 
 @endpoint @route!(r => r.path.startsWith("/admin")) @priority(999) 
 void admin_access_authorization(Request request, Output output) {
-  Session session = Session(request, output, "test.db");
-  int user_id = session.load();
-  scope Database db = new Database("test.db", OpenFlags.READONLY);
+  int user_id = session_load(request, output);
+  scope Database db = new Database(environment["db_filename"], OpenFlags.READONLY);
   auto query_result = db.query!(string, int)(db.prepare_bind!int("
     SELECT username, isAdmin
     FROM users
@@ -53,7 +53,7 @@ void admin_users(Request request, Output output) {
   int limit = to!int(request.get.read("limit", "30"));
   int offset = to!int(request.get.read("offset", "0"));
 
-  scope Database db = new Database("test.db", OpenFlags.READONLY);
+  scope Database db = new Database(environment["db_filename"], OpenFlags.READONLY);
   auto query_result = db.query!(int, string, string, int)(db.prepare_bind!(int, int)("
     SELECT user_id, username, email, isAdmin
     FROM users

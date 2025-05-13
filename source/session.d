@@ -1,116 +1,93 @@
 module session;
+import std.ascii : LetterCase;
+import std.logger;
 import serverino.interfaces;
-import std;
+import std.digest.hmac;
+import std.digest.sha;
+import std.digest : toHexString, fromHexString;
+import std.uni : toLower;
+import std.process : environment;
+import std.file;
+import std.conv;
+import std.string : representation;
+import core.time;
+import std.datetime;
+import std.regex;
 
 import sqlite;
 
-// TODO: set cookie path, domain, secure, httpOnly, sameSite as needed
-struct Session
+// saves user_id and expiration to cookie
+void session_save(ref Output output, int user_id, Duration maxAge = 15.minutes)
 {
-   static string safeSessionID(uint length = 32)
-   {
-      ubyte[] value = new ubyte[length];
-      value[0..$] = cast(ubyte[])read("/dev/urandom", value.length);
-      return value.toHexString.toLower;
-   }
+		bool verbose = environment["verbose"].to!bool;
+		long expiration = Clock.currTime.toUnixTime + maxAge.total!"seconds";
+		ubyte[] hmac_key = environment["cookie_hmac_key"].fromHexString;
+		string cookie_info = to!string(user_id) ~ ":" ~ to!string(expiration);
+		string hmac = cookie_info.representation.hmac!SHA256(hmac_key).toHexString!(LetterCase.lower).dup;
+		string session_cookie = cookie_info ~ ":" ~ hmac;
+		if (verbose)
+			info("Setting cookie: " ~ session_cookie);
+		output.setCookie(Cookie("session", session_cookie).httpOnly(true));
+}
 
-   this(const Request r, ref Output o, string databaseFilename, Duration maxAge = 15.minutes)
-   {
-      output = &o;
+// returns user_id on success
+// returns -1 otherwise
+int session_load(const Request request, ref Output output)
+{
+		bool verbose = environment["verbose"].to!bool;
+		string session_cookie = request.cookie.read("session");
+		if (verbose)
+				info("Loading session with cookie: " ~ session_cookie);
+		auto match = matchFirst(session_cookie, ctRegex!`^((\d+):(\d+)):([0-9a-f]+)$`);
+		
+		if (!match) {
+			warning("Cookie has invalid format: " ~ session_cookie);
+			session_remove(output);
+			return -1;
+		}
 
-      _session_id = r.cookie.read("session_id");
-      _databaseFilename = databaseFilename;
-      _isNew = _session_id.length == 0;
-      _maxAge = maxAge;
+		string cookie_info = match[1];
+		string cookie_hmac = match[4];
+		if (verbose) {
+			info("Cookie info: " ~ cookie_info);
+			info("Cookie hmac: " ~ cookie_hmac);
+		}
 
-      if (_isNew) _session_id = safeSessionID();
-   }
+		ubyte[] hmac_key = environment["cookie_hmac_key"].fromHexString;
+		string hmac = cookie_info.representation.hmac!SHA256(hmac_key).toHexString!(LetterCase.lower).dup;
 
-   string id() { return _session_id; }
+		if (cookie_hmac != hmac) {
+			warning("Cookie " ~ session_cookie ~ " has invalid hmac: { expected: " ~ hmac ~ ", got: " ~ cookie_hmac ~ " }");
+			session_remove(output);
+			return -1;
+		}
 
-   // saves user_id and expiration to database
-   void save(int user_id)
-   {
-      // reroll session_id if already taken by other user 
-      // (load() deletes session from database if expired)
-      int saved_user_id = load();
-      while (saved_user_id > 0 && saved_user_id != user_id) {
-        _session_id = safeSessionID();
-        _isNew = true;
-        saved_user_id = load();
-      }
 
-      long expiration = Clock.currTime.toUnixTime + _maxAge.total!"seconds";
-      scope Database db = new Database(_databaseFilename, OpenFlags.READWRITE);
+		int user_id = to!int(match[2]);
+		long expiration = to!long(match[3]);
+		if (verbose) {
+			info("Cookie hmac OK");
+			info("Cookie user_id: " ~ to!string(user_id));
+			info("Cookie expiration: " ~ to!string(expiration));
+		}
 
-      if (saved_user_id == user_id) {
-        db.exec(db.prepare_bind!(long, string, int)("
-          UPDATE sessions
-          SET expiration=?
-          WHERE session_id=? AND user_id=?
-        ", expiration, _session_id, user_id));
-        return;
-      }
+		if (expiration < Clock.currTime.toUnixTime) {
+			if (verbose)
+				warning("Session expired, removing");
+			session_remove(output);
+			return -1;
+		}
 
-      db.exec(db.prepare_bind!(string, int, long)("
-        INSERT INTO sessions (session_id, user_id, expiration)
-        VALUES (?, ?, ?)
-      ", _session_id, user_id, expiration));
+		if (verbose)
+				info("Session loaded successfully");
+		
+		return user_id;
+}
 
-      output.setCookie(Cookie("session_id", _session_id).httpOnly(true));
-   }
-   
-   // checks expiration and loads user_id from database
-   // deletes session from database if expired
-   // returns user_id on success
-   // returns -1 otherwise
-   int load()
-   {
-      try
-      {
-          scope Database db = new Database(_databaseFilename, OpenFlags.READONLY);
-          auto query_result = db.query!(int, long)(db.prepare_bind!(string)("
-            SELECT user_id, expiration
-            FROM sessions
-            WHERE session_id=?
-          ", _session_id));    
-          if (query_result.length < 1) {
-            return -1;
-          }
-          int user_id = query_result[0][0];
-          long expiration = query_result[0][1];
-          if (expiration < Clock.currTime.toUnixTime)
-          {
-             remove();
-             return -1;
-          }
-          return user_id;
-      }
-      catch(Exception e) { warning("Error loading session, removing.", e); remove(); }
-      return -1;
-   }
-
-   void remove()
-   {
-      scope Database db = new Database(_databaseFilename, OpenFlags.READWRITE);
-      db.exec(db.prepare_bind!(string)("
-        DELETE FROM sessions
-        WHERE session_id=?
-      ", _session_id));
-
-      _session_id = safeSessionID();
-      _isNew = true;
-
-      output.setCookie(Cookie("session_id", _session_id).httpOnly(true).invalidate());
-   }
-
-   bool isNew()   { return _isNew; }
-
-   private:
-
-   Output      *output;
-   string      _databaseFilename; 
-   Duration    _maxAge;
-   string      _session_id;
-   bool        _isNew = true;
+void session_remove(ref Output output)
+{
+	bool verbose = environment["verbose"].to!bool;
+	if (verbose)
+		info("Removing cookie");
+	output.setCookie(Cookie("session", "invalid").httpOnly(true).invalidate());
 }
