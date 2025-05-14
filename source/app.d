@@ -80,30 +80,25 @@ alias MustacheEngine!(string) Mustache;
           ON DELETE CASCADE 
           ON UPDATE CASCADE 
     )"); 
-    db.exec_imm("CREATE TABLE IF NOT EXISTS sessions ( 
-      session_id TEXT PRIMARY KEY, 
-      user_id INTEGER NOT NULL, 
-      expiration INTEGER NOT NULL, 
-      FOREIGN KEY(user_id) 
-        REFERENCES users(user_id)  
-          ON DELETE CASCADE 
-          ON UPDATE CASCADE 
-    )");
 		db.exec_imm("CREATE TABLE IF NOT EXISTS games (
       game_id INTEGER PRIMARY KEY,
       user_id INTEGER NOT NULL,
+      location TEXT NOT NULL,
+      timestamp INTEGER NOT NULL,
       FOREIGN KEY(user_id) 
         REFERENCES users(user_id) 
           ON DELETE CASCADE 
           ON UPDATE CASCADE
     )");
 		db.exec_imm("CREATE TABLE IF NOT EXISTS rounds (
-      round_id INTEGER PRIMARY KEY,
+      round_id INTEGER NOT NULL,
       game_id INTEGER NOT NULL,
       photo_id INTEGER NOT NULL,
       guess_lat REAL DEFAULT 0,
       guess_long REAL DEFAULT 0,
       score INTEGER NOT NULL DEFAULT 0,
+      finished INTEGER NOT NULL DEFAULT FALSE,
+      PRIMARY KEY (round_id, game_id),
       FOREIGN KEY(game_id) 
         REFERENCES games(game_id) 
           ON DELETE CASCADE
@@ -113,8 +108,10 @@ alias MustacheEngine!(string) Mustache;
           ON DELETE CASCADE
           ON UPDATE CASCADE
     )");
-		db.exec_imm("REPLACE INTO users (user_id, email, username, password_hash, isDeactivated)
-      VALUES (0, '', 'unkown', '', 1)");
+		db.exec_imm("
+      INSERT OR IGNORE INTO users (user_id, email, username, password_hash, isDeactivated)
+      VALUES (0, '', 'unknown', '', 1)
+    ");
   } catch (Database.DBException e){
     error("An exception occurred during database initialization: ", e.msg);
   }
