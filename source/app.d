@@ -65,7 +65,8 @@ alias MustacheEngine!(string) Mustache;
       email TEXT NOT NULL UNIQUE, 
       username TEXT NOT NULL UNIQUE, 
       password_hash TEXT NOT NULL,
-      isAdmin INTEGER NOT NULL DEFAULT FALSE   
+      isAdmin INTEGER NOT NULL DEFAULT FALSE,
+      isDeactivated INTEGER NOT NULL DEFAULT FALSE
     )"); 
     db.exec_imm("CREATE TABLE IF NOT EXISTS photos ( 
       photo_id INTEGER PRIMARY KEY, 
@@ -112,6 +113,8 @@ alias MustacheEngine!(string) Mustache;
           ON DELETE CASCADE
           ON UPDATE CASCADE
     )");
+		db.exec_imm("REPLACE INTO users (user_id, email, username, password_hash, isDeactivated)
+      VALUES (0, '', 'unkown', '', 1)");
   } catch (Database.DBException e){
     error("An exception occurred during database initialization: ", e.msg);
   }

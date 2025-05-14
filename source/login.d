@@ -102,8 +102,8 @@ void login(Request request, Output output){
     string password = request.post.read("password");
 
 	  scope Database db = new Database(environment["db_filename"], OpenFlags.READONLY);
-    auto query_result = db.query!(int, string, string)(db.prepare_bind!(string, string)("
-      SELECT user_id, username, password_hash 
+    auto query_result = db.query!(int, string, string, int)(db.prepare_bind!(string, string)("
+      SELECT user_id, username, password_hash, isDeactivated 
       FROM users
       WHERE email=? OR username=?
     ", email_or_username, email_or_username));
@@ -112,8 +112,9 @@ void login(Request request, Output output){
       int user_id = query_result[0][0];
 			string username = query_result[0][1];
       string password_hash = query_result[0][2];
+			int deactivated = query_result[0][3];
 
-      if (password.canCryptTo(password_hash)) {
+      if (deactivated == 0 && password.canCryptTo(password_hash)) {
 				session_save(output, user_id);
         info("User " ~ to!string(user_id) ~ " aka '" ~ username ~ "' logged in.");
 
