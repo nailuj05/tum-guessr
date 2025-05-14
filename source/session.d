@@ -35,7 +35,14 @@ void session_save(ref Output output, int user_id, Duration maxAge = 15.minutes)
 int session_load(const Request request, ref Output output)
 {
 		bool verbose = environment["verbose"].to!bool;
+		if(!request.cookie.has("session")) {
+			if (verbose)
+				info("No session cookie given");
+			return -1;
+		}
 		string session_cookie = request.cookie.read("session");
+
+		
 		if (verbose)
 				info("Loading session with cookie: " ~ session_cookie);
 		auto match = matchFirst(session_cookie, ctRegex!`^((\d+):(\d+)):([0-9a-f]+)$`);

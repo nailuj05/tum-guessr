@@ -11,11 +11,12 @@
     {{> header}}
 		<div id="photoContainer">
 				<div class="image-wrapper">
-						<img id="photo" src="res/garching.jpg">
+						<img id="photo" src="/game/round">
 				</div>
 		</div>
 		<div id="mapContainer">
 				<div id="map"></div>
+				<button id="guessButton" disabled>Guess</button>
 		</div>
 		<script src="js/dragimage.js"></script>
 		<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -24,10 +25,57 @@
      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 				 attribution: '© OpenStreetMap contributors'
      }).addTo(map);
+
+			let marker = null;
+			const guessButton = document.getElementById("guessButton");
+
+			guessButton.addEventListener("click", function() {
+				const latLng = marker.getLatLng();
+				const params = new URLSearchParams();
+				params.append('longitude', latLng.lng);
+				params.append('latitude', latLng.lat);
+
+				fetch('/game/round', {
+						method: 'POST',
+						headers: {
+								'Content-Type': 'application/x-www-form-urlencoded',
+						},
+						body: params,
+				})
+				.then(response => {
+						if (!response.ok) {
+								throw new Error('Network response was not ok');
+						}
+						return response.json();
+				})
+				.then(data => {
+						console.log('Latitude:', data.latitude);
+						console.log('Longitude:', data.longitude);
+						console.log('Score:', data.score);
+				})
+				.catch(error => {
+						console.error('There was a problem with the fetch operation:', error);
+				});
+			});
 		 
 		 map.on('click', function(e) {
-				 console.log(`Clicked at ${e.latlng.lat}, ${e.latlng.lng}`);
+				const lat = e.latlng.lat.toFixed(6);
+				const lng = e.latlng.lng.toFixed(6);
+
+				updateMarker(lat, lng);
+				guessButton.disabled = false;
+				console.log(`Clicked at ${e.latlng.lat}, ${e.latlng.lng}`);
 		 });
+
+		function updateMarker(lat, lng) {
+				const latlng = L.latLng(lat, lng);
+				if (marker) {
+						marker.setLatLng(latlng);
+				} else {
+						marker = L.marker(latlng).addTo(map);
+				}
+				map.panTo(latlng);
+		}
 		 
 		 // Resize map properly on hover without causing issues
 		 document.getElementById('mapContainer').addEventListener('mouseenter', () => {

@@ -27,50 +27,60 @@ void game(Request request, Output output) {
 		long timestamp = Clock.currTime.toUnixTime;
 		int game_id;
 
-		scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE);
-		try {
+		if (request.cookie.has("game_id")) {
+			try {
+				game_id = request.cookie.read("game_id").to!int;
+			} catch (Exception e) {
+				output.setCookie(Cookie("game_id", "invalid").invalidate());
+			}
+		}
+
+		if (!game_id) {
+			scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE);
+			try {
 			db.exec_imm("BEGIN TRANSACTION");
 			db.exec(db.prepare_bind!(int, string, long)("
-			  INSERT INTO games (user_id, location, timestamp)
-			  VALUES (?, ?, ?)
+					INSERT INTO games (user_id, location, timestamp)
+					VALUES (?, ?, ?)
 			", user_id, location, timestamp));
 			game_id = db.query_imm!int("SELECT last_insert_rowid()")[0][0];
 			db.exec(db.prepare_bind!(int, string)("
-        INSERT INTO rounds (round_id, game_id, photo_id)
-        SELECT
-          ROW_NUMBER() OVER () AS round_id,
-          ? AS game_id,
-          photo_id
-        FROM (
-          SELECT photo_id
-          FROM photos
-          WHERE location=?
-          ORDER BY RANDOM()
-          LIMIT 5
-        )
-      ", game_id, location));
+					INSERT INTO rounds (round_id, game_id, photo_id)
+					SELECT
+					  ROW_NUMBER() OVER () AS round_id,
+					  ? AS game_id,
+					  photo_id
+					FROM (
+					  SELECT photo_id
+					  FROM photos
+					  WHERE location=?
+					  ORDER BY RANDOM()
+					  LIMIT 5
+					)
+			", game_id, location));
 			auto created_rounds = db.query!(int, int, int, int)(db.prepare_bind!int("
-        SELECT round_id, photo_id, score, finished
-        FROM rounds
-        WHERE game_id=?
-      ", game_id));
+					SELECT round_id, photo_id, score, finished
+					FROM rounds
+					WHERE game_id=?
+			", game_id));
 			info(created_rounds);
 			if (created_rounds.length != 5) {
-				warning("Failed to create 5 rounds, rolling back");
-				db.exec_imm("ROLLBACK");
-				output.status = 500;
-				return;
+        warning("Failed to create 5 rounds, rolling back");
+        db.exec_imm("ROLLBACK");
+        output.status = 500;
+        return;
 			}
 			db.exec_imm("COMMIT");
-		} catch (Database.DBException e) {
-			warning("Failed to insert new game in db: " ~ e.msg);
-			output.status = 400;
-			output ~= "Failed to start game";
-			return;
-		}
+			} catch (Database.DBException e) {
+        warning("Failed to insert new game in db: " ~ e.msg);
+        output.status = 400;
+        output ~= "Failed to start game";
+        return;
+			}
 
-		// TODO: set as cookie with hmac instead
-		output.addHeader("tum-guessr-game-id", game_id.to!string);
+			// TODO: set as cookie with hmac instead
+			output.setCookie(Cookie("game_id", game_id.to!string));
+		}
 		
 		Mustache mustache;
 		mustache.path("public");
@@ -90,17 +100,18 @@ void round(Request request, Output output) {
 		user_id = 0;
 	
 	if (request.method == GET) {
-		if (!request.get.has("game_id")) {
+		if (!request.cookie.has("game_id")) {
 			output.status = 400;
-			output ~= "Missing argument game_id";
+			output ~= "Missing cookie game_id";
 			return;
 		}
 		int game_id;
 		try {
-			game_id = request.get.read("game_id").to!int;
+			game_id = request.cookie.read("game_id").to!int;
 		} catch (Exception e) {
 			output.status = 400;
-			output ~= "Invalid argument format";
+      output.setCookie(Cookie("game_id", "invalid").invalidate()); 
+			output ~= "Invalid game_id cookie format";
 			return;
 		}
 		string photo_path;
@@ -132,17 +143,25 @@ void round(Request request, Output output) {
 		return;
 	} else if (request.method == POST) {
 
-		if (!request.post.has("game_id") || !request.post.has("longitude") || !request.post.has("latitude")) {
+		if (!request.post.has("longitude") || !request.post.has("latitude")) {
 			output.status = 400;
 			output ~= "Missing argument";
 		  return;
 		}
 
 		int game_id;
+		try {
+			game_id = request.cookie.read("game_id").to!int;
+		} catch (Exception e) {
+			output.status = 400;
+      output.setCookie(Cookie("game_id", "invalid").invalidate()); 
+			output ~= "Invalid game_id cookie format";
+			return;
+		}
+
 		float guess_latitude;
 		float guess_longitude;
 		try {
-		  game_id = request.post.read("game_id").to!int;
 		  guess_latitude = request.post.read("latitude").to!float;
 		  guess_longitude = request.post.read("longitude").to!float;
 		} catch (Exception e) {
