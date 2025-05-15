@@ -1,7 +1,7 @@
 module session;
+
 import std.ascii : LetterCase;
 import std.logger;
-import serverino.interfaces;
 import std.digest.hmac;
 import std.digest.sha;
 import std.digest : toHexString, fromHexString;
@@ -14,7 +14,10 @@ import core.time;
 import std.datetime;
 import std.regex;
 
+import serverino.interfaces;
+
 import sqlite;
+import logger;
 
 // saves user_id and expiration to cookie
 void session_save(ref Output output, int user_id, Duration maxAge = 15.minutes)
@@ -26,7 +29,7 @@ void session_save(ref Output output, int user_id, Duration maxAge = 15.minutes)
 		string hmac = cookie_info.representation.hmac!SHA256(hmac_key).toHexString!(LetterCase.lower).dup;
 		string session_cookie = cookie_info ~ ":" ~ hmac;
 		if (verbose)
-			info("Setting cookie: " ~ session_cookie);
+			flogger.info("Setting cookie: " ~ session_cookie);
 		output.setCookie(Cookie("session", session_cookie).httpOnly(true));
 }
 
@@ -37,18 +40,18 @@ int session_load(const Request request, ref Output output)
 		bool verbose = environment["verbose"].to!bool;
 		if(!request.cookie.has("session")) {
 			if (verbose)
-				info("No session cookie given");
+				flogger.info("No session cookie given");
 			return -1;
 		}
 		string session_cookie = request.cookie.read("session");
 
 		
 		if (verbose)
-				info("Loading session with cookie: " ~ session_cookie);
+				flogger.info("Loading session with cookie: " ~ session_cookie);
 		auto match = matchFirst(session_cookie, ctRegex!`^((\d+):(\d+)):([0-9a-f]+)$`);
 		
 		if (!match) {
-			warning("Cookie has invalid format: " ~ session_cookie);
+			flogger.warning("Cookie has invalid format: " ~ session_cookie);
 			session_remove(output);
 			return -1;
 		}
@@ -56,15 +59,15 @@ int session_load(const Request request, ref Output output)
 		string cookie_info = match[1];
 		string cookie_hmac = match[4];
 		if (verbose) {
-			info("Cookie info: " ~ cookie_info);
-			info("Cookie hmac: " ~ cookie_hmac);
+			flogger.info("Cookie info: " ~ cookie_info);
+			flogger.info("Cookie hmac: " ~ cookie_hmac);
 		}
 
 		ubyte[] hmac_key = environment["cookie_hmac_key"].fromHexString;
 		string hmac = cookie_info.representation.hmac!SHA256(hmac_key).toHexString!(LetterCase.lower).dup;
 
 		if (cookie_hmac != hmac) {
-			warning("Cookie " ~ session_cookie ~ " has invalid hmac: { expected: " ~ hmac ~ ", got: " ~ cookie_hmac ~ " }");
+			flogger.warning("Cookie " ~ session_cookie ~ " has invalid hmac: { expected: " ~ hmac ~ ", got: " ~ cookie_hmac ~ " }");
 			session_remove(output);
 			return -1;
 		}
@@ -73,20 +76,20 @@ int session_load(const Request request, ref Output output)
 		int user_id = to!int(match[2]);
 		long expiration = to!long(match[3]);
 		if (verbose) {
-			info("Cookie hmac OK");
-			info("Cookie user_id: " ~ to!string(user_id));
-			info("Cookie expiration: " ~ to!string(expiration));
+			flogger.info("Cookie hmac OK");
+			flogger.info("Cookie user_id: " ~ to!string(user_id));
+			flogger.info("Cookie expiration: " ~ to!string(expiration));
 		}
 
 		if (expiration < Clock.currTime.toUnixTime) {
 			if (verbose)
-				warning("Session expired, removing");
+				flogger.warning("Session expired, removing");
 			session_remove(output);
 			return -1;
 		}
 
 		if (verbose)
-				info("Session loaded successfully");
+				flogger.info("Session loaded successfully");
 		
 		return user_id;
 }
@@ -95,6 +98,6 @@ void session_remove(ref Output output)
 {
 	bool verbose = environment["verbose"].to!bool;
 	if (verbose)
-		info("Removing cookie");
+		flogger.info("Removing cookie");
 	output.setCookie(Cookie("session", "invalid").httpOnly(true).invalidate());
 }

@@ -1,12 +1,15 @@
 module profile;
 
-import serverino;
-import sqlite;
-import session;
-import mustache;
 import std.regex;
 import std.algorithm;
 import std.process : environment;
+
+import mustache;
+import serverino;
+
+import sqlite;
+import session;
+import logger;
 
 alias MustacheEngine!(string) Mustache;
 
