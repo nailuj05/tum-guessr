@@ -70,11 +70,11 @@ void upload(Request request, Output output) {
         db.exec(db.prepare_bind!(string, float, float, string, int)("
           INSERT INTO photos (path, latitude, longitude, location, user_id)
           VALUES (?, ?, ?, ?, ?)", target_path, latitude, longitude, "garching", user_id));
-        mustache_context.addSubContext("info_messages")["info_message"] = "Photo received";
+        mustache_context.addSubContext("info_messages")["info_message"] = "Photo submitted for review.";
       } catch (Database.DBException e) {
         error("An exception occured during insertion of photo in database:
             ", e.msg);
-        mustache_context.addSubContext("error_messages")["info_message"] = "Database error";
+        mustache_context.addSubContext("error_messages")["info_message"] = "Database error.";
       }
 		}
 	}
