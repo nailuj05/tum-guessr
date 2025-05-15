@@ -2,7 +2,9 @@ module admin;
 
 import std.algorithm;
 import std.conv;
+import std.file;
 import std.logger;
+import std.array;
 import std.process : environment;
 
 import serverino;
@@ -81,8 +83,8 @@ void admin_users(Request request, Output output) {
 
 @endpoint @route!"/admin/log"
 void admin_log(Request request, Output output) {
-  if (request.method != Request.Method.Get) {
-    output.status = 405;
-  }
-	output ~=;
+  // if (request.method != Request.Method.Get) {
+  //   output.status = 405;
+  // }
+	output ~= readText("logs/log.txt").replace("\n", "<br>");
 }
