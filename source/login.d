@@ -94,7 +94,7 @@ void login(Request request, Output output){
 
 	  scope Database db = new Database(environment["db_filename"], OpenFlags.READONLY);
     auto query_result = db.query!(int, string, int)(db.prepare_bind!(string)("
-      SELECT user_id, password_hash, isDeactivated 
+      SELECT user_id, password_hash, is_deactivated 
       FROM users
       WHERE username=?
     ", username));

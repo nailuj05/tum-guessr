@@ -21,7 +21,7 @@ void admin_access_authorization(Request request, Output output) {
   int user_id = session_load(request, output);
   scope Database db = new Database(environment["db_filename"], OpenFlags.READONLY);
   auto query_result = db.query!(string, int)(db.prepare_bind!int("
-    SELECT username, isAdmin
+    SELECT username, is_admin
     FROM users
     WHERE user_id=?
   ", user_id));
@@ -32,8 +32,8 @@ void admin_access_authorization(Request request, Output output) {
     return;
   }
   string username = query_result[0][0];
-  int isAdmin = query_result[0][1];
-  if (!isAdmin) {
+  int is_admin = query_result[0][1];
+  if (!is_admin) {
     flogger.warning("User " ~ to!string(user_id) ~ " aka '" ~ username ~ "' attempted
         admin access on path " ~ request.path ~ " without privileges.");
     output.status = 403;
@@ -60,7 +60,7 @@ void admin_users(Request request, Output output) {
 
   scope Database db = new Database(environment["db_filename"], OpenFlags.READONLY);
   auto query_result = db.query!(int, string, int)(db.prepare_bind!(int, int)("
-    SELECT user_id, username, isAdmin
+    SELECT user_id, username, is_admin
     FROM users
     ORDER BY user_id
     LIMIT ? OFFSET ?  
@@ -74,7 +74,7 @@ void admin_users(Request request, Output output) {
     auto mustache_subcontext = mustache_context.addSubContext("users");
     mustache_subcontext["user_id"] = row[0];
     mustache_subcontext["username"] = row[1];
-    mustache_subcontext["isAdmin"] = row[2];
+    mustache_subcontext["is_admin"] = row[2];
   }
 
   output ~= mustache.render("admin_users", mustache_context);

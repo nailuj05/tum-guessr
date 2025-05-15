@@ -57,7 +57,7 @@ void game(Request request, Output output) {
 					FROM (
 					  SELECT photo_id
 					  FROM photos
-					  WHERE location=?
+					  WHERE location=? AND is_accepted=TRUE
 					  ORDER BY RANDOM()
 					  LIMIT 5
 					)
@@ -180,7 +180,6 @@ void round(Request request, Output output) {
 
 		scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE);
 		try {
-			db.exec_imm("BEGIN TRANSACTION");
 			// Get next unfinished round from game
 			auto round_id_query_result = db.query!int(db.prepare_bind!int("
 				SELECT round_id
@@ -190,7 +189,6 @@ void round(Request request, Output output) {
 				LIMIT 1
 			", game_id));
 			if (round_id_query_result.length < 1) {
-				db.exec_imm("ROLLBACK");
 				output.status = 400;
 				output ~= "No such unfinished game";
 				return;
@@ -213,7 +211,6 @@ void round(Request request, Output output) {
 				SET guess_lat=?, guess_long=?, score=?, finished=TRUE
 				WHERE game_id=? AND round_id=?
 			", guess_latitude, guess_longitude, score, game_id, round_id));
-			db.exec_imm("COMMIT");
 		} catch (Database.DBException e) {
 			flogger.warning("Failed to set finished round: " ~ e.msg);
 			output.status = 500;
