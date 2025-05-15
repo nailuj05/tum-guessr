@@ -10,9 +10,11 @@ import passwd.bcrypt;
 import std.logger;
 import std.process : environment;
 
+import mustache;
+
 import sqlite;
 import session;
-import mustache;
+import logger;
 
 alias MustacheEngine!(string) Mustache;
 
@@ -70,7 +72,7 @@ void sign_up(Request request, Output output) {
         WHERE email=? AND username=? AND password_hash=?
       ", email, username, password_hash))[0][0];
 
-    info("User " ~ to!string(user_id) ~ " aka '" ~ username ~ "' signed up.");
+    flogger.info("User " ~ to!string(user_id) ~ " aka '" ~ username ~ "' signed up.");
 
     session_save(output, user_id);
 
@@ -116,7 +118,7 @@ void login(Request request, Output output){
 
       if (deactivated == 0 && password.canCryptTo(password_hash)) {
 				session_save(output, user_id);
-        info("User " ~ to!string(user_id) ~ " aka '" ~ username ~ "' logged in.");
+        flogger.info("User " ~ to!string(user_id) ~ " aka '" ~ username ~ "' logged in.");
 
         output.status = 302;
         output.addHeader("Location", "/");
@@ -145,9 +147,9 @@ void logout(Request request, Output output) {
       FROM users
       WHERE user_id=?    
     ", user_id))[0][0];
-    info("User " ~ to!string(user_id) ~ " aka '" ~ username ~ "' logged out.");
+    flogger.info("User " ~ to!string(user_id) ~ " aka '" ~ username ~ "' logged out.");
   } else {
-    info("User attempted logout without being logged in.");
+    flogger.info("User attempted logout without being logged in.");
   }
 	
 	output.status = 302;

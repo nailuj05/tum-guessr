@@ -14,7 +14,10 @@ import std.uni : toLower;
 import std.process : environment;
 import std.string : representation;
 import session;
-import std.path : baseName;
+import std.path;
+import std.datetime;
+import std.datetime.systime;
+
 import serverino;
 import mustache;
 
@@ -24,13 +27,14 @@ import login;
 import profile;
 import game;
 import admin;
+import logger;
 
 mixin ServerinoMain!(upload, login, profile, game, admin);
 
 alias MustacheEngine!(string) Mustache;
 
 @onServerInit ServerinoConfig configure(string[] args)
-{
+{	
   bool showHelp = false;
 	bool verbose = false;
 	string db_filename = "prod.db";
@@ -57,6 +61,17 @@ alias MustacheEngine!(string) Mustache;
 	if(!exists("photos"))
 		 mkdir("photos");
 
+	if(!exists("logs"))
+		 mkdir("logs");
+
+	// Rename old logfile
+	string original = "logs/log.txt";
+	if(exists(original)) {
+		auto now = Clock.currTime();
+		string timeStr = now.toISOString();
+		rename(original, "logs/log_" ~ timeStr ~ ".txt");
+	}
+	
 	scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE
       | OpenFlags.CREATE);
   try {
@@ -173,13 +188,13 @@ void router(Request request, Output output) {
 	string path = "public" ~ request.path;
 
 	// if we don't want to use serve File we will need to set the mime manually (check the code for serveFile for a good example on that)
-	string[] ftypes = [".js", ".css", ".ico", ".png", ".jpg", ".jpeg"];
+	string[] ftypes = [".js", ".css", ".ico", ".png", ".jpg", ".jpeg", ".ico"];
 	if(exists(path) && ftypes.any!(suffix => path.endsWith(suffix))) {
 		if (environment["verbose"] == true.to!string)
-				info("Router served resource at " ~ path);
+				flogger.info("Router served resource at " ~ path);
 		output.serveFile(path);
   } else {
-    warning("Router refused to serve resource at " ~ path);
+    flogger.warning("Router refused to serve resource at " ~ path);
 	}
 }
 

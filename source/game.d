@@ -5,13 +5,14 @@ import std.format;
 import std.logger;
 import std.conv;
 import std.datetime;
+import std.process : environment;
 
 import serverino;
 import mustache;
 
 import session;
 import sqlite;
-import std.process : environment;
+import logger;
 
 alias MustacheEngine!(string) Mustache;
 alias Request.Method.Get GET;
@@ -63,16 +64,16 @@ void game(Request request, Output output) {
 					FROM rounds
 					WHERE game_id=?
 			", game_id));
-			info(created_rounds);
+			flogger.info(created_rounds);
 			if (created_rounds.length != 5) {
-        warning("Failed to create 5 rounds, rolling back");
+        flogger.warning("Failed to create 5 rounds, rolling back");
         db.exec_imm("ROLLBACK");
         output.status = 500;
         return;
 			}
 			db.exec_imm("COMMIT");
 			} catch (Database.DBException e) {
-        warning("Failed to insert new game in db: " ~ e.msg);
+        flogger.warning("Failed to insert new game in db: " ~ e.msg);
         output.status = 400;
         output ~= "Failed to start game";
         return;
@@ -135,7 +136,7 @@ void round(Request request, Output output) {
 			}
 			photo_path = query_result[0][0];
 		} catch (Database.DBException e) {
-			warning("An error occured while retrieving round data: " ~ e.msg);
+			flogger.warning("An error occured while retrieving round data: " ~ e.msg);
 			output.status = 500;
 			return;
 		}
@@ -207,7 +208,7 @@ void round(Request request, Output output) {
 			", guess_latitude, guess_longitude, score, game_id, round_id));
 			db.exec_imm("COMMIT");
 		} catch (Database.DBException e) {
-			warning("Failed to set finished round: " ~ e.msg);
+			flogger.warning("Failed to set finished round: " ~ e.msg);
 			output.status = 500;
 			return;
 		}

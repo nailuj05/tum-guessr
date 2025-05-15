@@ -2,12 +2,15 @@ module admin;
 
 import std.algorithm;
 import std.conv;
-import session;
-import serverino;
-import mustache;
-import sqlite;
 import std.logger;
 import std.process : environment;
+
+import serverino;
+import mustache;
+
+import sqlite;
+import session;
+import logger;
 
 alias MustacheEngine!(string) Mustache;
 
@@ -21,7 +24,7 @@ void admin_access_authorization(Request request, Output output) {
     WHERE user_id=?
   ", user_id));
   if (query_result.length < 1) {
-    warning("Unknown user attempted admin access without valid session.");
+    flogger.warning("Unknown user attempted admin access without valid session.");
     output.status = 403;
     output ~= "Permission denied. This incident will be reported.";
     return;
@@ -29,7 +32,7 @@ void admin_access_authorization(Request request, Output output) {
   string username = query_result[0][0];
   int isAdmin = query_result[0][1];
   if (!isAdmin) {
-    warning("User " ~ to!string(user_id) ~ " aka '" ~ username ~ "' attempted
+    flogger.warning("User " ~ to!string(user_id) ~ " aka '" ~ username ~ "' attempted
         admin access on path " ~ request.path ~ " without privileges.");
     output.status = 403;
     output ~= "Permission denied. This incident will be reported.";

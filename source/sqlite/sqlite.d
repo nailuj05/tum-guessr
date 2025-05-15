@@ -1,6 +1,8 @@
 module sqlite;
 pragma(lib, "sqlite3");
 
+import logger;
+
 // Database Module Overview:
 // RAII-style sqlite3 database management
 // Simple interface to execute raw and parameterized SQL statements.
@@ -52,14 +54,14 @@ public:
 			printf("Can't open database: %s\n", sqlite3_errmsg(handle));
 			throw new DBException("Database opening failed");
 		}
-		info("Database opened");
+		flogger.info("Database opened");
     exec_imm("PRAGMA foreign_keys = ON");
 	}
 
 	// Destructor closes db
 	~this() {
 		sqlite3_close(handle);
-		info("Database closed");
+		flogger.info("Database closed");
 	}
 
 	// Execute a plain string SQL Query on the database

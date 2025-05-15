@@ -1,6 +1,7 @@
 *~
 *.db*
 photos/*
+logs/*
 .dub
 docs.json
 __dummy.html
