@@ -76,3 +76,10 @@ void admin_users(Request request, Output output) {
   output ~= mustache.render("admin_users", mustache_context);
 }
 
+@endpoint @route!"/admin/log"
+void admin_log(Request request, Output output) {
+  if (request.method != Request.Method.Get) {
+    output.status = 405;
+  }
+	output ~=;
+}
