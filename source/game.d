@@ -40,11 +40,14 @@ void game(Request request, Output output) {
 			scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE);
 			try {
 			db.exec_imm("BEGIN TRANSACTION");
+			// Create game in db
 			db.exec(db.prepare_bind!(int, string, long)("
 					INSERT INTO games (user_id, location, timestamp)
 					VALUES (?, ?, ?)
 			", user_id, location, timestamp));
+			// Get game_id
 			game_id = db.query_imm!int("SELECT last_insert_rowid()")[0][0];
+			// Create 5 rounds with random photos
 			db.exec(db.prepare_bind!(int, string)("
 					INSERT INTO rounds (round_id, game_id, photo_id)
 					SELECT
@@ -54,18 +57,18 @@ void game(Request request, Output output) {
 					FROM (
 					  SELECT photo_id
 					  FROM photos
-					  WHERE location=?
+					  WHERE location=? AND is_accepted=TRUE
 					  ORDER BY RANDOM()
 					  LIMIT 5
 					)
 			", game_id, location));
-			auto created_rounds = db.query!(int, int, int, int)(db.prepare_bind!int("
-					SELECT round_id, photo_id, score, finished
+			// Check round creation
+			int num_created_rounds = db.query!int(db.prepare_bind!int("
+					SELECT count(*)
 					FROM rounds
 					WHERE game_id=?
-			", game_id));
-			flogger.info(created_rounds);
-			if (created_rounds.length != 5) {
+			", game_id))[0][0];
+			if (num_created_rounds != 5) {
         flogger.warning("Failed to create 5 rounds, rolling back");
         db.exec_imm("ROLLBACK");
         output.status = 500;
@@ -118,6 +121,7 @@ void round(Request request, Output output) {
 		string photo_path;
 		scope Database db = new Database(environment["db_filename"], OpenFlags.READONLY);
 		try {
+			// Get photo path of next unfinished round
 			auto query_result = db.query!string(db.prepare_bind!(int, int)("
 				SELECT p.path
 				FROM games g
@@ -176,7 +180,7 @@ void round(Request request, Output output) {
 
 		scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE);
 		try {
-			db.exec_imm("BEGIN TRANSACTION");
+			// Get next unfinished round from game
 			auto round_id_query_result = db.query!int(db.prepare_bind!int("
 				SELECT round_id
 				FROM rounds
@@ -185,12 +189,12 @@ void round(Request request, Output output) {
 				LIMIT 1
 			", game_id));
 			if (round_id_query_result.length < 1) {
-				db.exec_imm("ROLLBACK");
 				output.status = 400;
 				output ~= "No such unfinished game";
 				return;
 			}
 			int round_id = round_id_query_result[0][0];
+			// Get coords of round
 			auto coords_query_result = db.query!(double, double)(db.prepare_bind!(int, int)("
 				SELECT p.latitude, p.longitude
 				FROM games g JOIN rounds r ON g.game_id=r.game_id
@@ -201,12 +205,12 @@ void round(Request request, Output output) {
 			true_longitude = coords_query_result[0][1];
 			// TODO: calculate score
 			score = 69;
+			// Insert round info
 			db.exec(db.prepare_bind!(float, float, int, int, int)("
 				UPDATE rounds
 				SET guess_lat=?, guess_long=?, score=?, finished=TRUE
 				WHERE game_id=? AND round_id=?
 			", guess_latitude, guess_longitude, score, game_id, round_id));
-			db.exec_imm("COMMIT");
 		} catch (Database.DBException e) {
 			flogger.warning("Failed to set finished round: " ~ e.msg);
 			output.status = 500;

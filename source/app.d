@@ -77,11 +77,11 @@ alias MustacheEngine!(string) Mustache;
   try {
     db.exec_imm("CREATE TABLE IF NOT EXISTS users (
       user_id INTEGER PRIMARY KEY, 
-      email TEXT NOT NULL UNIQUE, 
       username TEXT NOT NULL UNIQUE, 
       password_hash TEXT NOT NULL,
-      isAdmin INTEGER NOT NULL DEFAULT FALSE,
-      isDeactivated INTEGER NOT NULL DEFAULT FALSE
+      is_admin INTEGER NOT NULL DEFAULT FALSE,
+      is_trusted INTEGER NOT NULL DEFAULT FALSE,
+      is_deactivated INTEGER NOT NULL DEFAULT FALSE
     )"); 
     db.exec_imm("CREATE TABLE IF NOT EXISTS photos ( 
       photo_id INTEGER PRIMARY KEY, 
@@ -90,6 +90,7 @@ alias MustacheEngine!(string) Mustache;
       longitude REAL NOT NULL,
       location STRING NOT NULL,
       user_id INTEGER NOT NULL, 
+      is_accepted INTEGER NOT NULL DEFAULT FALSE,
       FOREIGN KEY(user_id) 
         REFERENCES users(user_id) 
           ON DELETE CASCADE 
@@ -124,8 +125,8 @@ alias MustacheEngine!(string) Mustache;
           ON UPDATE CASCADE
     )");
 		db.exec_imm("
-      INSERT OR IGNORE INTO users (user_id, email, username, password_hash, isDeactivated)
-      VALUES (0, '', 'unknown', '', 1)
+      INSERT OR IGNORE INTO users (user_id, username, password_hash, is_deactivated)
+      VALUES (0, 'unknown', '', 1)
     ");
   } catch (Database.DBException e){
     error("An exception occurred during database initialization: ", e.msg);
