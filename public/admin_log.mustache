@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard</title>
+	<link rel="stylesheet" href="/style.css">
+	<style>
+	 #log-container {
+			 width: 80%;
+			 height: 60vh;
+			 font-family: monospace;
+       padding: 1em;
+			 text-align: left;
+       white-space: pre-wrap;
+       word-wrap: break-word;
+       background-color: #2d2d2d;
+       padding: 1em;
+       border-radius: 5px;
+       overflow-x: auto;
+			 
+   }
+   .log_error { color: #f44747; }
+   .log_warn  { color: #ffaf00; }
+   .log_info  { color: #9cdcfe; }
+   .log_debug { color: #6a9955; }
+	 .hidden { display: none; }
+	</style>
+</head>
+<body>
+    {{> header}}
+		{{> admin-nav}}
+    <h1>Log</h1>
+		<div class="center">
+				<div>
+						<label><input type="checkbox" checked data-filter="error"> Error</label>
+						<label><input type="checkbox" checked data-filter="warn"> Warning</label>
+						<label><input type="checkbox" checked data-filter="info"> Info</label>
+						<label><input type="checkbox" checked data-filter="debug"> Debug</label>
+				</div>
+				<div id="log-container">
+{{log}}
+				</div>
+		</div>
+
+		<script>
+		 const logContainer = document.getElementById('log-container');
+		 const rawLog = `{{{log}}}`;
+		 
+     const lines = rawLog.split('\n').map(line => {
+				 let cls = '';
+				 if (line.includes('[error]')) cls = 'log_error';
+				 else if (line.includes('[warning]')) cls = 'log_warn';
+				 else if (line.includes('[info]')) cls = 'log_info';
+				 else if (line.includes('[debug]')) cls = 'log_debug';
+				 return `<div class="${cls}">${line}</div>`;
+     });
+     logContainer.innerHTML = lines.join('');
+
+     document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+				 cb.addEventListener('change', () => {
+						 console.log(cb + "changed");
+						 const level = cb.dataset.filter;
+						 document.querySelectorAll(`.log_${level}`).forEach(el => {
+								 console.log("hide: " + el.classList);
+								 el.classList.toggle('hidden', !cb.checked);
+						 });
+				 });
+     });
+		</script>
+</body>
+</html>

@@ -82,8 +82,14 @@ void admin_users(Request request, Output output) {
 
 @endpoint @route!"/admin/log"
 void admin_log(Request request, Output output) {
-  // if (request.method != Request.Method.Get) {
-  //   output.status = 405;
-  // }
-	output ~= readText("logs/log.txt").replace("\n", "<br>");
+  if (request.method != Request.Method.Get) {
+    output.status = 405;
+  }
+	
+  Mustache mustache;
+  mustache.path("public");
+  scope auto mustache_context = new Mustache.Context;
+	mustache_context["log"] = readText("logs/log.txt");
+	
+	output ~= mustache.render("admin_log", mustache_context);
 }

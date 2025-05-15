@@ -54,14 +54,14 @@ public:
 			printf("Can't open database: %s\n", sqlite3_errmsg(handle));
 			throw new DBException("Database opening failed");
 		}
-		flogger.info("Database opened");
+		// flogger.info("Database opened");
     exec_imm("PRAGMA foreign_keys = ON");
 	}
 
 	// Destructor closes db
 	~this() {
 		sqlite3_close(handle);
-		flogger.info("Database closed");
+		// flogger.info("Database closed");
 	}
 
 	// Execute a plain string SQL Query on the database
