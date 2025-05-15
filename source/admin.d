@@ -59,8 +59,8 @@ void admin_users(Request request, Output output) {
   int offset = to!int(request.get.read("offset", "0"));
 
   scope Database db = new Database(environment["db_filename"], OpenFlags.READONLY);
-  auto query_result = db.query!(int, string, string, int)(db.prepare_bind!(int, int)("
-    SELECT user_id, username, email, isAdmin
+  auto query_result = db.query!(int, string, int)(db.prepare_bind!(int, int)("
+    SELECT user_id, username, isAdmin
     FROM users
     ORDER BY user_id
     LIMIT ? OFFSET ?  
@@ -74,8 +74,7 @@ void admin_users(Request request, Output output) {
     auto mustache_subcontext = mustache_context.addSubContext("users");
     mustache_subcontext["user_id"] = row[0];
     mustache_subcontext["username"] = row[1];
-    mustache_subcontext["email"] = row[2];
-    mustache_subcontext["isAdmin"] = row[3];
+    mustache_subcontext["isAdmin"] = row[2];
   }
 
   output ~= mustache.render("admin_users", mustache_context);

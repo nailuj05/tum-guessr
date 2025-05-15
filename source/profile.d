@@ -62,8 +62,8 @@ void profile_username(Request request, Output output) {
   string username = username_match[1];
 
   scope Database db = new Database(environment["db_filename"], OpenFlags.READONLY);
-  auto query_result = db.query!(int, string)(db.prepare_bind!(string)("
-    SELECT user_id, email
+  auto query_result = db.query!(int)(db.prepare_bind!(string)("
+    SELECT user_id
     FROM users
     WHERE username=?
   ", username));
@@ -75,9 +75,7 @@ void profile_username(Request request, Output output) {
   }
 
   int user_id = query_result[0][0];
-  string email = query_result[0][1];
 
-  
   int session_user_id = session_load(request, output);
 
   Mustache mustache;
@@ -86,7 +84,6 @@ void profile_username(Request request, Output output) {
   mustache_context["username"] = username;
   if (session_user_id == user_id) {
     mustache_context.useSection("logged_in");
-    mustache_context["email"] = email;    
   }
   output ~= mustache.render("profile", mustache_context);
 }

@@ -77,7 +77,6 @@ alias MustacheEngine!(string) Mustache;
   try {
     db.exec_imm("CREATE TABLE IF NOT EXISTS users (
       user_id INTEGER PRIMARY KEY, 
-      email TEXT NOT NULL UNIQUE, 
       username TEXT NOT NULL UNIQUE, 
       password_hash TEXT NOT NULL,
       isAdmin INTEGER NOT NULL DEFAULT FALSE,
@@ -124,8 +123,8 @@ alias MustacheEngine!(string) Mustache;
           ON UPDATE CASCADE
     )");
 		db.exec_imm("
-      INSERT OR IGNORE INTO users (user_id, email, username, password_hash, isDeactivated)
-      VALUES (0, '', 'unknown', '', 1)
+      INSERT OR IGNORE INTO users (user_id, username, password_hash, isDeactivated)
+      VALUES (0, 'unknown', '', 1)
     ");
   } catch (Database.DBException e){
     error("An exception occurred during database initialization: ", e.msg);

@@ -27,27 +27,16 @@ void sign_up(Request request, Output output) {
     output ~= mustache.render("sign_up", mustache_context);
     return;
   } else if (request.method == Request.Method.Post){
-    if (!request.post.has("username") || !request.post.has("email") ||
+    if (!request.post.has("username") ||
         !request.post.has("password")) {
       output.status = 400;
       output ~= "Missing argument";
       return;
     }
-    string email = request.post.read("email");
     string username = request.post.read("username");
     string password = request.post.read("password");
 
 	  scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE);
-    if (db.query!(int)(db.prepare_bind!(string)("
-      SELECT count(*) 
-      FROM users
-      WHERE email=?
-    ", email))[0][0] > 0) {
-      output.status = 400;
-		  mustache_context.addSubContext("error_messages")["error_message"] = "Email already in use";
-			output ~= mustache.render("sign_up", mustache_context);
-      return;
-    }
     if (db.query!(int)(db.prepare_bind!(string)("
       SELECT count(*) 
       FROM users
@@ -61,16 +50,16 @@ void sign_up(Request request, Output output) {
 
     string password_hash = to!(string)(password.crypt(Bcrypt.genSalt()));
     
-    db.exec(db.prepare_bind!(string, string, string)("
-        INSERT INTO users (email, username, password_hash)
-        VALUES (?, ?, ?)
-      ", email, username, password_hash));
+    db.exec(db.prepare_bind!(string, string)("
+        INSERT INTO users (username, password_hash)
+        VALUES (?, ?)
+      ", username, password_hash));
 
-    int user_id = db.query!(int)(db.prepare_bind!(string, string, string)("
+    int user_id = db.query!(int)(db.prepare_bind!(string, string)("
         SELECT user_id
         FROM users
-        WHERE email=? AND username=? AND password_hash=?
-      ", email, username, password_hash))[0][0];
+        WHERE  username=? AND password_hash=?
+      ", username, password_hash))[0][0];
 
     flogger.info("User " ~ to!string(user_id) ~ " aka '" ~ username ~ "' signed up.");
 
@@ -94,27 +83,26 @@ void login(Request request, Output output){
     output ~= mustache.render("login", mustache_context);
     return;
   } else if (request.method == Request.Method.Post) {
-    if (!request.post.has("email_or_username") ||
+    if (!request.post.has("username") ||
         !request.post.has("password")) {
       output.status = 400;
-      output ~= "Missing email_or_username or password";
+      output ~= "Missing username or password";
       return;
     }
-    string email_or_username = request.post.read("email_or_username");
+    string username = request.post.read("username");
     string password = request.post.read("password");
 
 	  scope Database db = new Database(environment["db_filename"], OpenFlags.READONLY);
-    auto query_result = db.query!(int, string, string, int)(db.prepare_bind!(string, string)("
-      SELECT user_id, username, password_hash, isDeactivated 
+    auto query_result = db.query!(int, string, int)(db.prepare_bind!(string)("
+      SELECT user_id, password_hash, isDeactivated 
       FROM users
-      WHERE email=? OR username=?
-    ", email_or_username, email_or_username));
+      WHERE username=?
+    ", username));
     
     if (query_result.length > 0) {
       int user_id = query_result[0][0];
-			string username = query_result[0][1];
-      string password_hash = query_result[0][2];
-			int deactivated = query_result[0][3];
+      string password_hash = query_result[0][1];
+			int deactivated = query_result[0][2];
 
       if (deactivated == 0 && password.canCryptTo(password_hash)) {
 				session_save(output, user_id);
