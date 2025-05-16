@@ -37,25 +37,28 @@ alias MustacheEngine!(string) Mustache;
 {	
   bool showHelp = false;
 	bool verbose = false;
+	bool unsafe = false;
 	string db_filename = "prod.db";
-
-	try { showHelp = getopt(args,
-													"verbose",  &verbose,
-													"database", &db_filename)
-			.helpWanted; }
-	catch (Exception e) { showHelp = true; }
-
-	if (showHelp)
+	
+	scope(failure) 
 	{
 		writeln("Usage: ", baseName(args[0]), " [OPTIONS]");
     writeln("Options:");
     writeln("  --help             Show this help message");
     writeln("  --verbose          Enable verbose output");
+    writeln("  --unsafe           Enable unsafe static cookie hmac (useful for debugging)");
     writeln("  --database=FILE    Path to database file");
-		return ServerinoConfig.create().setReturnCode(1);
+		ServerinoConfig.create().setReturnCode(1);
 	}
 
+	showHelp = getopt(args,
+										"verbose",  &verbose,
+										"unsafe",   &unsafe,
+										"database", &db_filename)
+		.helpWanted;
+	
 	environment["verbose"] = verbose.to!string;
+	environment["unsafe"] = unsafe.to!string;
 	environment["db_filename"] = db_filename;
 
 	if(!exists("photos"))
@@ -137,7 +140,8 @@ alias MustacheEngine!(string) Mustache;
 
 @onDaemonStart
 void daemon_start() {
-	ubyte[] random_bytes = cast(ubyte[])read("/dev/urandom", 64);
+	ubyte[64] random_bytes;
+	if (!environment["unsafe"].to!bool) random_bytes = cast(ubyte[])read("/dev/urandom", 64);
 	environment["cookie_hmac_key"] = random_bytes.toHexString!(LetterCase.lower);
 }
 
