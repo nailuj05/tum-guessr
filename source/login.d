@@ -129,6 +129,7 @@ void logout(Request request, Output output) {
 	session_remove(output);
 
   if (user_id > 0) {
+		scope(failure) flogger.error("Database error when logging out");
     scope Database db = new Database(environment["db_filename"], OpenFlags.READONLY);
     string username = db.query!string(db.prepare_bind!int("
       SELECT username

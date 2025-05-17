@@ -125,23 +125,25 @@ input[type="submit"]:disabled {
   background: var(--accent);
 }
 table {
+  border: 1px solid #fff;
   border-collapse: collapse;
-  width: 100%;
+  width: 60%;
   margin: 20px 0;
   font-family: Arial, sans-serif;
 }
 th, td {
-  border: 1px solid #ddd;
+  border: 1px solid #fff;
   padding: 8px;
   text-align: left;
 }
 th {
-  background-color: #f2f2f2;
+  border: 1px solid #fff;
+  background-color: var(--background);
   cursor: pointer;
   position: relative;
 }
 th:hover {
-  background-color: #ddd;
+  border: 1px solid #fff;
 }
 th::after {
   content: "";
@@ -156,10 +158,8 @@ th.desc::after {
   content: "▼";
 }
 tr:nth-child(even) {
-  background-color: #f9f9f9;
-}
-tr:hover {
-  background-color: #f1f1f1;
+  border: 1px solid #fff;
+  background-color: var(--background);
 }
 
 /* Index Page */

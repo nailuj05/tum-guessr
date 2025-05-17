@@ -18,27 +18,29 @@
 
 		{{> admin-nav}}
     <h1>Users</h1>
-    <table>
+		<div class="center" style="justify-content: normal">
+			<table>
         <thead>
-            <tr>
-                <th>ID</th>
-                <th>Username</th>
-                <th>is_admin</th>
-                <th>is_trusted</th>
-                <th>is_deactivated</th>
-            </tr>
+          <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>is_admin</th>
+            <th>is_trusted</th>
+            <th>is_deactivated</th>
+          </tr>
         </thead>
         <tbody>
-            {{#users}}
-            <tr>
-                <td>{{user_id}}</td>
-                <td>{{username}}</td>
-                <td>{{is_admin}}</td>
-                <td>{{is_trusted}}</td>
-                <td>{{is_deactived}}</td>
-            </tr>
-            {{/users}}
+          {{#users}}
+          <tr>	
+            <td>{{user_id}}</td>
+            <td>{{username}}</td>
+            <td><input type="checkbox" onchange="window.location.href = '/admin/set?id={{user_id}}&role=is_admin&value={{admin_value}}';" {{admin_checked}}></td>
+            <td><input type="checkbox" onchange="window.location.href = '/admin/set?id={{user_id}}&role=is_trusted&value={{trusted_value}}';" {{trusted_checked}}></td>
+            <td><input type="checkbox" onchange="window.location.href = '/admin/set?id={{user_id}}&role=is_deactivated&value={{deactivated_value}}';" {{deactivated_checked}}></td>
+          </tr>
+          {{/users}}
         </tbody>
-    </table>
+			</table>
+		</div>
 </body>
 </html>
