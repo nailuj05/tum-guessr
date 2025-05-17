@@ -59,8 +59,8 @@ void admin_users(Request request, Output output) {
   int offset = to!int(request.get.read("offset", "0"));
 
   scope Database db = new Database(environment["db_filename"], OpenFlags.READONLY);
-  auto query_result = db.query!(int, string, int)(db.prepare_bind!(int, int)("
-    SELECT user_id, username, is_admin
+  auto query_result = db.query!(int, string, int, int, int)(db.prepare_bind!(int, int)("
+    SELECT user_id, username, is_admin, is_trusted, is_deactivated
     FROM users
     ORDER BY user_id
     LIMIT ? OFFSET ?  
@@ -75,8 +75,15 @@ void admin_users(Request request, Output output) {
     mustache_subcontext["user_id"] = row[0];
     mustache_subcontext["username"] = row[1];
     mustache_subcontext["is_admin"] = row[2];
+		// TODO add admin_checkbox here
   }
 
+	if (request.get.has("error")) {
+		mustache_context.addSubContext("error_messages")["error_message"] = request.get.read("error");
+	} else if (request.get.has("info")) {
+		mustache_context.addSubContext("info_messages")["info_message"] = request.get.read("info");
+	}
+	
   output ~= mustache.render("admin_users", mustache_context);
 }
 
@@ -92,4 +99,23 @@ void admin_log(Request request, Output output) {
 	mustache_context["log"] = readText("logs/log.txt");
 	
 	output ~= mustache.render("admin_log", mustache_context);
+}
+
+@endpoint @route!(r => r.path == "/admin/set" && r.get.has("id") && r.get.has("role") && r.get.has("value"))
+void set_role(Request r, Output output) {
+  if (r.method != Request.Method.Get) {
+    output.status = 405;
+  }
+
+	scope(success) output.addHeader("Location", "/admin/users?info=Updated role successfully");
+	scope(failure) output.addHeader("Location", "/admin/users?error=Failed to update role");
+	scope(exit) output.status = 302;
+	
+	assert(["is_admin", "is_trusted", "is_deactivated"].canFind(r.get.read("role")), "invalid role");
+
+	scope Database db = new Database(environment["db_filename"]);
+	Stmt stmt = db.prepare_bind!(string, string)("UPDATE users SET " ~ r.get.read("role") ~ " = ?
+                                                    WHERE user_id = ?",
+																										r.get.read("value"), r.get.read("id"));
+	db.exec(stmt);	
 }

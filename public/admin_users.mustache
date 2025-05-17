@@ -8,6 +8,14 @@
 </head>
 <body>
     {{> header}}
+
+		{{#error_messages}}
+    {{>error_message}}
+    {{/error_messages}}
+    {{#info_messages}}
+    {{>info_message}}
+    {{/info_messages}}
+
 		{{> admin-nav}}
     <h1>Users</h1>
     <table>
@@ -16,6 +24,8 @@
                 <th>ID</th>
                 <th>Username</th>
                 <th>is_admin</th>
+                <th>is_trusted</th>
+                <th>is_deactivated</th>
             </tr>
         </thead>
         <tbody>
@@ -24,6 +34,8 @@
                 <td>{{user_id}}</td>
                 <td>{{username}}</td>
                 <td>{{is_admin}}</td>
+                <td>{{is_trusted}}</td>
+                <td>{{is_deactived}}</td>
             </tr>
             {{/users}}
         </tbody>
