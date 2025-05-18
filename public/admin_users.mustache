@@ -42,7 +42,15 @@
           {{/users}}
         </tbody>
 			</table>
-			{{>admin-page-select-bar}}
+			<div class="page-select-bar">
+				{{#prev_pages}}
+				<a href="/admin/users?page={{prev_page}}&limit={{limit}}">{{prev_page}}</a>
+				{{/prev_pages}}
+				<a>{{page}}</a>
+				{{#next_pages}}
+				<a href="/admin/users?page={{next_page}}&limit={{limit}}">{{next_page}}</a>
+				{{/next_pages}}
+			</div>
 		</div>
 </body>
 </html>
