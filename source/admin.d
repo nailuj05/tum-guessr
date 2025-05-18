@@ -50,6 +50,31 @@ void admin(Request request, Output output) {
 	output ~= "You are being redirected.";
 }
 
+void page_context(int page, int max_pages, Mustache.Context mustache_context) {
+  if (page > 2) {
+    auto mustache_subcontext = mustache_context.addSubContext("prev_pages");
+    mustache_subcontext["prev_page"] = 0;
+  }
+  for (int i = 2; i > 0; i--) {
+    int prev_page = page - i;
+    if (prev_page >= 0) {
+      auto mustache_subcontext = mustache_context.addSubContext("prev_pages");
+      mustache_subcontext["prev_page"] = prev_page;
+    }
+  }
+  for (int i = 1; i < 3; i++) {
+    int next_page = page + i;
+    if (next_page <= max_pages) {
+      auto mustache_subcontext = mustache_context.addSubContext("next_pages");
+      mustache_subcontext["next_page"] = next_page;
+    }
+  }
+  if (page < max_pages - 1) {
+    auto mustache_subcontext = mustache_context.addSubContext("next_pages");
+    mustache_subcontext["next_page"] = max_pages;
+  }
+}
+
 @endpoint @route!"/admin/users"
 void admin_users(Request request, Output output) {
 	if (request.method != Request.Method.Get) {
@@ -77,29 +102,9 @@ void admin_users(Request request, Output output) {
 	scope auto mustache_context = new Mustache.Context;
 
   mustache_context["limit"] = limit;
-  if (page > 2) {
-    auto mustache_subcontext = mustache_context.addSubContext("prev_pages");
-    mustache_subcontext["prev_page"] = 0;
-  }
-  for (int i = 2; i > 0; i--) {
-    int prev_page = page - i;
-    if (prev_page >= 0) {
-      auto mustache_subcontext = mustache_context.addSubContext("prev_pages");
-      mustache_subcontext["prev_page"] = prev_page;
-    }
-  }
-  for (int i = 1; i < 3; i++) {
-    int next_page = page + i;
-    if (next_page <= max_pages) {
-      auto mustache_subcontext = mustache_context.addSubContext("next_pages");
-      mustache_subcontext["next_page"] = next_page;
-    }
-  }
-  if (page < max_pages - 1) {
-    auto mustache_subcontext = mustache_context.addSubContext("next_pages");
-    mustache_subcontext["next_page"] = max_pages;
-  }
   mustache_context["page"] = page;
+  mustache_context["admin_page"] = "users";
+	page_context(page, max_pages, mustache_context);
 
 	foreach (ref row; query_result) {
 		auto mustache_subcontext = mustache_context.addSubContext("users");
@@ -122,12 +127,57 @@ void admin_users(Request request, Output output) {
 	output ~= mustache.render("admin_users", mustache_context);
 }
 
+@endpoint @route!"/admin/photos"
+void admin_photos(Request request, Output output) {
+	if (request.method != Request.Method.Get) {
+		output.status = 405;
+	}
+
+	int limit = to!int(request.get.read("limit", "30"));
+	int page = to!int(request.get.read("page", "0"));
+  int offset = page * limit;
+	
+	string order_by = request.get.read("order_by", "photo_id");
+	string order = request.get.read("order", "a") == "a" ? "ASC" : "DESC";
+	
+	scope Database db = new Database(environment["db_filename"], OpenFlags.READONLY);
+  int num_users = db.query_imm!int("
+    SELECT count(*) FROM photos
+  ")[0][0];
+  int max_pages = num_users / limit;
+	auto query_result = db.query!(int, string, string, int)(db.prepare_bind!(string, int, int)("
+		SELECT p.photo_id, p.path, u.username, p.is_accepted
+		FROM photos p JOIN users u ON p.user_id == u.user_id
+		ORDER BY ? " ~ order ~ "
+		LIMIT ? OFFSET ?	
+	", order_by, limit, offset));
+	
+	Mustache mustache;
+	mustache.path("public");
+	scope auto mustache_context = new Mustache.Context;
+	
+  mustache_context["limit"] = limit;
+  mustache_context["page"] = page;
+  mustache_context["admin_page"] = "photos";
+	page_context(page, max_pages, mustache_context);
+
+	foreach (ref row; query_result) {
+		auto mustache_subcontext = mustache_context.addSubContext("photos");
+		mustache_subcontext["photo_id"] = row[0];
+		mustache_subcontext["path"] = row[1];
+		mustache_subcontext["user_id"] = row[2];
+		mustache_subcontext["is_accepted"] = row[3] == 1 ? "checked" : "";
+	}
+	
+	output ~= mustache.render("admin_photos", mustache_context);
+}
+
 @endpoint @route!"/admin/log"
 void admin_log(Request request, Output output) {
 	if (request.method != Request.Method.Get) {
 		output.status = 405;
 	}
-	
+
 	Mustache mustache;
 	mustache.path("public");
 	scope auto mustache_context = new Mustache.Context;

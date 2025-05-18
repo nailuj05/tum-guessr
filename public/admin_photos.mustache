@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard</title>
+	<link rel="stylesheet" href="/style.css">	
+</head>
+<body class="scroll-enabled">
+    {{> header}}
+		{{> admin-nav}}
+    <h1>Photos</h1>
+		<div class="center" style="justify-content: normal">
+			{{>admin-page-select-bar}}
+			<table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Photo</th>
+            <th>Uploader</th>
+            <th>Accepted</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#photos}}
+          <tr>	
+            <td>{{photo_id}}</td>
+            <td><img src="/{{path}}" alt="{{path}}" width="200" height="200" style="object-fit: cover"></td>
+            <td><a href="/profile/{{user_id}}">{{user_id}}</a></td>
+						<td><input type="checkbox" readonly {{is_accepted}}/></td>
+          </tr>
+          {{/photos}}
+        </tbody>
+			</table>
+			{{>admin-page-select-bar}}
+		</div>
+</body>
+</html>

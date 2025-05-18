@@ -25,9 +25,9 @@
           <tr>
             <th>ID</th>
             <th>Username</th>
-            <th>is_admin</th>
-            <th>is_trusted</th>
-            <th>is_deactivated</th>
+            <th>Admin</th>
+            <th>Trusted</th>
+            <th>Deactivated</th>
           </tr>
         </thead>
         <tbody>
@@ -35,22 +35,17 @@
           <tr>	
             <td>{{user_id}}</td>
             <td>{{username}}</td>
-            <td><input type="checkbox" onchange="window.location.href = '/admin/set?id={{user_id}}&role=is_admin&value={{admin_value}}&page={{page}}&limit={{limit}}';" {{admin_checked}}></td>
-            <td><input type="checkbox" onchange="window.location.href = '/admin/set?id={{user_id}}&role=is_trusted&value={{trusted_value}}&page={{page}}&limit={{limit}}';" {{trusted_checked}}></td>
-            <td><input type="checkbox" onchange="window.location.href = '/admin/set?id={{user_id}}&role=is_deactivated&value={{deactivated_value}}&page={{page}}&limit={{limit}}';" {{deactivated_checked}}></td>
+            <td><input type="checkbox" onchange="window.location.href = '/admin/set?id={{user_id}}&role=is_admin&value={{admin_value}}&page={{page}}&limit={{limit}}';"
+											 {{admin_checked}}></td>
+            <td><input type="checkbox" onchange="window.location.href = '/admin/set?id={{user_id}}&role=is_trusted&value={{trusted_value}}&page={{page}}&limit={{limit}}';"
+											 {{trusted_checked}}></td>
+            <td><input type="checkbox" onchange="window.location.href = '/admin/set?id={{user_id}}&role=is_deactivated&value={{deactivated_value}}&page={{page}}&limit={{limit}}';"
+											 {{deactivated_checked}}></td>
           </tr>
           {{/users}}
         </tbody>
 			</table>
-			<div class="page-select-bar">
-				{{#prev_pages}}
-				<a href="/admin/users?page={{prev_page}}&limit={{limit}}">{{prev_page}}</a>
-				{{/prev_pages}}
-				<a>{{page}}</a>
-				{{#next_pages}}
-				<a href="/admin/users?page={{next_page}}&limit={{limit}}">{{next_page}}</a>
-				{{/next_pages}}
-			</div>
+			{{>admin-page-select-bar}}
 		</div>
 </body>
 </html>
