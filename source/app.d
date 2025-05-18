@@ -38,28 +38,32 @@ alias MustacheEngine!(string) Mustache;
   bool showHelp = false;
 	bool verbose = false;
 	bool unsafe = false;
+  int num_populate_users = 0;
 	string db_filename = "prod.db";
 	
 	scope(failure) 
 	{
 		writeln("Usage: ", baseName(args[0]), " [OPTIONS]");
     writeln("Options:");
-    writeln("  --help             Show this help message");
-    writeln("  --verbose          Enable verbose output");
-    writeln("  --unsafe           Enable unsafe static cookie hmac (useful for debugging)");
-    writeln("  --database=FILE    Path to database file");
+    writeln("  --help                       Show this help message.");
+    writeln("  --verbose                    Enable verbose output.");
+    writeln("  --unsafe                     Enable unsafe static cookie hmac (useful for debugging)");
+    writeln("  --populate_users=NUM_USERS   Populate table users with NUM_USERS random generated users. Password is set to 'pw'.");
+    writeln("  --database=FILE              Path to database file.");
 		ServerinoConfig.create().setReturnCode(1);
 	}
 
 	showHelp = getopt(args,
 										"verbose",  &verbose,
 										"unsafe",   &unsafe,
+                    "populate_users", &num_populate_users,
 										"database", &db_filename)
 		.helpWanted;
 	
 	environment["verbose"] = verbose.to!string;
 	environment["unsafe"] = unsafe.to!string;
 	environment["db_filename"] = db_filename;
+
 
 	if(!exists("photos"))
 		 mkdir("photos");
@@ -131,6 +135,9 @@ alias MustacheEngine!(string) Mustache;
       INSERT OR IGNORE INTO users (user_id, username, password_hash, is_deactivated)
       VALUES (0, 'unknown', '', 1)
     ");
+    if (num_populate_users > 0) {
+      populate_users(num_populate_users);
+    }
   } catch (Database.DBException e){
     error("An exception occurred during database initialization: ", e.msg);
   }
@@ -211,4 +218,22 @@ void page404(Output output)
 	output.addHeader("Content-Type", "text/plain");
 
 	output.write("Page not found!");
+}
+
+void populate_users(int num_users, string password = "pw") {
+  import passwd;
+  import passwd.bcrypt;
+  string password_hash = to!(string)(password.crypt(Bcrypt.genSalt()));
+	scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE);
+  db.exec(db.prepare_bind("
+  WITH RECURSIVE iterator(n) AS (
+    SELECT 1
+    UNION ALL
+    SELECT n+1 FROM iterator WHERE n < ?
+  )
+  INSERT OR IGNORE INTO users (username, password_hash)
+  SELECT
+    'user_' || ABS(RANDOM()), ?
+  FROM iterator
+  ", num_users, password_hash));
 }
