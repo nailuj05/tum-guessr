@@ -6,7 +6,7 @@
   <title>Admin Dashboard</title>
 	<link rel="stylesheet" href="/style.css">	
 </head>
-<body>
+<body class="scroll-enabled">
     {{> header}}
 
 		{{#error_messages}}
@@ -19,6 +19,7 @@
 		{{> admin-nav}}
     <h1>Users</h1>
 		<div class="center" style="justify-content: normal">
+			{{>admin-page-select-bar}}
 			<table>
         <thead>
           <tr>
@@ -34,13 +35,14 @@
           <tr>	
             <td>{{user_id}}</td>
             <td>{{username}}</td>
-            <td><input type="checkbox" onchange="window.location.href = '/admin/set?id={{user_id}}&role=is_admin&value={{admin_value}}';" {{admin_checked}}></td>
-            <td><input type="checkbox" onchange="window.location.href = '/admin/set?id={{user_id}}&role=is_trusted&value={{trusted_value}}';" {{trusted_checked}}></td>
-            <td><input type="checkbox" onchange="window.location.href = '/admin/set?id={{user_id}}&role=is_deactivated&value={{deactivated_value}}';" {{deactivated_checked}}></td>
+            <td><input type="checkbox" onchange="window.location.href = '/admin/set?id={{user_id}}&role=is_admin&value={{admin_value}}&page={{page}}&limit={{limit}}';" {{admin_checked}}></td>
+            <td><input type="checkbox" onchange="window.location.href = '/admin/set?id={{user_id}}&role=is_trusted&value={{trusted_value}}&page={{page}}&limit={{limit}}';" {{trusted_checked}}></td>
+            <td><input type="checkbox" onchange="window.location.href = '/admin/set?id={{user_id}}&role=is_deactivated&value={{deactivated_value}}&page={{page}}&limit={{limit}}';" {{deactivated_checked}}></td>
           </tr>
           {{/users}}
         </tbody>
 			</table>
+			{{>admin-page-select-bar}}
 		</div>
 </body>
 </html>

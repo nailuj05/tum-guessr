@@ -20,7 +20,7 @@ import sqlite;
 import logger;
 
 // saves user_id and expiration to cookie
-void session_save(ref Output output, int user_id, Duration maxAge = 15.minutes)
+void session_save(ref Output output, int user_id, Duration maxAge = 8.hours)
 {
 		bool verbose = environment["verbose"].to!bool;
 		long expiration = Clock.currTime.toUnixTime + maxAge.total!"seconds";

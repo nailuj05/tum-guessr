@@ -32,6 +32,10 @@ header {
     justify-content: space-between;
     align-items: center;
 }
+.scroll-enabled {
+		overflow: auto;
+		padding-bottom: 5rem;
+}
 .btn {
 		color: white;
     padding: 0.5rem 1rem;
@@ -123,6 +127,13 @@ input[type="submit"]:disabled {
 }
 .nav-bar .btn {
   background: var(--accent);
+}
+.page-select-bar {
+		display: flex;
+}
+.page-select-bar p,
+.page-select-bar a {
+		padding: 8px;
 }
 table {
   border: 1px solid #fff;

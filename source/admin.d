@@ -57,9 +57,14 @@ void admin_users(Request request, Output output) {
 	}
 	
 	int limit = to!int(request.get.read("limit", "30"));
-	int offset = to!int(request.get.read("offset", "0"));
+	int page = to!int(request.get.read("page", "0"));
+  int offset = page * limit;
 
 	scope Database db = new Database(environment["db_filename"], OpenFlags.READONLY);
+  int num_users = db.query_imm!int("
+    SELECT count(*) FROM users
+  ")[0][0];
+  int max_pages = num_users / limit;
 	auto query_result = db.query!(int, string, int, int, int)(db.prepare_bind!(int, int)("
 		SELECT user_id, username, is_admin, is_trusted, is_deactivated
 		FROM users
@@ -70,6 +75,31 @@ void admin_users(Request request, Output output) {
 	Mustache mustache;
 	mustache.path("public");
 	scope auto mustache_context = new Mustache.Context;
+
+  mustache_context["limit"] = limit;
+  if (page > 2) {
+    auto mustache_subcontext = mustache_context.addSubContext("prev_pages");
+    mustache_subcontext["prev_page"] = 0;
+  }
+  for (int i = 2; i > 0; i--) {
+    int prev_page = page - i;
+    if (prev_page >= 0) {
+      auto mustache_subcontext = mustache_context.addSubContext("prev_pages");
+      mustache_subcontext["prev_page"] = prev_page;
+    }
+  }
+  for (int i = 1; i < 3; i++) {
+    int next_page = page + i;
+    if (next_page <= max_pages) {
+      auto mustache_subcontext = mustache_context.addSubContext("next_pages");
+      mustache_subcontext["next_page"] = next_page;
+    }
+  }
+  if (page < max_pages - 1) {
+    auto mustache_subcontext = mustache_context.addSubContext("next_pages");
+    mustache_subcontext["next_page"] = max_pages;
+  }
+  mustache_context["page"] = page;
 
 	foreach (ref row; query_result) {
 		auto mustache_subcontext = mustache_context.addSubContext("users");
@@ -107,20 +137,24 @@ void admin_log(Request request, Output output) {
 }
 
 @endpoint @route!(r => r.path == "/admin/set" && r.get.has("id") && r.get.has("role") && r.get.has("value"))
-void set_role(Request r, Output output) {
-	if (r.method != Request.Method.Get) {
+void set_role(Request request, Output output) {
+	if (request.method != Request.Method.Get) {
 		output.status = 405;
 	}
 
-	scope(success) output.addHeader("Location", "/admin/users?info=Updated role successfully");
-	scope(failure) output.addHeader("Location", "/admin/users?error=Failed to update role");
+  bool has_limit = request.get.has("limit");
+	string limit = request.get.read("limit");
+	string page = request.get.read("page", "0");
+
+	scope(success) output.addHeader("Location", "/admin/users?page=" ~ page ~ (has_limit ? "&limit=" ~ limit : "") ~ "&info=Updated role successfully");
+	scope(failure) output.addHeader("Location", "/admin/users?page=" ~ page ~ (has_limit ? "&limit=" ~ limit : "") ~ "&error=Failed to update role");
 	scope(exit) output.status = 302;
 	
-	enforce(["is_admin", "is_trusted", "is_deactivated"].canFind(r.get.read("role")), "invalid role");
+	enforce(["is_admin", "is_trusted", "is_deactivated"].canFind(request.get.read("role")), "invalid role");
 
 	scope Database db = new Database(environment["db_filename"]);
-	Stmt stmt = db.prepare_bind!(string, string)("UPDATE users SET " ~ r.get.read("role") ~ " = ?
+	Stmt stmt = db.prepare_bind!(string, string)("UPDATE users SET " ~ request.get.read("role") ~ " = ?
 																										WHERE user_id = ?",
-																										r.get.read("value"), r.get.read("id"));
+																										request.get.read("value"), request.get.read("id"));
 	db.exec(stmt);	
 }
