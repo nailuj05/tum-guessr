@@ -1,28 +1,24 @@
-* User Experience
-- Landing Page
-  - Account Page
-    - Photo Upload
-    - (Admin Panel)
-  - Game Page
-    - Result Page
+* TODO Admin / Security
+	- option to disable new sign ups
+	- ensure public/ escape safety
+	- sign up timestamp
+
+* TODO Game Page
+  - Next Button
+  - Score/Result Page
+
+* TODO Profile Pages
+  - Played Games
+	- Average Accuracy
+	- Uploaded Photos
+	
+* TODO Statistics
+  - track visits
+  - statistics page
+		- visits
+		- scores/guesses
+	- photo guess heatmap?
       
-* DB Layout
-** Photos
-- path of image
-- coords
-- userid
-
-** User
-- userid
-- username
-- user mail
-- isAdmin
-
-** Login
-- logintoken
-- userid
-- expiration
-
-* Backend Endpoints
-
-
+* Future
+  - Multiplayer/Versus
+	- Heilbronn + Stammgelände
