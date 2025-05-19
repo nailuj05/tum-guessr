@@ -22,27 +22,17 @@ void upload(Request request, Output output) {
 	mustache.path("public");
 	scope auto mustache_context = new Mustache.Context;
 		
-	
 	int user_id = session_load(request, output);
-
-	if (request.method == Request.Method.Get) {
-		if(user_id >= 0) {
-			mustache_context.useSection("logged_in");
-		} else {
-			output.status = 302;
-			output.addHeader("Location", "/login");
-			output ~= "No access!" ~ "\n" ~ "You are being redirected.";
-      return;
-		}
+	if(user_id <= 0) {
+		output.status = 302;
+		output.addHeader("Location", "/login");
+		output ~= "No access!" ~ "\n" ~ "You are being redirected.";
+		return;
 	}
-	else if (request.method == Request.Method.Post) {
-		if (user_id == -1) {
-			output.status = 302;
-			output.addHeader("Location", "/login");
-			output ~= "No access!" ~ "\n" ~ "You are being redirected.";
-			return;
-		}
-		
+	
+  mustache_context.useSection("logged_in");
+	
+	if (request.method == Request.Method.Post) {
 		import std.logger;
 		import core.stdc.time;
 		time_t unixTime = core.stdc.time.time(null);

@@ -101,7 +101,12 @@ void admin_users(Request request, Output output) {
 	mustache.path("public");
 	scope auto mustache_context = new Mustache.Context;
 
-  mustache_context["limit"] = limit;
+  int user_id = session_load(request, output);
+  if (user_id > 0) {
+    mustache_context.useSection("logged_in");
+  }
+
+	mustache_context["limit"] = limit;
   mustache_context["page"] = page;
   mustache_context["admin_page"] = "users";
 	page_context(page, max_pages, mustache_context);
@@ -155,6 +160,11 @@ void admin_photos(Request request, Output output) {
 	Mustache mustache;
 	mustache.path("public");
 	scope auto mustache_context = new Mustache.Context;
+
+  int user_id = session_load(request, output);
+  if (user_id > 0) {
+    mustache_context.useSection("logged_in");
+  }
 	
   mustache_context["limit"] = limit;
   mustache_context["page"] = page;
@@ -181,6 +191,12 @@ void admin_log(Request request, Output output) {
 	Mustache mustache;
 	mustache.path("public");
 	scope auto mustache_context = new Mustache.Context;
+
+	int user_id = session_load(request, output);
+  if (user_id > 0) {
+    mustache_context.useSection("logged_in");
+  }
+
 	mustache_context["log"] = readText("logs/log.txt");
 	
 	output ~= mustache.render("admin_log", mustache_context);
