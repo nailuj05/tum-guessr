@@ -27,7 +27,7 @@
             <td>{{photo_id}}</td>
             <td><img src="/{{path}}" alt="{{path}}" width="200" height="200" style="object-fit: cover"></td>
             <td><a href="/profile/{{user_id}}">{{user_id}}</a></td>
-						<td><input type="checkbox" readonly {{is_accepted}}/></td>
+						<td><input type="checkbox" disabled {{is_accepted}}/></td>
           </tr>
           {{/photos}}
         </tbody>
