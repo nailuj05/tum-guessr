@@ -43,7 +43,7 @@ void admin_access_authorization(Request request, Output output) {
 	}
 }
 
-@endpoint @route!"/admin"
+@endpoint @route!"/admin" @route!"/admin/"
 void admin(Request request, Output output) {
 	output.status = 302;
 	output.addHeader("Location", "/admin/users");
