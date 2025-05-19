@@ -1,1 +1,1 @@
-((nil . ((compile-command . "cd .. && dub run"))))
+((nil . ((compile-command . "cd .. && dub run -- --unsafe"))))
