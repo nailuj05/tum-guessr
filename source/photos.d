@@ -88,10 +88,12 @@ void photos_list(Request r, Output output) {
 }
 
 // TODO: Accept Endpoint
-@endpoint @route!"/photos/accept" @route!(r => r.post.has("photo_id"))
+@endpoint @route!"/photos/accept"
 void photos_accept(Request r, Output output) {
 	scope(failure) output.status = 404;
-	
+
+  writeln(r.path);
+  
 	int photo_id = to!int(r.post.read("photo_id", "-1"));
 
 	scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE);
@@ -110,7 +112,7 @@ void photos_accept(Request r, Output output) {
 	output ~= "updated successfully";
 }
 
-@endpoint @route!"/photos/delete" @route!(r => r.post.has("photo_id"))
+@endpoint @route!"/photos/delete"
 void photos_delete(Request r, Output output) {
 	scope(failure) output.status = 404;
 	
