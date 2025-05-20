@@ -22,14 +22,16 @@ import serverino;
 import mustache;
 
 import sqlite;
+import logger;
+
 import upload;
 import login;
 import profile;
 import game;
 import admin;
-import logger;
+import photos;
 
-mixin ServerinoMain!(upload, login, profile, game, admin);
+mixin ServerinoMain!(upload, login, profile, game, admin, photos);
 
 alias MustacheEngine!(string) Mustache;
 
