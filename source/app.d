@@ -141,7 +141,7 @@ alias MustacheEngine!(string) Mustache;
       populate_users(num_populate_users);
     }
   } catch (Database.DBException e){
-    error("An exception occurred during database initialization: ", e.msg);
+    flogger.error("An exception occurred during database initialization: ", e.msg);
   }
       
 	return ServerinoConfig.create().addListener("0.0.0.0", 8080);
