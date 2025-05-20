@@ -42,29 +42,36 @@ void upload(Request request, Output output) {
     const float longitude = to!float(request.form.read("long").data);
 		if(fd.isFile() && (fd.path.endsWith(".png") || fd.path.endsWith(".jpg"))) {
 			flogger.info("File ", fd.filename, " uploaded at ", fd.path);
-			
-			// make sure file doesnt override (even if 2 files are uploaded the same second)
-			string temp_path = fd.path;
-			string target_path;
-      string suffix = matchFirst(fd.filename, ctRegex!`(\.\w+)$`)[1];
-			int i = 0;
-			do {
-				target_path = "photos/" ~ to!string(unixTime) ~ "_" ~ to!string(i++) ~ suffix;
-			} while (exists(target_path));
-			
-			temp_path.copy(target_path);
-			flogger.info("copied file to: ", target_path);
 
-      scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE);
-      try {
-        db.exec(db.prepare_bind!(string, float, float, string, int)("
+      // make sure only these files can be uploaded
+      string[] ftypes = [".png", ".jpg", ".jpeg"];
+      if(!ftypes.canFind(extension(fd.filename))) {
+        flogger.error("image type ", fd.filename, " not supported");
+        mustache_context.addSubContext("error_messages")["info_message"] = "Image file not supported.";
+      }
+      else {
+        // make sure file doesnt override (even if 2 files are uploaded the same second)
+        string temp_path = fd.path;
+        string target_path;
+        int i = 0;
+        do {
+          target_path = "photos/" ~ to!string(unixTime) ~ "_" ~ to!string(i++) ~ extension(fd.filename);
+        } while (exists(target_path));
+			
+        temp_path.copy(target_path);
+        flogger.info("copied file to: ", target_path);
+
+        scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE);
+        try {
+          db.exec(db.prepare_bind!(string, float, float, string, int)("
           INSERT INTO photos (path, latitude, longitude, location, user_id)
           VALUES (?, ?, ?, ?, ?)", target_path, latitude, longitude, "garching", user_id));
-        mustache_context.addSubContext("info_messages")["info_message"] = "Photo submitted for review.";
-      } catch (Database.DBException e) {
-        error("An exception occured during insertion of photo in database:
+          mustache_context.addSubContext("info_messages")["info_message"] = "Photo submitted for review.";
+        } catch (Database.DBException e) {
+          flogger.error("An exception occured during insertion of photo in database:
             ", e.msg);
-        mustache_context.addSubContext("error_messages")["info_message"] = "Database error.";
+          mustache_context.addSubContext("error_messages")["info_message"] = "Database error.";
+        }
       }
 		}
 	}
