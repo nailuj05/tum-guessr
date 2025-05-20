@@ -1,94 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+	<head>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<title>TUM Guessr</title>
 		<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 		<link rel="stylesheet" href="style.css">
-</head>
-<body>		
+	</head>
+	<body>		
     {{> header}}
 		<div id="photoContainer">
-				<div class="image-wrapper">
-						<img id="photo" src="/game/round">
-				</div>
+			<div class="image-wrapper">
+				<img id="photo" src="/game/round">
+			</div>
 		</div>
 		<div id="mapContainer">
-				<div id="map"></div>
-				<button id="guessButton" disabled>Guess</button>
+			<div id="map"></div>
+			<button id="guessButton" disabled>Guess</button>
 		</div>
 		<script src="js/dragimage.js"></script>
 		<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 		<script>
-     const map = L.map('map').setView([48.2621, 11.6676], 16);
-     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-				 attribution: '© OpenStreetMap contributors'
-     }).addTo(map);
+			const map = L.map('map').setView([48.2621, 11.6676], 16);
+			L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+					attribution: '© OpenStreetMap contributors'
+			}).addTo(map);
 
 			let marker = null;
 			const guessButton = document.getElementById("guessButton");
 
 			guessButton.addEventListener("click", function() {
-				const latLng = marker.getLatLng();
-				const params = new URLSearchParams();
-				params.append('longitude', latLng.lng);
-				params.append('latitude', latLng.lat);
+					const latLng = marker.getLatLng();
+					const params = new URLSearchParams();
+					params.append('longitude', latLng.lng);
+					params.append('latitude', latLng.lat);
 
-				fetch('/game/round', {
-						method: 'POST',
-						headers: {
-								'Content-Type': 'application/x-www-form-urlencoded',
-						},
-						body: params,
-				})
-				.then(response => {
-						if (!response.ok) {
-								throw new Error('Network response was not ok');
-						}
-						return response.json();
-				})
-				.then(data => {
-						console.log('Latitude:', data.latitude);
-						console.log('Longitude:', data.longitude);
-						console.log('Score:', data.score);
-				})
-				.catch(error => {
-						console.error('There was a problem with the fetch operation:', error);
-				});
+					fetch('/game/round', {
+							method: 'POST',
+							headers: {
+									'Content-Type': 'application/x-www-form-urlencoded',
+							},
+							body: params,
+					})
+							.then(response => {
+									if (!response.ok) {
+											throw new Error('Network response was not ok');
+									}
+									window.location.replace('/game/result');
+							})
+							.catch(error => {
+									console.error('There was a problem with the fetch operation:', error);
+							});
 			});
-		 
-		 map.on('click', function(e) {
-				const lat = e.latlng.lat.toFixed(6);
-				const lng = e.latlng.lng.toFixed(6);
+			
+			map.on('click', function(e) {
+					const lat = e.latlng.lat.toFixed(6);
+					const lng = e.latlng.lng.toFixed(6);
 
-				updateMarker(lat, lng);
-				guessButton.disabled = false;
-				console.log(`Clicked at ${e.latlng.lat}, ${e.latlng.lng}`);
-		 });
+					updateMarker(lat, lng);
+					guessButton.disabled = false;
+					console.log(`Clicked at ${e.latlng.lat}, ${e.latlng.lng}`);
+			});
 
-		function updateMarker(lat, lng) {
-				const latlng = L.latLng(lat, lng);
-				if (marker) {
-						marker.setLatLng(latlng);
-				} else {
-						marker = L.marker(latlng).addTo(map);
-				}
-				map.panTo(latlng);
-		}
-		 
-		 // Resize map properly on hover without causing issues
-		 document.getElementById('mapContainer').addEventListener('mouseenter', () => {
-				 setTimeout(() => {
-						 map.invalidateSize();
-				 }, 110);  // Delay to match the CSS transition duration
-		 });
-		 
-		 document.getElementById('mapContainer').addEventListener('mouseleave', () => {
-				 setTimeout(() => {
-						 map.invalidateSize();
-				 }, 110);  // Delay to match the CSS transition duration
-		 });
+			function updateMarker(lat, lng) {
+					const latlng = L.latLng(lat, lng);
+					if (marker) {
+							marker.setLatLng(latlng);
+					} else {
+							marker = L.marker(latlng).addTo(map);
+					}
+					map.panTo(latlng);
+			}
+			
+			// Resize map properly on hover without causing issues
+			document.getElementById('mapContainer').addEventListener('mouseenter', () => {
+					setTimeout(() => {
+							map.invalidateSize();
+					}, 110);  // Delay to match the CSS transition duration
+			});
+			
+			document.getElementById('mapContainer').addEventListener('mouseleave', () => {
+					setTimeout(() => {
+							map.invalidateSize();
+					}, 110);  // Delay to match the CSS transition duration
+			});
 		</script>
-</body>
+	</body>
 </html>

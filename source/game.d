@@ -18,7 +18,7 @@ alias MustacheEngine!(string) Mustache;
 alias Request.Method.Get GET;
 alias Request.Method.Post POST;
 
-@endpoint @priority(10) @route!("/game")
+@endpoint @priority(10) @route!"/game"
 void game(Request request, Output output) {
   if (request.method == GET) {
 		int user_id = session_load(request, output);
@@ -26,29 +26,37 @@ void game(Request request, Output output) {
 			user_id = 0;
 		string location = request.get.read("location", "garching");
 		long timestamp = Clock.currTime.toUnixTime;
-		int game_id;
 
-		if (request.cookie.has("game_id")) {
-			try {
-				game_id = request.cookie.read("game_id").to!int;
-			} catch (Exception e) {
-				output.setCookie(Cookie("game_id", "invalid").invalidate());
-			}
-		}
+		scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE);
+		int game_id = get_game_id(request, output, db);
+    try {
+      int remaining_rounds = db.query!int(db.prepare_bind!int("
+      SELECT count(*)
+      FROM rounds
+      WHERE game_id=? AND finished=FALSE
+    ", game_id))[0][0];
+      if (remaining_rounds < 1) {
+        game_id = -1;
+      }
+    } catch (Database.DBException e) {
+      flogger.warning("Failed to check whether game is finished: " ~ e.msg);
+      output.status = 400;
+      output ~= "Failed to start game";
+      return;
+    }
 
-		if (!game_id) {
-			scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE);
+		if (game_id < 0) {
 			try {
-			db.exec_imm("BEGIN TRANSACTION");
-			// Create game in db
-			db.exec(db.prepare_bind!(int, string, long)("
+        db.exec_imm("BEGIN TRANSACTION");
+        // Create game in db
+        db.exec(db.prepare_bind!(int, string, long)("
 					INSERT INTO games (user_id, location, timestamp)
 					VALUES (?, ?, ?)
 			", user_id, location, timestamp));
-			// Get game_id
-			game_id = db.query_imm!int("SELECT last_insert_rowid()")[0][0];
-			// Create 5 rounds with random photos
-			db.exec(db.prepare_bind!(int, string)("
+        // Get game_id
+        game_id = db.query_imm!int("SELECT last_insert_rowid()")[0][0];
+        // Create 5 rounds with random photos
+        db.exec(db.prepare_bind!(int, string)("
 					INSERT INTO rounds (round_id, game_id, photo_id)
 					SELECT
 					  ROW_NUMBER() OVER () AS round_id,
@@ -61,20 +69,21 @@ void game(Request request, Output output) {
 					  ORDER BY RANDOM()
 					  LIMIT 5
 					)
-			", game_id, location));
-			// Check round creation
-			int num_created_rounds = db.query!int(db.prepare_bind!int("
+			  ", game_id, location));
+        // Check round creation
+        int num_created_rounds = db.query!int(db.prepare_bind!int("
 					SELECT count(*)
 					FROM rounds
 					WHERE game_id=?
-			", game_id))[0][0];
-			if (num_created_rounds != 5) {
-        flogger.warning("Failed to create 5 rounds, rolling back");
-        db.exec_imm("ROLLBACK");
-        output.status = 500;
-        return;
-			}
-			db.exec_imm("COMMIT");
+			  ", game_id))[0][0];
+        info(to!string(num_created_rounds));
+        if (num_created_rounds != 5) {
+          flogger.warning("Failed to create 5 rounds, rolling back");
+          db.exec_imm("ROLLBACK");
+          output.status = 500;
+          return;
+        }
+        db.exec_imm("COMMIT");
 			} catch (Database.DBException e) {
         flogger.warning("Failed to insert new game in db: " ~ e.msg);
         output.status = 400;
@@ -97,6 +106,7 @@ void game(Request request, Output output) {
 	}
 }
 
+
 @endpoint @route!"/game/round"
 void round(Request request, Output output) {
 	int user_id = session_load(request, output);
@@ -104,22 +114,14 @@ void round(Request request, Output output) {
 		user_id = 0;
 	
 	if (request.method == GET) {
-		if (!request.cookie.has("game_id")) {
-			output.status = 400;
-			output ~= "Missing cookie game_id";
-			return;
-		}
-		int game_id;
-		try {
-			game_id = request.cookie.read("game_id").to!int;
-		} catch (Exception e) {
-			output.status = 400;
-      output.setCookie(Cookie("game_id", "invalid").invalidate()); 
-			output ~= "Invalid game_id cookie format";
-			return;
-		}
-		string photo_path;
 		scope Database db = new Database(environment["db_filename"], OpenFlags.READONLY);
+    int game_id = get_game_id(request, output, db);
+    if (game_id < 0) {
+			output.status = 400;
+			output ~= "Missing or invalid game_id";
+      return;
+    }
+		string photo_path;
 		try {
 			// Get photo path of next unfinished round
 			auto query_result = db.query!string(db.prepare_bind!(int, int)("
@@ -154,16 +156,14 @@ void round(Request request, Output output) {
 		  return;
 		}
 
-		int game_id;
-		try {
-			game_id = request.cookie.read("game_id").to!int;
-		} catch (Exception e) {
+		scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE);
+		int game_id = get_game_id(request, output, db);
+    if (game_id < 0) {
 			output.status = 400;
-      output.setCookie(Cookie("game_id", "invalid").invalidate()); 
-			output ~= "Invalid game_id cookie format";
-			return;
-		}
-
+			output ~= "Missing or invalid game_id";
+      return;
+    }
+		
 		float guess_latitude;
 		float guess_longitude;
 		try {
@@ -174,37 +174,27 @@ void round(Request request, Output output) {
 		  output ~= "Invalid argument format";
 		  return;
 		}
-		double true_latitude;
-		double true_longitude;
-		int score;
-
-		scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE);
+    
 		try {
-			// Get next unfinished round from game
-			auto round_id_query_result = db.query!int(db.prepare_bind!int("
-				SELECT round_id
-				FROM rounds
-				WHERE game_id=? AND finished=FALSE
-				ORDER BY round_id ASC
-				LIMIT 1
+			// Get coords of next unfinshed round of the game
+			auto query_result = db.query!(int, double, double)(db.prepare_bind!(int)("
+				SELECT r.round_id, p.latitude, p.longitude
+				FROM rounds r
+        JOIN photos p ON r.photo_id=p.photo_id
+        WHERE r.game_id=? AND r.finished=FALSE
+        ORDER BY r.round_id ASC
+        LIMIT 1
 			", game_id));
-			if (round_id_query_result.length < 1) {
+			if (query_result.length < 1) {
 				output.status = 400;
 				output ~= "No such unfinished game";
 				return;
 			}
-			int round_id = round_id_query_result[0][0];
-			// Get coords of round
-			auto coords_query_result = db.query!(double, double)(db.prepare_bind!(int, int)("
-				SELECT p.latitude, p.longitude
-				FROM games g JOIN rounds r ON g.game_id=r.game_id
-        JOIN photos p ON r.photo_id=p.photo_id
-        WHERE g.game_id=? AND r.round_id=?
-			", game_id, round_id));
-			true_latitude = coords_query_result[0][0];
-			true_longitude = coords_query_result[0][1];
+      int round_id = query_result[0][0];
+			double true_latitude = query_result[0][1];
+			double true_longitude = query_result[0][2];
 			// TODO: calculate score
-			score = 69;
+			int score = 69;
 			// Insert round info
 			db.exec(db.prepare_bind!(float, float, int, int, int)("
 				UPDATE rounds
@@ -216,11 +206,116 @@ void round(Request request, Output output) {
 			output.status = 500;
 			return;
 		}
-
-		output ~= format(`{"latitude": %2.6f, "longitude": %2.6f, "score": %d}` ~ "\n", true_latitude, true_longitude, score);
-		return;
-	}
+    output.status = 200;
+    return;
+  }
 	output.status = 405;
 }
 
+@endpoint @route!"/game/result"
+void game_result(Request request, Output output) {
+  if (request.method != GET) {
+    output.status = 400;
+    return;
+  }
 
+  scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE);
+  int game_id = get_game_id(request, output, db);
+  if (game_id < 0) {
+    output.status = 400;
+    output ~= "Missing or invalid game_id";
+    return;
+  }
+
+  double guess_latitude;
+  double guess_longitude;
+  double true_latitude;
+  double true_longitude;
+  int score;
+  int remaining_rounds;
+
+  try {
+    auto query_result = db.query!(int, double, double, double, double)(db.prepare_bind!(int)("
+      SELECT r.score, r.guess_lat, r.guess_long, p.latitude, p.longitude
+      FROM rounds r
+      JOIN photos p ON r.photo_id=p.photo_id
+      WHERE r.game_id=? AND r.finished=TRUE
+      ORDER BY r.round_id DESC
+      LIMIT 1
+    ", game_id));
+    if (query_result.length < 1) {
+      output.status = 400;
+      output ~= "No such finished round";
+      return;
+    }
+    score = query_result[0][0];
+    guess_latitude = query_result[0][1];
+    guess_longitude = query_result[0][2];
+    true_latitude = query_result[0][3];
+    true_longitude = query_result[0][4];
+    remaining_rounds = db.query!int(db.prepare_bind!int("
+      SELECT count(*)
+      FROM rounds
+      WHERE game_id=? AND finished=FALSE
+    ", game_id))[0][0];
+  } catch (Database.DBException e) {
+    flogger.warning("Failed to set finished round: " ~ e.msg);
+    output.status = 500;
+    return;
+  }
+
+  Mustache mustache;
+  mustache.path("public");
+  scope auto mustache_context = new Mustache.Context;
+  mustache_context["score"] = score;
+  mustache_context["guess_latitude"] = guess_latitude;
+  mustache_context["guess_longitude"] = guess_longitude;
+  mustache_context["true_latitude"] = true_latitude;
+  mustache_context["true_longitude"] = true_longitude;
+
+  if (remaining_rounds < 1) {
+    mustache_context.useSection("final_round");
+  }
+
+  output ~= mustache.render("round_result", mustache_context);
+}
+
+int get_game_id(Request request, Output output, Database db) {
+  if (!request.cookie.has("game_id")) {
+    return -1;
+  }
+  int game_id;
+  try {
+    game_id = request.cookie.read("game_id").to!int;
+  } catch (Exception e) {
+    output.setCookie(Cookie("game_id", "invalid").invalidate()); 
+    return -2;
+  }
+  int user_id = session_load(request, output);
+  if (user_id < 0) {
+    user_id = 0;
+  }
+  int is_valid;
+  try {
+    is_valid = db.query!int(db.prepare_bind!(int, int)("
+        SELECT count(*)
+        FROM users u JOIN games g ON u.user_id=g.user_id
+        WHERE u.user_id=? AND g.game_id=?
+      ", user_id, game_id))[0][0];
+  } catch (Database.DBException e) {
+    flogger.warning("Something went wrong during game_id validation of user_id " ~ user_id.to!string ~ " and game_id " ~ game_id.to!string ~ ": " ~ e.msg);
+    output.setCookie(Cookie("game_id", "invalid").invalidate()); 
+    return -3;
+  }
+  if (is_valid <= 0) {
+    flogger.warning("User " ~ user_id.to!string ~ " tried to use invalid game_id " ~ game_id.to!string);
+    output.setCookie(Cookie("game_id", "invalid").invalidate()); 
+    return -4;
+  }
+  return game_id;
+}
+
+@endpoint @route!"/game/summary"
+void game_summary(Request request, Output output) {
+  output ~= "Game summary goes here";
+}

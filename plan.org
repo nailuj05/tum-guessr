@@ -4,8 +4,13 @@
 	- sign up timestamp
 
 * TODO Game Page
-  - Next Button
-  - Score/Result Page
+  - Add Game summary page
+  - Results page
+    - Set correct map zoom level
+    - Add score bar
+    - styling
+      - continue button
+      - icons
 
 * TODO Profile Pages
   - Played Games
