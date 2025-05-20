@@ -4,6 +4,7 @@ import std.process : environment;
 import std.algorithm;
 import std.conv;
 import std.stdio;
+import std.file;
 
 import serverino;
 import mustache;
@@ -57,10 +58,27 @@ void photos_view(Request r, Output output) {
 		output ~= "failed to load image";
 		return;
 	}
-	
-	// Display both photo and coordinate location with option to accept or delete
 
-	output ~= "PhotoID: " ~ to!string(photo_id);
+  Stmt stmt = db.prepare_bind!(int)("SELECT path, latitude, longitude, is_accepted FROM photos WHERE photo_id = ?", photo_id);
+	auto rows = db.query!(string, double, double, int)(stmt);
+	auto row = rows[0];
+  
+	Mustache mustache;
+	mustache.path("public");
+	scope auto mustache_context = new Mustache.Context;
+
+  int user_id = session_load(r, output);
+  if (user_id > 0) {
+    mustache_context.useSection("logged_in");
+  }
+	
+	mustache_context["path"] = row[0];
+	mustache_context["lat"] = row[1];
+	mustache_context["long"] = row[2];
+	mustache_context["photo_id"] = photo_id;
+  mustache_context["accept"] = row[3] == 1 ? "Unaccept" : "Accept";
+
+	output ~= mustache.render("photos_view", mustache_context);
 }
 
 // TODO: Photo List Endpoint (display all currently unaccepted images
@@ -72,7 +90,7 @@ void photos_list(Request r, Output output) {
 // TODO: Accept Endpoint
 @endpoint @route!"/photos/accept" @route!(r => r.post.has("photo_id"))
 void photos_accept(Request r, Output output) {
-	scope(failure) output.status = 404
+	scope(failure) output.status = 404;
 	
 	int photo_id = to!int(r.post.read("photo_id", "-1"));
 
@@ -85,16 +103,16 @@ void photos_accept(Request r, Output output) {
 
 	scope(failure) output ~= "acception failed";
 	scope(failure) flogger.error("Photo: ", photo_id, " failed to be accepted");
-	Stmt stmt = db.prepare_bind!(int)("UPDATE photos SET is_accepted = 1 WHERE photo_id = ?",
+	Stmt stmt = db.prepare_bind!(int)("UPDATE photos SET is_accepted = NOT is_accepted WHERE photo_id = ?",
 																		photo_id);
 	db.exec(stmt);
 
-	output ~= "accepted successfully"
+	output ~= "updated successfully";
 }
 
 @endpoint @route!"/photos/delete" @route!(r => r.post.has("photo_id"))
 void photos_delete(Request r, Output output) {
-	scope(failure) output.status = 404
+	scope(failure) output.status = 404;
 	
 	int photo_id = to!int(r.post.read("photo_id", "-1"));
 
@@ -120,7 +138,7 @@ void photos_delete(Request r, Output output) {
 	Stmt stmt = db.prepare_bind!(int)("DELETE FROM photos WHERE photo_id = ?", photo_id);
 	db.exec(stmt);
 
-	output ~= "deleted successfully"
+	output ~= "deleted successfully";
 }
 
 bool photo_exists(int photo_id, ref Database db) {

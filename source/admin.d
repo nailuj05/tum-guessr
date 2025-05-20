@@ -173,10 +173,12 @@ void admin_photos(Request request, Output output) {
 
 	foreach (ref row; query_result) {
 		auto mustache_subcontext = mustache_context.addSubContext("photos");
+    bool is_accepted = row[3] == 1;
+    
 		mustache_subcontext["photo_id"] = row[0];
 		mustache_subcontext["path"] = row[1];
 		mustache_subcontext["user_id"] = row[2];
-		mustache_subcontext["is_accepted"] = row[3] == 1 ? "checked" : "";
+		mustache_subcontext["is_accepted"] = is_accepted ? "checked" : "";
 	}
 	
 	output ~= mustache.render("admin_photos", mustache_context);
