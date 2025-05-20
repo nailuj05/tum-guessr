@@ -7,7 +7,7 @@
 				<link rel="stylesheet" href="style.css">
 				<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 		</head>
-		<body>
+		<body class="scroll-enabled">
 			{{> header}}
       {{#error_messages}}
       {{>error_message}}
@@ -30,7 +30,7 @@
 					<hr>
 					<label class="btn">
 						📷 Take or Upload Image
-						<input name="image" type="file" accept=".jpg,.jpeg,.png" capture="environment" required hidden>
+						<input name="image" type="file" accept="image/jpeg,image/png" capture="environment" required hidden>
 					</label><br>
 					<input type="submit" value="Upload Image" disabled/>
 				</form>
