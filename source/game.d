@@ -6,6 +6,7 @@ import std.logger;
 import std.conv;
 import std.datetime;
 import std.process : environment;
+import std.typecons : Tuple;
 
 import serverino;
 import mustache;
@@ -280,6 +281,59 @@ void game_result(Request request, Output output) {
   output ~= mustache.render("round_result", mustache_context);
 }
 
+@endpoint @route!"/game/summary"
+void game_summary(Request request, Output output) {
+  if (request.method != GET) {
+    output.status = 405;
+    return;
+  }
+  scope Database db = new Database(environment["db_filename"], OpenFlags.READONLY);
+  int game_id = get_game_id(request, output, db);
+  if (game_id < 0) {
+    output.status = 400;
+    output ~= "Missing or invalid game_id";
+    return;
+  }
+  Tuple!(int, double, double, double, double)[] round_results;
+  try {
+    int remaining_rounds = db.query!int(db.prepare_bind!int("
+      SELECT count(*)
+      FROM rounds
+      WHERE game_id=? AND finished=FALSE
+    ", game_id))[0][0];
+    if (remaining_rounds > 0) {
+      output.status = 400;
+      output ~= "Game not finished, how did you get here?";
+      return;
+    }
+    round_results = db.query!(int, double, double, double, double)(db.prepare_bind!int("
+      SELECT r.score, r.guess_lat, r.guess_long, p.latitude, p.longitude
+      FROM rounds r JOIN photos p ON r.photo_id=p.photo_id 
+      WHERE r.game_id=?
+      ORDER BY r.round_id ASC
+    ", game_id));
+  } catch (Database.DBException e) {
+    flogger.error("Failed to retrieve game summary: " ~ e.msg);
+    output.status = 500;
+    return;
+  }
+
+  Mustache mustache;
+  mustache.path("public");
+  scope auto mustache_context = new Mustache.Context;
+  
+  foreach (result; round_results) {
+    auto mustache_subcontext = mustache_context.addSubContext("rounds");
+    mustache_subcontext["score"] = result[0];
+    mustache_subcontext["guess_latitude"] = result[1];
+    mustache_subcontext["guess_longitude"] = result[2];
+    mustache_subcontext["true_latitude"] = result[3];
+    mustache_subcontext["true_longitude"] = result[4];
+  }
+
+  output ~= mustache.render("game_summary", mustache_context);
+}
+
 int get_game_id(Request request, Output output, Database db) {
   if (!request.cookie.has("game_id")) {
     return -1;
@@ -315,7 +369,3 @@ int get_game_id(Request request, Output output, Database db) {
   return game_id;
 }
 
-@endpoint @route!"/game/summary"
-void game_summary(Request request, Output output) {
-  output ~= "Game summary goes here";
-}
