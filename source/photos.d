@@ -92,9 +92,9 @@ void photos_list(Request r, Output output) {
 void photos_accept(Request r, Output output) {
 	scope(failure) output.status = 404;
 
-  writeln(r.path);
-  
 	int photo_id = to!int(r.post.read("photo_id", "-1"));
+  // TODO: accepted by who?
+  flogger.info("photo: ", photo_id, " accepted");
 
 	scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE);
 
