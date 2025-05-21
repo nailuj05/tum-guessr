@@ -77,7 +77,6 @@ void game(Request request, Output output) {
 					FROM rounds
 					WHERE game_id=?
 			  ", game_id))[0][0];
-        info(to!string(num_created_rounds));
         if (num_created_rounds != 5) {
           flogger.warning("Failed to create 5 rounds, rolling back");
           db.exec_imm("ROLLBACK");
