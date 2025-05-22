@@ -118,6 +118,10 @@ void photos_list(Request r, Output output) {
 // TODO: Accept Endpoint
 @endpoint @route!"/photos/accept"
 void photos_accept(Request r, Output output) {
+	if (request.method != POST) {
+		output.status = 405;
+		return;
+	}
 	scope(failure) output.status = 404;
 
 	int user_id = session_load(r, output);
@@ -138,11 +142,17 @@ void photos_accept(Request r, Output output) {
 																		photo_id);
 	db.exec(stmt);
 
+	output.status = 302;
+	output.addHeader("Location", "/photos/list");
 	output ~= "updated successfully";
 }
 
 @endpoint @route!"/photos/delete"
 void photos_delete(Request r, Output output) {
+	if (request.method != POST) {
+		output.status = 405;
+		return;
+	}
 	scope(failure) output.status = 404;
 	
 	int user_id = session_load(r, output);
@@ -172,6 +182,8 @@ void photos_delete(Request r, Output output) {
 	Stmt stmt = db.prepare_bind!(int)("DELETE FROM photos WHERE photo_id = ?", photo_id);
 	db.exec(stmt);
 
+	output.status = 302;
+	output.addHeader("Location", "/photos/list");
 	output ~= "deleted successfully";
 }
 

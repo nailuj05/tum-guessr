@@ -15,10 +15,10 @@ window.addEventListener('wheel', (event) => {
   if (event.deltaY < 0) {
     scale = Math.min(scale * 1.1, 3); // zoom in
   } else {
-    scale = Math.max(scale / 1.1, 1); // zoom out
+    scale = Math.max(scale / 1.1, 0.5); // zoom out
   }
 	applyTransform();
-});
+}, { passive: false });
 
 imgWrapper.addEventListener('mousedown', (event) => {
 	event.preventDefault();
@@ -31,6 +31,7 @@ imgWrapper.addEventListener('mousedown', (event) => {
 });
 
 window.addEventListener('mousemove', (event) => {
+	event.preventDefault();
   if (isDragging) {
     const dx = (event.clientX / scale) - lastX;
 		const dy = (event.clientY / scale) - lastY;
@@ -48,6 +49,7 @@ window.addEventListener('mouseup', () => {
 });
 
 imgWrapper.addEventListener('touchstart', (e) => {
+  e.preventDefault();
   if (e.touches.length === 1) {
     isDragging = true;
     lastX = e.touches[0].clientX / scale;
@@ -75,12 +77,13 @@ imgWrapper.addEventListener('touchmove', (e) => {
     const dx = e.touches[1].clientX - e.touches[0].clientX;
     const dy = e.touches[1].clientY - e.touches[0].clientY;
     const currentDistance = Math.hypot(dx, dy);
-    scale = Math.min(Math.max(lastScale * (currentDistance / initialDistance), 1), 3);
+    scale = Math.min(Math.max(lastScale * (currentDistance / initialDistance), 0.5), 3);
     applyTransform();
   }
 }, { passive: false });
 
 imgWrapper.addEventListener('touchend', (e) => {
+  e.preventDefault();
   if (e.touches.length === 0) {
     isDragging = false;
     initialDistance = null;
