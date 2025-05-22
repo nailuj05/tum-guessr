@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Dashboard</title>
-	<link rel="stylesheet" href="/style.css">	
-</head>
-<body class="scroll-enabled">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard</title>
+	  <link rel="stylesheet" href="/style.css">	
+  </head>
+  <body class="scroll-enabled">
     {{> header}}
 
 		{{#error_messages}}
-    {{>error_message}}
+      {{>error_message}}
     {{/error_messages}}
     {{#info_messages}}
-    {{>info_message}}
+      {{>info_message}}
     {{/info_messages}}
 
 		{{> admin-nav}}
@@ -32,20 +32,20 @@
         </thead>
         <tbody>
           {{#users}}
-          <tr>	
-            <td>{{user_id}}</td>
-            <td>{{username}}</td>
-            <td><input type="checkbox" onchange="window.location.href = '/admin/set?id={{user_id}}&role=is_admin&value={{admin_value}}&page={{page}}&limit={{limit}}';"
-											 {{admin_checked}}></td>
-            <td><input type="checkbox" onchange="window.location.href = '/admin/set?id={{user_id}}&role=is_trusted&value={{trusted_value}}&page={{page}}&limit={{limit}}';"
-											 {{trusted_checked}}></td>
-            <td><input type="checkbox" onchange="window.location.href = '/admin/set?id={{user_id}}&role=is_deactivated&value={{deactivated_value}}&page={{page}}&limit={{limit}}';"
-											 {{deactivated_checked}}></td>
-          </tr>
+            <tr>	
+              <td>{{user_id}}</td>
+              <td>{{username}}</td>
+              <td><input type="checkbox" onchange="window.location.href = '/admin/set?id={{user_id}}&role=is_admin&value={{admin_value}}&page={{page}}&limit={{limit}}';"
+											   {{admin_checked}}></td>
+              <td><input type="checkbox" onchange="window.location.href = '/admin/set?id={{user_id}}&role=is_trusted&value={{trusted_value}}&page={{page}}&limit={{limit}}';"
+											   {{trusted_checked}}></td>
+              <td><input type="checkbox" onchange="window.location.href = '/admin/set?id={{user_id}}&role=is_deactivated&value={{deactivated_value}}&page={{page}}&limit={{limit}}';"
+											   {{deactivated_checked}}></td>
+            </tr>
           {{/users}}
         </tbody>
 			</table>
 			{{>page-select-bar}}
 		</div>
-</body>
+  </body>
 </html>

@@ -14,9 +14,9 @@ public struct Stmt {
 }
 
 enum OpenFlags : int {
-		READONLY  = 0x00000001,
-    READWRITE = 0x00000002,
-    CREATE    = 0x00000004,
+  READONLY  = 0x00000001,
+  READWRITE = 0x00000002,
+  CREATE    = 0x00000004,
 }
 
 class Database {
@@ -34,7 +34,7 @@ class Database {
 
 	class DBException : Exception {
 		this(string msg, string file = __FILE__, size_t line = __LINE__) {
-        super(msg, file, line);
+      super(msg, file, line);
     }
 	}
 	

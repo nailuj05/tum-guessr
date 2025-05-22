@@ -195,6 +195,6 @@ void set_role(Request request, Output output) {
 	scope Database db = new Database(environment["db_filename"]);
 	Stmt stmt = db.prepare_bind!(string, string)("UPDATE users SET " ~ request.get.read("role") ~ " = ?
 																										WHERE user_id = ?",
-																										request.get.read("value"), request.get.read("id"));
+                                               request.get.read("value"), request.get.read("id"));
 	db.exec(stmt);	
 }

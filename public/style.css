@@ -20,7 +20,7 @@ p {
 		color: white;
 }
 h1,h2,h3,h4,h5,h6 {
-  color: var(--accent);
+    color: var(--accent);
 }
 
 header {
@@ -82,14 +82,14 @@ header {
 				hide 0s 4s forwards;
 }
 @keyframes fadeOut {
-  to {
-    opacity: 0;
-  }
+    to {
+        opacity: 0;
+    }
 }
 @keyframes hide {
-  to {
-    display: none;
-  }
+    to {
+        display: none;
+    }
 }
 
 form {
@@ -115,8 +115,8 @@ input, textarea, button, select {
 		border-radius: 5px;
 }
 input.disabled {
-  pointer-events: none;
-  opacity: 0.5;
+    pointer-events: none;
+    opacity: 0.5;
 }
 input:hover .btn:hover {
 		border-color: var(--highlight) 
@@ -132,7 +132,7 @@ input[type="submit"]:disabled {
     justify-content: center;
 }
 .nav-bar .btn {
-  background: var(--accent);
+    background: var(--accent);
 }
 .page-select-bar {
 		display: flex;
@@ -144,41 +144,41 @@ input[type="submit"]:disabled {
 		padding: 8px;
 }
 table {
-  border: 1px solid #fff;
-  border-collapse: collapse;
-  width: 60%;
-  margin: 20px 0;
-  font-family: Arial, sans-serif;
+    border: 1px solid #fff;
+    border-collapse: collapse;
+    width: 60%;
+    margin: 20px 0;
+    font-family: Arial, sans-serif;
 }
 th, td {
-  border: 1px solid #fff;
-  padding: 8px;
-  text-align: left;
+    border: 1px solid #fff;
+    padding: 8px;
+    text-align: left;
 }
 th {
-  border: 1px solid #fff;
-  background-color: var(--background);
-  cursor: pointer;
-  position: relative;
+    border: 1px solid #fff;
+    background-color: var(--background);
+    cursor: pointer;
+    position: relative;
 }
 th:hover {
-  border: 1px solid #fff;
+    border: 1px solid #fff;
 }
 th::after {
-  content: "";
-  position: absolute;
-  right: 8px;
-  color: #aaa;
+    content: "";
+    position: absolute;
+    right: 8px;
+    color: #aaa;
 }
 th.asc::after {
-  content: "▲";
+    content: "▲";
 }
 th.desc::after {
-  content: "▼";
+    content: "▼";
 }
 tr:nth-child(even) {
-  border: 1px solid #fff;
-  background-color: var(--background);
+    border: 1px solid #fff;
+    background-color: var(--background);
 }
 
 /* Index Page */
@@ -247,14 +247,14 @@ progress {
 		border: 1px solid var(--accent);
 }
 #spanprogress {
-  height: 100%;
-  display: block;
-  width: 0;
-  color: white;
-  line-height: 30px;
-  position: absolute;
-  text-align: end;
-  padding-right: 5px;
+    height: 100%;
+    display: block;
+    width: 0;
+    color: white;
+    line-height: 30px;
+    position: absolute;
+    text-align: end;
+    padding-right: 5px;
 }
 
 /* Photo View CSS */
@@ -338,10 +338,10 @@ progress {
 		height: 100%;
 }
 #mapContainer #map {
-	cursor: crosshair;
+	  cursor: crosshair;
 }
 #mapEmbed #map {
-  cursor: crosshair;
+    cursor: crosshair;
 }
 #mapContainer .leaflet-marker-icon {
     cursor: crosshair;

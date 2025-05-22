@@ -1,47 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TUM Guessr</title>
-	<link rel="stylesheet" href="style.css">	
-</head>
-<body style="overflow: auto; padding-bottom: 5rem">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TUM Guessr</title>
+	  <link rel="stylesheet" href="style.css">	
+  </head>
+  <body style="overflow: auto; padding-bottom: 5rem">
     {{> header}}
 		<div class="content">
-				<h1>Welcome to TUM Guessr</h1>
-				<div class="wip">🚧 This website is a work in progress 🚧</div>
-				<div class="carousel" id="carousel">
-						<div class="card" data-name="muenchen">
-								<h2>Campus Munich</h2>
-								<img src="res/muenchen.jpg" alt="Main Campus" id="disabled">
-						</div>
-						<div class="card" data-name="garching">
-								<h2>Campus Garching</h2>
-								<img src="res/garching.jpg" alt="Garching Campus">
-						</div>
-						<div class="card" data-name="heilbronn">
-								<h2>Campus Heilbronn</h2>
-								<img src="res/heilbronn.jpg" alt="Heilbronn Campus" id="disabled">
-						</div>
-						<!-- <div class="card" data-name="weihenstephan">
-								 <h2>Campus Weihenstephan</h2>
-								 <img src="res/weihenstephan.jpg" alt="Weihenstephan Campus" id="disabled">
-								 </div> -->
+			<h1>Welcome to TUM Guessr</h1>
+			<div class="wip">🚧 This website is a work in progress 🚧</div>
+			<div class="carousel" id="carousel">
+				<div class="card" data-name="muenchen">
+					<h2>Campus Munich</h2>
+					<img src="res/muenchen.jpg" alt="Main Campus" id="disabled">
 				</div>
-				<script src="js/carousel.js"></script>
+				<div class="card" data-name="garching">
+					<h2>Campus Garching</h2>
+					<img src="res/garching.jpg" alt="Garching Campus">
+				</div>
+				<div class="card" data-name="heilbronn">
+					<h2>Campus Heilbronn</h2>
+					<img src="res/heilbronn.jpg" alt="Heilbronn Campus" id="disabled">
+				</div>
+				<!-- <div class="card" data-name="weihenstephan">
+						 <h2>Campus Weihenstephan</h2>
+						 <img src="res/weihenstephan.jpg" alt="Weihenstephan Campus" id="disabled">
+						 </div> -->
+			</div>
+			<script src="js/carousel.js"></script>
 		</div>
 		<div>
-				<h2>Progress and Goals</h2>
-				<p>TUM Guessr is a community driven project, you can contribute by signing up and uploading new photos of your own and sharing this site with your friends.</p>
-				<label for="photo_goal">Photos: ({{photo_cur}}/{{photo_max}})</label>
-				<br>
-				<progress id="photo_goal" value="{{photo_cur}}" max="{{photo_max}}"></progress>
-				<br>
-				<br>
-				<label for="user_goal">Users: ({{user_cur}}/{{user_max}})</label>
-				<br>
-				<progress id="user_goal" value="{{user_cur}}" max="{{user_max}}">{{user_cur}}</progress>
+			<h2>Progress and Goals</h2>
+			<p>TUM Guessr is a community driven project, you can contribute by signing up and uploading new photos of your own and sharing this site with your friends.</p>
+			<label for="photo_goal">Photos: ({{photo_cur}}/{{photo_max}})</label>
+			<br>
+			<progress id="photo_goal" value="{{photo_cur}}" max="{{photo_max}}"></progress>
+			<br>
+			<br>
+			<label for="user_goal">Users: ({{user_cur}}/{{user_max}})</label>
+			<br>
+			<progress id="user_goal" value="{{user_cur}}" max="{{user_max}}">{{user_cur}}</progress>
 		</div>
-</body>
+  </body>
 </html>
