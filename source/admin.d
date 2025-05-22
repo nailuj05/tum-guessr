@@ -56,22 +56,28 @@ void admin_users(Request request, Output output) {
 	if (request.method != Request.Method.Get) {
 		output.status = 405;
 	}
-	
-	int limit = to!int(request.get.read("limit", "30"));
-	int page = to!int(request.get.read("page", "0"));
-  int offset = page * limit;
+
+  const string default_option = "user_id";
+  
+	string order    = request.get.read("order", "asc") == "asc" ? "asc" : "desc";
+  string order_by = request.get.read("order_by", default_option);
+	int limit       = to!int(request.get.read("limit", "30"));
+	int page        = to!int(request.get.read("page", "0"));
+  int offset      = page * limit;
 
 	scope Database db = new Database(environment["db_filename"], OpenFlags.READONLY);
-  int num_users = db.query_imm!int("
-    SELECT count(*) FROM users
-  ")[0][0];
+  int num_users = db.query_imm!int("SELECT count(*) FROM users")[0][0];
   int max_pages = num_users / limit;
-	auto query_result = db.query!(int, string, int, int, int)(db.prepare_bind!(int, int)("
+  
+  string[] order_options = ["user_id", "username", "is_admin", "is_trusted", "is_deactivated"];
+  string order_option = order_options.canFind(order_by) ? order_by : default_option;
+  
+  Stmt stmt = db.prepare_bind!(int, int)("
 		SELECT user_id, username, is_admin, is_trusted, is_deactivated
 		FROM users
-		ORDER BY user_id
-		LIMIT ? OFFSET ?	
-	", limit, offset));
+		ORDER BY " ~ order_option ~ " " ~ order ~ "
+		LIMIT ? OFFSET ?", limit, offset);
+	auto query_result = db.query!(int, string, int, int, int)(stmt);
 
 	Mustache mustache;
 	mustache.path("public");
@@ -82,10 +88,7 @@ void admin_users(Request request, Output output) {
     mustache_context.useSection("logged_in");
   }
 
-	mustache_context["limit"] = limit;
-  mustache_context["page"] = page;
-  mustache_context["parent_page"] = "/admin/photos";
-	page_context(page, max_pages, mustache_context);
+	page_context(mustache_context, "/admin/users", page, max_pages, limit, order, order_option, order_options);
 
 	foreach (ref row; query_result) {
 		auto mustache_subcontext = mustache_context.addSubContext("users");
@@ -114,24 +117,28 @@ void admin_photos(Request request, Output output) {
 		output.status = 405;
 	}
 
-	int limit = to!int(request.get.read("limit", "30"));
-	int page = to!int(request.get.read("page", "0"));
-  int offset = page * limit;
+  const string default_option = "photo_id";
+  
+	string order    = request.get.read("order", "asc") == "asc" ? "asc" : "desc";
+	string order_by = request.get.read("order_by", default_option);
+	int limit       = to!int(request.get.read("limit", "30"));
+	int page        = to!int(request.get.read("page", "0"));
+  int offset      = page * limit;
 	
-	string order_by = request.get.read("order_by", "photo_id");
-	string order = request.get.read("order", "a") == "a" ? "ASC" : "DESC";
 	
 	scope Database db = new Database(environment["db_filename"], OpenFlags.READONLY);
-  int num_photos = db.query_imm!int("
-    SELECT count(*) FROM photos
-  ")[0][0];
+  int num_photos = db.query_imm!int("SELECT count(*) FROM photos")[0][0];
   int max_pages = num_photos / limit;
-	auto query_result = db.query!(int, string, string, int)(db.prepare_bind!(string, int, int)("
+  
+  string[] order_options = ["photo_id", "username", "is_accepted"];
+  string order_option = order_options.canFind(order_by) ? order_by : default_option;
+
+  Stmt stmt = db.prepare_bind!(int, int)("
 		SELECT p.photo_id, p.path, u.username, p.is_accepted
 		FROM photos p JOIN users u ON p.user_id == u.user_id
-		ORDER BY ? " ~ order ~ "
-		LIMIT ? OFFSET ?	
-	", order_by, limit, offset));
+		ORDER BY " ~ order_option ~ " " ~ order ~ "
+		LIMIT ? OFFSET ?", limit, offset);
+  auto query_result = db.query!(int, string, string, int)(stmt);
 	
 	Mustache mustache;
 	mustache.path("public");
@@ -142,10 +149,7 @@ void admin_photos(Request request, Output output) {
     mustache_context.useSection("logged_in");
   }
 	
-  mustache_context["limit"] = limit;
-  mustache_context["page"] = page;
-  mustache_context["parent_page"] = "/admin/photos";
-	page_context(page, max_pages, mustache_context);
+	page_context(mustache_context, "/admin/photos", page, max_pages, limit, order, order_option, order_options);
 
 	foreach (ref row; query_result) {
 		auto mustache_subcontext = mustache_context.addSubContext("photos");

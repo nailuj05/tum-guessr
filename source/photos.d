@@ -108,10 +108,7 @@ void photos_list(Request r, Output output) {
     mustache_context.useSection("logged_in");
   }
 	
-  mustache_context["limit"] = limit;
-  mustache_context["page"] = page;
-  mustache_context["parent_page"] = "/photos/list";
-	page_context(page, max_pages, mustache_context);
+	page_context(mustache_context, "/photos/list", page, max_pages, limit);
 
 	foreach (ref row; rows) {
 		auto mustache_subcontext = mustache_context.addSubContext("photos");

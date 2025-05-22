@@ -1,9 +1,48 @@
 <div class="page-select-bar">
 	{{#prev_pages}}
-	<a href="{{parent_page}}?page={{prev_page}}&limit={{limit}}">{{prev_page}}</a>
+		<a href="{{parent_page}}?page={{prev_page}}&limit={{limit}}{{#has_order_by}}&order_by={{order_by}}{{/has_order_by}}{{#has_order}}&order={{order}}{{/has_order}}">{{prev_page}}</a>
 	{{/prev_pages}}
+
 	<a>{{page}}</a>
+
 	{{#next_pages}}
-	<a href="{{parent_page}}?page={{next_page}}&limit={{limit}}">{{next_page}}</a>
+		<a href="{{parent_page}}?page={{next_page}}&limit={{limit}}{{#has_order_by}}&order_by={{order_by}}{{/has_order_by}}{{#has_order}}&order={{order}}{{/has_order}}">{{next_page}}</a>
 	{{/next_pages}}
+
+	<form method="get">
+		<input type="hidden" name="page" value="{{page}}">
+		{{#has_order_by}}<input type="hidden" name="order_by" value="{{order_by}}">{{/has_order_by}}
+		{{#has_order}}<input type="hidden" name="order" value="{{order}}">{{/has_order}}
+		<select name="limit" onchange="this.form.submit()">
+			<option value="10" {{#selected_10}}selected{{/selected_10}}>10</option>
+			<option value="30" {{#selected_30}}selected{{/selected_30}}>30</option>
+			<option value="50" {{#selected_50}}selected{{/selected_50}}>50</option>
+			<option value="100" {{#selected_100}}selected{{/selected_100}}>100</option>
+		</select>
+	</form>
+
+	{{#has_order_by}}
+	<form method="get">
+		<input type="hidden" name="page" value="{{page}}">
+		<input type="hidden" name="limit" value="{{limit}}">
+		{{#has_order}}<input type="hidden" name="order" value="{{order}}">{{/has_order}}
+		<select name="order_by" onchange="this.form.submit()">
+			{{#order_by_options}}
+				<option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>
+			{{/order_by_options}}
+		</select>
+	</form>
+	{{/has_order_by}}
+
+	{{#has_order}}
+	<form method="get">
+		<input type="hidden" name="page" value="{{page}}">
+		<input type="hidden" name="limit" value="{{limit}}">
+		{{#has_order_by}}<input type="hidden" name="order_by" value="{{order_by}}">{{/has_order_by}}
+		<select name="order" onchange="this.form.submit()">
+			<option value="asc" {{#order_a}}selected{{/order_a}}>Ascending</option>
+			<option value="desc" {{#order_d}}selected{{/order_d}}>Descending</option>
+		</select>
+	</form>
+	{{/has_order}}
 </div>
