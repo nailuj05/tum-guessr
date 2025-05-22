@@ -99,7 +99,13 @@ form {
 		outline-offset: 4px;
 		text-align: center;
 }
-input, textarea, button {
+.form-decent {
+		padding: 0px;
+		outline: 0px;
+		border-radius: 0px;
+		outline-offset: 0px;
+}
+input, textarea, button, select {
 		color: white;
 		padding: 5px;
 		margin: 5px;
@@ -130,9 +136,11 @@ input[type="submit"]:disabled {
 }
 .page-select-bar {
 		display: flex;
+		align-items: center;
 }
 .page-select-bar p,
 .page-select-bar a {
+    font-size: 1.3em;
 		padding: 8px;
 }
 table {

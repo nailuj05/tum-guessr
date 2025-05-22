@@ -9,7 +9,7 @@
 		<a href="{{parent_page}}?page={{next_page}}&limit={{limit}}{{#has_order_by}}&order_by={{order_by}}{{/has_order_by}}{{#has_order}}&order={{order}}{{/has_order}}">{{next_page}}</a>
 	{{/next_pages}}
 
-	<form method="get">
+	<form method="get" class="form-decent">
 		<input type="hidden" name="page" value="{{page}}">
 		{{#has_order_by}}<input type="hidden" name="order_by" value="{{order_by}}">{{/has_order_by}}
 		{{#has_order}}<input type="hidden" name="order" value="{{order}}">{{/has_order}}
@@ -22,7 +22,7 @@
 	</form>
 
 	{{#has_order_by}}
-	<form method="get">
+	<form method="get" class="form-decent">
 		<input type="hidden" name="page" value="{{page}}">
 		<input type="hidden" name="limit" value="{{limit}}">
 		{{#has_order}}<input type="hidden" name="order" value="{{order}}">{{/has_order}}
@@ -35,7 +35,7 @@
 	{{/has_order_by}}
 
 	{{#has_order}}
-	<form method="get">
+	<form method="get" class="form-decent">
 		<input type="hidden" name="page" value="{{page}}">
 		<input type="hidden" name="limit" value="{{limit}}">
 		{{#has_order_by}}<input type="hidden" name="order_by" value="{{order_by}}">{{/has_order_by}}
