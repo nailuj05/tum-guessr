@@ -44,7 +44,17 @@ class Database {
 
 	private enum allowedBind(T) = (is(T == int) || is(T == long) || is(T == float) || is(T == double) || isSomeString!T);
 	
-	
+  private void log_stmt(Stmt stmt) {
+    // this replacement is crude but I dont want to regex here...
+    string retrieved_sql = to!string(sqlite3_sql(stmt.stmt)).replace("\n", " ").replace("\t", " ").replace("  ", "");
+    flogger.log("SQL: ", retrieved_sql);
+  }
+
+  private void log_stmt(string sql) {
+    sql = sql.replace("\n", " ").replace("\t", " ").replace("  ", "");
+    flogger.log("SQL: ", sql);
+  }
+  
 public:
 
 	// Constructor to open db file
@@ -66,6 +76,7 @@ public:
 
 	// Execute a plain string SQL Query on the database
 	void exec_imm(string sql) {
+    log_stmt(sql);
 		char *err;
 		int rc = sqlite3_exec(handle, toStringz(sql), null, null, &err);
 		if (rc != SQLITE_OK) {
@@ -108,6 +119,7 @@ public:
 
 	// Executes Stmt (no return)
 	void exec(Stmt r) {
+    log_stmt(r);
 		int rc = sqlite3_step(r.stmt);
 		scope(exit) sqlite3_finalize(r.stmt);
 		
@@ -128,6 +140,8 @@ public:
 		enum N = RetTypes.length;	
 		assert(N == sqlite3_column_count(r.stmt), "Column count mismatch");
 
+    log_stmt(r);
+    
 		Tuple!RetTypes[] results;
  
 		int rc;

@@ -23,7 +23,7 @@
    .log_error { color: #f44747; }
    .log_warn  { color: #ffaf00; }
    .log_info  { color: #9cdcfe; }
-   .log_debug { color: #6a9955; }
+   .log_log { color: #6a9955; }
 	 .hidden { display: none; }
 	</style>
 </head>
@@ -36,7 +36,7 @@
 						<label><input type="checkbox" checked data-filter="error"> Error</label>
 						<label><input type="checkbox" checked data-filter="warn"> Warning</label>
 						<label><input type="checkbox" checked data-filter="info"> Info</label>
-						<label><input type="checkbox" checked data-filter="debug"> Debug</label>
+						<label><input type="checkbox" data-filter="log"> SQL</label>
 				</div>
 				<div id="log-container">
 {{log}}
@@ -52,20 +52,21 @@
 				 if (line.includes('[error]')) cls = 'log_error';
 				 else if (line.includes('[warning]')) cls = 'log_warn';
 				 else if (line.includes('[info]')) cls = 'log_info';
-				 else if (line.includes('[debug]')) cls = 'log_debug';
+				 else if (line.includes('[all]')) cls = 'log_log';
 				 return `<div class="${cls}">${line}</div>`;
      });
      logContainer.innerHTML = lines.join('');
 
+     function update(cb) { 
+			 const level = cb.dataset.filter;
+			 document.querySelectorAll(`.log_${level}`).forEach(el => {
+				 el.classList.toggle('hidden', !cb.checked);
+			 });
+     }
+     
      document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-				 cb.addEventListener('change', () => {
-						 console.log(cb + "changed");
-						 const level = cb.dataset.filter;
-						 document.querySelectorAll(`.log_${level}`).forEach(el => {
-								 console.log("hide: " + el.classList);
-								 el.classList.toggle('hidden', !cb.checked);
-						 });
-				 });
+			 cb.addEventListener('change', () => update(cb)); 
+       update(cb);
      });
 		</script>
 </body>
