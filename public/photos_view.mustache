@@ -1,56 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
-		<head>
-				<meta charset="UTF-8">
-				<meta name="viewport" content="width=device-width, initial-scale=1.0">
-				<title>TUM Guessr</title>
-				<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-				<link rel="stylesheet" href="/style.css">
-		</head>
-		<body class="scroll-enabled">		
-				{{> header}}
-				<div id="photoContainer">
-						<div class="image-wrapper">
-								<img id="photo" src="/{{path}}">
-						</div>
-				</div>
-				<div id="mapContainer">
-						<div id="map"></div>
-				</div>
-				<script src="/js/dragimage.js"></script>
-				<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-				<script>
-				 const map = L.map('map').setView([48.2621, 11.6676], 16);
-				 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-						 attribution: '© OpenStreetMap contributors'
-				 }).addTo(map);
-				 
-				 const latlng = L.latLng({{lat}}, {{long}});
-				 L.marker(latlng).addTo(map);
-				 map.panTo(latlng);
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>TUM Guessr</title>
+		<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+		<link rel="stylesheet" href="/style.css">
+	</head>
+	<body class="scroll-enabled">		
+		{{> header}}
+		<div id="photoContainer">
+			<div class="image-wrapper">
+				<img id="photo" src="/{{path}}">
+			</div>
+		</div>
+		<div id="mapContainer">
+			<div id="map"></div>
+		</div>
+		<script src="/js/dragimage.js"></script>
+		<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+		<script>
+		 const map = L.map('map').setView([48.2621, 11.6676], 16);
+		 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+			 attribution: '© OpenStreetMap contributors'
+		 }).addTo(map);
+		 
+		 const latlng = L.latLng({{lat}}, {{long}});
+		 L.marker(latlng).addTo(map);
+		 map.panTo(latlng);
 
 
-				 // Resize map properly on hover without causing issues
-				 document.getElementById('mapContainer').addEventListener('mouseenter', () => {
-						 setTimeout(() => {
-								 map.invalidateSize();
-						 }, 110);  // Delay to match the CSS transition duration
-				 });
-				 document.getElementById('mapContainer').addEventListener('mouseleave', () => {
-						 setTimeout(() => {
-								 map.invalidateSize();
-				 }, 110);  // Delay to match the CSS transition duration
-				 });
-				</script>
-				<div style="display: flex; margin-top: 2rem; gap: 3rem; justify-content: center;">
-						<form action="/photos/accept" method="POST">
-								<input type="hidden" name="photo_id" value="{{photo_id}}">
-								<input type="submit" value="{{accept}} Photo"/>
-						</form>
-						<form action="/photos/delete" method="POST">
-								<input type="hidden" name="photo_id" value="{{photo_id}}">
-								<input type="submit" value="Delete Photo" />
-						</form>
-				</div>
-		</body>
+		 // Resize map properly on hover without causing issues
+		 document.getElementById('mapContainer').addEventListener('mouseenter', () => {
+			 setTimeout(() => {
+				 map.invalidateSize();
+			 }, 110);  // Delay to match the CSS transition duration
+		 });
+		 document.getElementById('mapContainer').addEventListener('mouseleave', () => {
+			 setTimeout(() => {
+				 map.invalidateSize();
+			 }, 110);  // Delay to match the CSS transition duration
+		 });
+		</script>
+		<div style="display: flex; margin-top: 2rem; gap: 3rem; justify-content: center;">
+			<form action="/photos/accept" method="POST">
+				<input type="hidden" name="photo_id" value="{{photo_id}}">
+				<input type="submit" value="{{accept}} Photo"/>
+			</form>
+			<form action="/photos/delete" method="POST">
+				<input type="hidden" name="photo_id" value="{{photo_id}}">
+				<input type="submit" value="Delete Photo" />
+			</form>
+		</div>
+	</body>
 </html>

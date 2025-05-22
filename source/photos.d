@@ -12,6 +12,7 @@ import mustache;
 import sqlite;
 import session;
 import logger;
+import pageselect;
 
 alias MustacheEngine!(string) Mustache;
 
@@ -25,7 +26,7 @@ void photos_access_authorization(Request request, Output output) {
 		WHERE user_id=?
 	", user_id));
 	if (query_result.length < 1) {
-		flogger.warning("Unknown user attempted admin access without valid session.");
+		flogger.warning("unknown user attempted admin access without valid session.");
 		output.status = 403;
 		output ~= "Permission denied. This incident will be reported.";
 		return;
@@ -84,7 +85,42 @@ void photos_view(Request r, Output output) {
 // TODO: Photo List Endpoint (display all currently unaccepted images
 @endpoint @route!"/photos/list"
 void photos_list(Request r, Output output) {
+  scope(failure) output.status = 404;
 
+	int limit = to!int(r.get.read("limit", "30"));
+	int page = to!int(r.get.read("page", "0"));
+  int offset = page * limit;
+
+	scope Database db = new Database(environment["db_filename"], OpenFlags.READONLY);
+
+  int num_photos = db.query_imm!int("SELECT count(*) FROM photos WHERE is_accepted = false")[0][0];
+  int max_pages = num_photos / limit;
+
+  Stmt stmt = db.prepare_bind!(int, int)("SELECT photo_id, path FROM photos WHERE is_accepted = false LIMIT ? OFFSET ?", limit, offset);
+  auto rows = db.query!(int, string)(stmt);
+  
+	Mustache mustache;
+	mustache.path("public");
+	scope auto mustache_context = new Mustache.Context;
+
+  int user_id = session_load(r, output);
+  if (user_id > 0) {
+    mustache_context.useSection("logged_in");
+  }
+	
+  mustache_context["limit"] = limit;
+  mustache_context["page"] = page;
+  mustache_context["parent_page"] = "/photos/list";
+	page_context(page, max_pages, mustache_context);
+
+	foreach (ref row; rows) {
+		auto mustache_subcontext = mustache_context.addSubContext("photos");
+    
+		mustache_subcontext["photo_id"] = row[0];
+		mustache_subcontext["path"] = row[1];
+	}
+	
+	output ~= mustache.render("photos_list", mustache_context);
 }
 
 // TODO: Accept Endpoint
@@ -92,9 +128,10 @@ void photos_list(Request r, Output output) {
 void photos_accept(Request r, Output output) {
 	scope(failure) output.status = 404;
 
+	int user_id = session_load(r, output);
 	int photo_id = to!int(r.post.read("photo_id", "-1"));
-  // TODO: accepted by who?
-  flogger.info("photo: ", photo_id, " accepted");
+
+  flogger.info("photo: ", photo_id, " accepted by ", user_id);
 
 	scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE);
 
@@ -116,8 +153,11 @@ void photos_accept(Request r, Output output) {
 void photos_delete(Request r, Output output) {
 	scope(failure) output.status = 404;
 	
+	int user_id = session_load(r, output);
 	int photo_id = to!int(r.post.read("photo_id", "-1"));
 
+  flogger.info("photo: ", photo_id, " deleted by ", user_id);
+  
 	scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE);
 
 	if (!photo_exists(photo_id, db)) {

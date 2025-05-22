@@ -14,6 +14,7 @@ import mustache;
 import sqlite;
 import session;
 import logger;
+import pageselect;
 
 alias MustacheEngine!(string) Mustache;
 
@@ -27,7 +28,7 @@ void admin_access_authorization(Request request, Output output) {
 		WHERE user_id=?
 	", user_id));
 	if (query_result.length < 1) {
-		flogger.warning("Unknown user attempted admin access without valid session.");
+		flogger.warning("unknown user attempted admin access without valid session.");
 		output.status = 403;
 		output ~= "Permission denied. This incident will be reported.";
 		return;
@@ -48,31 +49,6 @@ void admin(Request request, Output output) {
 	output.status = 302;
 	output.addHeader("Location", "/admin/users");
 	output ~= "You are being redirected.";
-}
-
-void page_context(int page, int max_pages, Mustache.Context mustache_context) {
-  if (page > 2) {
-    auto mustache_subcontext = mustache_context.addSubContext("prev_pages");
-    mustache_subcontext["prev_page"] = 0;
-  }
-  for (int i = 2; i > 0; i--) {
-    int prev_page = page - i;
-    if (prev_page >= 0) {
-      auto mustache_subcontext = mustache_context.addSubContext("prev_pages");
-      mustache_subcontext["prev_page"] = prev_page;
-    }
-  }
-  for (int i = 1; i < 3; i++) {
-    int next_page = page + i;
-    if (next_page <= max_pages) {
-      auto mustache_subcontext = mustache_context.addSubContext("next_pages");
-      mustache_subcontext["next_page"] = next_page;
-    }
-  }
-  if (page < max_pages - 1) {
-    auto mustache_subcontext = mustache_context.addSubContext("next_pages");
-    mustache_subcontext["next_page"] = max_pages;
-  }
 }
 
 @endpoint @route!"/admin/users"
@@ -108,7 +84,7 @@ void admin_users(Request request, Output output) {
 
 	mustache_context["limit"] = limit;
   mustache_context["page"] = page;
-  mustache_context["admin_page"] = "users";
+  mustache_context["parent_page"] = "/admin/photos";
 	page_context(page, max_pages, mustache_context);
 
 	foreach (ref row; query_result) {
@@ -146,10 +122,10 @@ void admin_photos(Request request, Output output) {
 	string order = request.get.read("order", "a") == "a" ? "ASC" : "DESC";
 	
 	scope Database db = new Database(environment["db_filename"], OpenFlags.READONLY);
-  int num_users = db.query_imm!int("
+  int num_photos = db.query_imm!int("
     SELECT count(*) FROM photos
   ")[0][0];
-  int max_pages = num_users / limit;
+  int max_pages = num_photos / limit;
 	auto query_result = db.query!(int, string, string, int)(db.prepare_bind!(string, int, int)("
 		SELECT p.photo_id, p.path, u.username, p.is_accepted
 		FROM photos p JOIN users u ON p.user_id == u.user_id
@@ -168,7 +144,7 @@ void admin_photos(Request request, Output output) {
 	
   mustache_context["limit"] = limit;
   mustache_context["page"] = page;
-  mustache_context["admin_page"] = "photos";
+  mustache_context["parent_page"] = "/admin/photos";
 	page_context(page, max_pages, mustache_context);
 
 	foreach (ref row; query_result) {
