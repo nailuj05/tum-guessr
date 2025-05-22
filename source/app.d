@@ -30,6 +30,7 @@ import profile;
 import game;
 import admin;
 import photos;
+import header;
 
 mixin ServerinoMain!(upload, login, profile, game, admin, photos);
 
@@ -161,10 +162,7 @@ void index(Request request, Output output) {
 
 	scope auto mustache_context = new Mustache.Context;
 	
-  int user_id = session_load(request, output);
-  if (user_id > 0) {
-    mustache_context.useSection("logged_in");
-  }
+  set_header_context(mustache_context, request, output);
 
 	int[] milestones = [10, 25, 50, 100, 250, 500, 750, 1000, 1500, 2000, 3000, 5000];
 	scope Database db = new Database(environment["db_filename"], OpenFlags.READONLY);
@@ -190,10 +188,7 @@ void about(Request request, Output output) {
   mustache.path("public");
   scope auto mustache_context = new Mustache.Context;
   
-  int user_id = session_load(request, output);
-  if (user_id > 0) {
-    mustache_context.useSection("logged_in");
-  }
+  set_header_context(mustache_context, request, output);
 	output ~= mustache.render("about", mustache_context);
 }
 

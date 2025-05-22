@@ -14,6 +14,7 @@ import mustache;
 import session;
 import sqlite;
 import logger;
+import header;
 
 alias MustacheEngine!(string) Mustache;
 alias Request.Method.Get GET;
@@ -99,9 +100,7 @@ void game(Request request, Output output) {
 		mustache.path("public");
 		scope auto mustache_context = new Mustache.Context;
 		
-		if (user_id > 0) {
-			mustache_context.useSection("logged_in");
-		}
+    set_header_context(mustache_context, request, output);
 		output ~= mustache.render("game", mustache_context);
 	}
 }

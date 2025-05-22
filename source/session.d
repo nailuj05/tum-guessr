@@ -16,7 +16,6 @@ import std.regex;
 
 import serverino.interfaces;
 
-import sqlite;
 import logger;
 
 // saves user_id and expiration to cookie

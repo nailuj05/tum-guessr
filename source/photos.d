@@ -13,6 +13,7 @@ import sqlite;
 import session;
 import logger;
 import pageselect;
+import header;
 
 alias MustacheEngine!(string) Mustache;
 
@@ -68,10 +69,7 @@ void photos_view(Request r, Output output) {
 	mustache.path("public");
 	scope auto mustache_context = new Mustache.Context;
 
-  int user_id = session_load(r, output);
-  if (user_id > 0) {
-    mustache_context.useSection("logged_in");
-  }
+  set_header_context(mustache_context, r, output);
 	
 	mustache_context["path"] = row[0];
 	mustache_context["lat"] = row[1];
@@ -103,10 +101,7 @@ void photos_list(Request r, Output output) {
 	mustache.path("public");
 	scope auto mustache_context = new Mustache.Context;
 
-  int user_id = session_load(r, output);
-  if (user_id > 0) {
-    mustache_context.useSection("logged_in");
-  }
+  set_header_context(mustache_context, r, output);
 	
 	page_context(mustache_context, "/photos/list", page, max_pages, limit);
 

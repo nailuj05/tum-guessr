@@ -4,6 +4,12 @@
 		</div>
 		<div class="right">
 				<a class="btn" href="/about">About</a>
+				{{#is_trusted}}
+					<a class="btn" href="/photos/list">Acceptance</a>
+        {{/is_trusted}}
+				{{#is_admin}}
+					<a class="btn" href="/admin">Admin</a>
+        {{/is_admin}}
 				{{#logged_in}}
 						<a class="btn" href="/upload">📷</a>
 						<a class="btn" href="/profile">Profile</a>

@@ -15,6 +15,7 @@ import sqlite;
 import session;
 import logger;
 import pageselect;
+import header;
 
 alias MustacheEngine!(string) Mustache;
 
@@ -83,10 +84,7 @@ void admin_users(Request request, Output output) {
 	mustache.path("public");
 	scope auto mustache_context = new Mustache.Context;
 
-  int user_id = session_load(request, output);
-  if (user_id > 0) {
-    mustache_context.useSection("logged_in");
-  }
+  set_header_context(mustache_context, request, output);
 
 	page_context(mustache_context, "/admin/users", page, max_pages, limit, order, order_option, order_options);
 
@@ -144,10 +142,7 @@ void admin_photos(Request request, Output output) {
 	mustache.path("public");
 	scope auto mustache_context = new Mustache.Context;
 
-  int user_id = session_load(request, output);
-  if (user_id > 0) {
-    mustache_context.useSection("logged_in");
-  }
+  set_header_context(mustache_context, request, output);
 	
 	page_context(mustache_context, "/admin/photos", page, max_pages, limit, order, order_option, order_options);
 
@@ -174,10 +169,7 @@ void admin_log(Request request, Output output) {
 	mustache.path("public");
 	scope auto mustache_context = new Mustache.Context;
 
-	int user_id = session_load(request, output);
-  if (user_id > 0) {
-    mustache_context.useSection("logged_in");
-  }
+  set_header_context(mustache_context, request, output);
 
 	mustache_context["log"] = readText("logs/log.txt");
 	
