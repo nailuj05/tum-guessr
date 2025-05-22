@@ -9,13 +9,16 @@
   - Add return to game / abandon game button (?)
   - Add timer
   - Add (round number / total rounds) on game page and result page
-  - Add Game summary page
+  - DONE Add Game summary page
   - Results page
     - Set correct map zoom level
     - Add score bar
     - styling
       - continue button
       - icons
+
+* TODO dragimage.js
+  - zoom to mouse position instead of center
 
 * TODO Profile Pages
   - Played Games
