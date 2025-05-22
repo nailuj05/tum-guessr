@@ -1,11 +1,9 @@
-- Header with Admin / Trusted Links
-
 * TODO Admin / Security
-	- option to disable new sign ups
-	- ensure public/ escape safety
-	- sign up timestamp
-        - DONE Photos View
-        - Photos List
+  - option to disable new sign ups
+  - ensure public/ escape safety
+  - sign up timestamp
+  - DONE Photos View
+  - DONE Photos List
 
 * TODO Game Page
   - Add return to game / abandon game button (?)
@@ -30,7 +28,11 @@
 		- visits
 		- scores/guesses
 	- photo guess heatmap?
-      
+
+* DONE Other
+  - DONE Header with Admin / Trusted Links
+  - DONE Order/Order By on Admin Users/Photos
+  
 * Future
   - Multiplayer/Versus
 	- Heilbronn + Stammgelände
