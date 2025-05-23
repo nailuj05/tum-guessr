@@ -46,12 +46,12 @@ class Database {
 	
   private void log_stmt(Stmt stmt) {
     // this replacement is crude but I dont want to regex here...
-    string retrieved_sql = to!string(sqlite3_sql(stmt.stmt)).replace("\n", " ").replace("\t", " ").replace("  ", "");
+    string retrieved_sql = to!string(sqlite3_sql(stmt.stmt)).replace("\n", " ").replace("\t", " ").replace("  ", "").strip;
     flogger.log("SQL: ", retrieved_sql);
   }
 
   private void log_stmt(string sql) {
-    sql = sql.replace("\n", " ").replace("\t", " ").replace("  ", "");
+    sql = sql.replace("\n", " ").replace("\t", " ").replace("  ", "").strip;
     flogger.log("SQL: ", sql);
   }
   
