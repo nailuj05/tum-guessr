@@ -46,12 +46,12 @@ class Database {
 	
   private void log_stmt(Stmt stmt) {
     // this replacement is crude but I dont want to regex here...
-    string retrieved_sql = to!string(sqlite3_sql(stmt.stmt)).replace("\n", " ").replace("\t", " ").replace("  ", "");
+    string retrieved_sql = to!string(sqlite3_sql(stmt.stmt)).replace("\n", " ").replace("\t", " ").replace("  ", "").strip;
     flogger.log("SQL: ", retrieved_sql);
   }
 
   private void log_stmt(string sql) {
-    sql = sql.replace("\n", " ").replace("\t", " ").replace("  ", "");
+    sql = sql.replace("\n", " ").replace("\t", " ").replace("  ", "").strip;
     flogger.log("SQL: ", sql);
   }
   
@@ -65,7 +65,8 @@ public:
 			throw new DBException("Database opening failed");
 		}
 		// flogger.info("Database opened");
-    exec_imm("PRAGMA foreign_keys = ON");
+		if (flags & (OpenFlags.READWRITE | OpenFlags.CREATE))
+			exec_imm("PRAGMA foreign_keys = ON");
 	}
 
 	// Destructor closes db
