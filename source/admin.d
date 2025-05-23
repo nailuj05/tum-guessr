@@ -5,6 +5,7 @@ import std.conv;
 import std.file;
 import std.logger;
 import std.array;
+import std.datetime;
 import std.process : environment;
 import std.exception : enforce;
 
@@ -70,15 +71,15 @@ void admin_users(Request request, Output output) {
   int num_users = db.query_imm!int("SELECT count(*) FROM users")[0][0];
   int max_pages = num_users / limit;
   
-  string[] order_options = ["user_id", "username", "is_admin", "is_trusted", "is_deactivated"];
+  string[] order_options = ["user_id", "username", "sign_up_time", "is_admin", "is_trusted", "is_deactivated"];
   string order_option = order_options.canFind(order_by) ? order_by : default_option;
   
   Stmt stmt = db.prepare_bind!(int, int)("
-		SELECT user_id, username, is_admin, is_trusted, is_deactivated
+		SELECT user_id, username, sign_up_time, is_admin, is_trusted, is_deactivated
 		FROM users
 		ORDER BY " ~ order_option ~ " " ~ order ~ "
 		LIMIT ? OFFSET ?", limit, offset);
-	auto query_result = db.query!(int, string, int, int, int)(stmt);
+	auto query_result = db.query!(int, string, int, int, int, int)(stmt);
 
 	Mustache mustache;
 	mustache.path("public");
@@ -92,12 +93,13 @@ void admin_users(Request request, Output output) {
 		auto mustache_subcontext = mustache_context.addSubContext("users");
 		mustache_subcontext["user_id"] = row[0];
 		mustache_subcontext["username"] = row[1];
-		mustache_subcontext["admin_value"] = 1 - row[2];
-		mustache_subcontext["admin_checked"] = row[2] == 1 ? "checked" : "";
-		mustache_subcontext["trusted_value"] = 1 - row[3];
-		mustache_subcontext["trusted_checked"] = row[3] == 1 ? "checked" : "";
-		mustache_subcontext["deactivated_value"] = 1 - row[4];
-		mustache_subcontext["deactivated_checked"] = row[4] == 1 ? "checked" : "";
+		mustache_subcontext["sign_up_time"] = SysTime.fromUnixTime(row[2]).toString;
+		mustache_subcontext["admin_value"] = 1 - row[3];
+		mustache_subcontext["admin_checked"] = row[3] == 1 ? "checked" : "";
+		mustache_subcontext["trusted_value"] = 1 - row[4];
+		mustache_subcontext["trusted_checked"] = row[4] == 1 ? "checked" : "";
+		mustache_subcontext["deactivated_value"] = 1 - row[5];
+		mustache_subcontext["deactivated_checked"] = row[5] == 1 ? "checked" : "";
 	}
 
 	if (request.get.has("error")) {
