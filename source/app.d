@@ -89,6 +89,7 @@ alias MustacheEngine!(string) Mustache;
       user_id INTEGER PRIMARY KEY, 
       username TEXT NOT NULL UNIQUE, 
       password_hash TEXT NOT NULL,
+      sign_up_time INTEGER NOT NULL,
       is_admin INTEGER NOT NULL DEFAULT FALSE,
       is_trusted INTEGER NOT NULL DEFAULT FALSE,
       is_deactivated INTEGER NOT NULL DEFAULT FALSE
@@ -99,12 +100,13 @@ alias MustacheEngine!(string) Mustache;
       latitude REAL NOT NULL, 
       longitude REAL NOT NULL,
       location STRING NOT NULL,
-      user_id INTEGER NOT NULL, 
+      uploader_id INTEGER NOT NULL, 
+      upload_time INTEGER NOT NULL,
       is_accepted INTEGER NOT NULL DEFAULT FALSE,
-      FOREIGN KEY(user_id) 
+      FOREIGN KEY(uploader_id) 
         REFERENCES users(user_id) 
           ON DELETE CASCADE 
-          ON UPDATE CASCADE 
+          ON UPDATE CASCADE
     )"); 
 		db.exec_imm("CREATE TABLE IF NOT EXISTS games (
       game_id INTEGER PRIMARY KEY,
@@ -135,8 +137,8 @@ alias MustacheEngine!(string) Mustache;
           ON UPDATE CASCADE
     )");
 		db.exec_imm("
-      INSERT OR IGNORE INTO users (user_id, username, password_hash, is_deactivated)
-      VALUES (0, 'unknown', '', 1)
+      INSERT OR IGNORE INTO users (user_id, username, password_hash, sign_up_time, is_deactivated)
+      VALUES (0, 'unknown', '', 0, 1)
     ");
     if (num_populate_users > 0) {
       populate_users(num_populate_users);

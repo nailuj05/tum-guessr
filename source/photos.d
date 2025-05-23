@@ -16,6 +16,8 @@ import pageselect;
 import header;
 
 alias MustacheEngine!(string) Mustache;
+alias Request.Method.Get GET;
+alias Request.Method.Post POST;
 
 @endpoint @route!(r => r.path.startsWith("/photos")) @priority(999) 
 void photos_access_authorization(Request request, Output output) {
@@ -118,7 +120,7 @@ void photos_list(Request r, Output output) {
 // TODO: Accept Endpoint
 @endpoint @route!"/photos/accept"
 void photos_accept(Request r, Output output) {
-	if (request.method != POST) {
+	if (r.method != POST) {
 		output.status = 405;
 		return;
 	}
@@ -149,7 +151,7 @@ void photos_accept(Request r, Output output) {
 
 @endpoint @route!"/photos/delete"
 void photos_delete(Request r, Output output) {
-	if (request.method != POST) {
+	if (r.method != POST) {
 		output.status = 405;
 		return;
 	}

@@ -4,6 +4,7 @@ import std.conv;
 import std.format;
 import std.array;
 import std.file;
+import std.datetime;
 import serverino;
 import passwd;
 import passwd.bcrypt;
@@ -49,17 +50,18 @@ void sign_up(Request request, Output output) {
     }
 
     string password_hash = to!(string)(password.crypt(Bcrypt.genSalt()));
+		long timestamp = Clock.currTime.toUnixTime;
     
-    db.exec(db.prepare_bind!(string, string)("
-        INSERT INTO users (username, password_hash)
-        VALUES (?, ?)
-      ", username, password_hash));
+    db.exec(db.prepare_bind!(string, string, long)("
+        INSERT INTO users (username, password_hash, sign_up_time)
+        VALUES (?, ?, ?)
+      ", username, password_hash, timestamp));
 
-    int user_id = db.query!(int)(db.prepare_bind!(string, string)("
+    int user_id = db.query!(int)(db.prepare_bind!string("
         SELECT user_id
         FROM users
-        WHERE  username=? AND password_hash=?
-      ", username, password_hash))[0][0];
+        WHERE username=?
+      ", username))[0][0];
 
     flogger.info("User " ~ to!string(user_id) ~ " aka '" ~ username ~ "' signed up.");
 

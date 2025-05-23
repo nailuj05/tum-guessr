@@ -5,6 +5,7 @@ import std.conv;
 import std.array;
 import std.algorithm;
 import std.regex;
+import std.datetime;
 import std.path;
 import std.process : environment;
 import serverino;
@@ -61,12 +62,13 @@ void upload(Request request, Output output) {
 			
         temp_path.copy(target_path);
         flogger.info("copied file to: ", target_path);
+				long timestamp = Clock.currTime.toUnixTime;
 
         scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE);
         try {
-          db.exec(db.prepare_bind!(string, float, float, string, int)("
-          INSERT INTO photos (path, latitude, longitude, location, user_id)
-          VALUES (?, ?, ?, ?, ?)", target_path, latitude, longitude, "garching", user_id));
+          db.exec(db.prepare_bind!(string, float, float, string, int, long)("
+          INSERT INTO photos (path, latitude, longitude, location, uploader_id, upload_time)
+          VALUES (?, ?, ?, ?, ?, ?)", target_path, latitude, longitude, "garching", user_id, timestamp));
           mustache_context.addSubContext("info_messages")["info_message"] = "Photo submitted for review.";
         } catch (Database.DBException e) {
           flogger.error("An exception occured during insertion of photo in database:
