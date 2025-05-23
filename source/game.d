@@ -82,6 +82,7 @@ void game(Request request, Output output) {
           flogger.warning("Failed to create 5 rounds, rolling back");
           db.exec_imm("ROLLBACK");
           output.status = 500;
+					output ~= "Failed to create game, not enough accepted photos for location";
           return;
         }
         db.exec_imm("COMMIT");

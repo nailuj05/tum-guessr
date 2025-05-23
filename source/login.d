@@ -147,3 +147,23 @@ void logout(Request request, Output output) {
 	output.addHeader("Location", "/");
 	output ~= "Logged out!" ~ "\n" ~ "You are being redirected.";
 }
+
+// TODO: Debug endpoint, remove before production
+@endpoint @route!"/delete_me"
+void delete_user(Request request, Output output) {
+	int user_id = session_load(request, output);
+	if (user_id < 0) {
+		output.status = 302;
+		output.addHeader("Location", "/login");
+		output ~= "Not logged in";
+		return;
+	}
+	scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE);
+	try {
+		db.exec(db.prepare_bind("DELETE FROM users WHERE user_id=?", user_id));
+	} catch (Database.DBException e) {
+		flogger.warning("Something went wrong during user deletion: " ~ e.msg);
+	}
+	
+	output ~= "Successfully deleted yourself";
+}

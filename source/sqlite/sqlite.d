@@ -65,7 +65,8 @@ public:
 			throw new DBException("Database opening failed");
 		}
 		// flogger.info("Database opened");
-    exec_imm("PRAGMA foreign_keys = ON");
+		if (flags & (OpenFlags.READWRITE | OpenFlags.CREATE))
+			exec_imm("PRAGMA foreign_keys = ON");
 	}
 
 	// Destructor closes db
