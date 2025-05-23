@@ -7,7 +7,7 @@ import std.algorithm;
 import std.regex;
 import std.datetime;
 import std.path;
-import std.process : environment;
+import std.process : executeShell, environment;
 import serverino;
 
 import mustache;
@@ -31,6 +31,14 @@ void guideline(Request request, Output output) {
   output.status = 200;
 }
 
+bool isValidFilename(string name) {
+    // Reject if name contains directory components or dangerous characters
+    if (name.canFind("/") || name.canFind("\\") || name.canFind("..")) return false;
+
+    // Allow only alphanumeric, dash, underscore, and dot
+    return cast(bool)matchFirst(name, ctRegex!`^[a-zA-Z0-9_.-]+$`);
+}
+
 @endpoint @route!("/upload")
 void upload(Request request, Output output) {
 	Mustache mustache;
@@ -47,8 +55,7 @@ void upload(Request request, Output output) {
 		
 	if (request.method == Request.Method.Post) {
 		import std.logger;
-		import core.stdc.time;
-		time_t unixTime = core.stdc.time.time(null);
+    long timestamp = Clock.currTime.toUnixTime;
 
 		const Request.FormData fd = request.form.read("image");
     const float latitude = to!float(request.form.read("lat").data);
@@ -68,23 +75,32 @@ void upload(Request request, Output output) {
         string target_path;
         int i = 0;
         do {
-          target_path = "photos/" ~ to!string(unixTime) ~ "_" ~ to!string(i++) ~ extension(fd.filename);
+          target_path = "photos/" ~ to!string(timestamp) ~ "_" ~ to!string(i++) ~ ".jpg";
         } while (exists(target_path));
-			
-        temp_path.copy(target_path);
-        flogger.info("copied file to: ", target_path);
-				long timestamp = Clock.currTime.toUnixTime;
 
-        scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE);
-        try {
-          db.exec(db.prepare_bind!(string, float, float, string, int, long)("
+        if(!isValidFilename(fd.filename)) {
+          flogger.error("Suspicious file uploaded, aborting: ", temp_path);
+        } else {
+          string cmd = "magick " ~ temp_path ~ " -resize 1200x800^ -gravity center -extent 1200x800 -quality 85 " ~ target_path;
+
+          auto result = executeShell(cmd);
+          if (result.status != 0) {
+            flogger.error("Image Conversion failed: ", result.output);
+          }
+          
+          flogger.info("Image uploaded: ", target_path);
+        
+          scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE);
+          try {
+            db.exec(db.prepare_bind!(string, float, float, string, int, long)("
           INSERT INTO photos (path, latitude, longitude, location, uploader_id, upload_time)
           VALUES (?, ?, ?, ?, ?, ?)", target_path, latitude, longitude, "garching", user_id, timestamp));
-          mustache_context.addSubContext("info_messages")["info_message"] = "Photo submitted for review.";
-        } catch (Database.DBException e) {
-          flogger.error("An exception occured during insertion of photo in database:
+            mustache_context.addSubContext("info_messages")["info_message"] = "Photo submitted for review.";
+          } catch (Database.DBException e) {
+            flogger.error("An exception occured during insertion of photo in database:
             ", e.msg);
-          mustache_context.addSubContext("error_messages")["info_message"] = "Database error.";
+            mustache_context.addSubContext("error_messages")["info_message"] = "Database error.";
+          }
         }
       }
 		}
