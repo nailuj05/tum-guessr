@@ -27,11 +27,15 @@
 					<label>Longitude:</label>
 					<input type="text" name="long" placeholder="Longitude" id="long"><br>
 				</div>
-				<hr>
 				<label class="btn">
 					📷 Take or Upload Image
 					<input name="image" type="file" accept="image/jpeg,image/png" capture="environment" required hidden>
 				</label><br>
+				<hr>
+        <label for="agree">
+          I have read and agreed to the <a href="/upload/guideline">Upload Guideline</a>.
+          <input name="agree" type="checkbox" id="agree" required>
+        </label><br>
 				<input type="submit" value="Upload Image" disabled/>
 			</form>
 		</div>
@@ -41,17 +45,20 @@
 		 const longitudeInput = document.getElementById('long');
 		 const fileInput = document.querySelector('input[name="image"]');
 		 const submitButton = document.querySelector('input[type="submit"]');
+     const agreed = document.querySelector('input[type="checkbox"]');
 
 		 function validateForm() {
 			 const lat = parseFloat(latitudeInput.value);
 			 const lng = parseFloat(longitudeInput.value);
 			 const hasCoords = !isNaN(lat) && !isNaN(lng);
 			 const hasFile = fileInput.files.length > 0;
+       const hasAgreed = agreed.checked;
 
-			 submitButton.disabled = !(hasCoords && hasFile);
+			 submitButton.disabled = !(hasCoords && hasFile && hasAgreed);
 		 }
 
 		 fileInput.addEventListener('change', validateForm);
+		 agree.addEventListener('change', validateForm);
 		 
 		 const map = L.map('map').setView([48.2621, 11.6676], 16);
 		 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {

@@ -14,9 +14,22 @@ import mustache;
 
 import session;
 import sqlite;
+import header;
 import logger;
 
 alias MustacheEngine!(string) Mustache;
+
+@endpoint @route!("/upload/guideline")
+void guideline(Request request, Output output) {  
+	Mustache mustache;
+	mustache.path("public");
+	scope auto mustache_context = new Mustache.Context;
+		
+  set_header_context(mustache_context, request, output);
+
+  output ~= mustache.render("guideline", mustache_context);
+  output.status = 200;
+}
 
 @endpoint @route!("/upload")
 void upload(Request request, Output output) {
@@ -24,16 +37,14 @@ void upload(Request request, Output output) {
 	mustache.path("public");
 	scope auto mustache_context = new Mustache.Context;
 		
-	int user_id = session_load(request, output);
+	int user_id = set_header_context(mustache_context, request, output);
 	if(user_id <= 0) {
 		output.status = 302;
 		output.addHeader("Location", "/login");
 		output ~= "No access!" ~ "\n" ~ "You are being redirected.";
 		return;
 	}
-	
-  mustache_context.useSection("logged_in");
-	
+		
 	if (request.method == Request.Method.Post) {
 		import std.logger;
 		import core.stdc.time;
@@ -42,7 +53,7 @@ void upload(Request request, Output output) {
 		const Request.FormData fd = request.form.read("image");
     const float latitude = to!float(request.form.read("lat").data);
     const float longitude = to!float(request.form.read("long").data);
-		if(fd.isFile() && (fd.path.endsWith(".png") || fd.path.endsWith(".jpg"))) {
+		if(fd.isFile() && (fd.path.endsWith(".png") || fd.path.endsWith(".jpg")) && request.form.read("agree").data == "on") {
 			flogger.info("File ", fd.filename, " uploaded at ", fd.path);
 
       // make sure only these files can be uploaded
@@ -81,3 +92,4 @@ void upload(Request request, Output output) {
 	output ~= mustache.render("upload", mustache_context);
   output.status = 200;
 }
+
