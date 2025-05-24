@@ -39,7 +39,7 @@ void sign_up(Request request, Output output) {
     const string password = request.post.read("password");
 
 		const string username_regex = `.+`;
-		const string password_regex = `.{16,}`;
+		const string password_regex = environment["unsafe"].to!bool ? `.+` : `.{16,}`;
 		
 		if (!matchFirst(username, username_regex.regex)) {
 			output.status = 400;
