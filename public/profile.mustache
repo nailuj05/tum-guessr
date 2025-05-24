@@ -9,11 +9,14 @@
 <body>
   {{> header}}
 
-  <div class="content" style="text-align: left; margin: 0 auto; width: 40%">
+  <div class="content" style="text-align: left; margin: 0 auto; width: 60%">
     <h1>{{username}}</h1>
     {{#logged_in}}
     {{/logged_in}}
-    <p>Stats go here</p>
+    <hr>
+    <p>Joined: {{join_date}}</p>
+    <p>Played Games: {{games_played}}</p>
+    <p>Uploaded Photos: {{photos_uploaded}}</p>
   </div>
 </body>
 </html>
