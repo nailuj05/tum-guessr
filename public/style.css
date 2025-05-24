@@ -57,6 +57,7 @@ header {
     align-items: center;
     min-height: 80vh;
     box-sizing: border-box;
+		padding: 1.5rem;
 }
 .error {
 		color: var(--error);
@@ -175,7 +176,7 @@ th::after {
 }
 th.asc::after {
     content: "▲";
-}
+} 
 th.desc::after {
     content: "▼";
 }

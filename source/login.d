@@ -5,6 +5,7 @@ import std.format;
 import std.array;
 import std.file;
 import std.datetime;
+import std.regex;
 import serverino;
 import passwd;
 import passwd.bcrypt;
@@ -34,8 +35,25 @@ void sign_up(Request request, Output output) {
       output ~= "Missing argument";
       return;
     }
-    string username = request.post.read("username");
-    string password = request.post.read("password");
+    const string username = request.post.read("username");
+    const string password = request.post.read("password");
+
+		const string username_regex = `.+`;
+		const string password_regex = `.{16,}`;
+		
+		if (!matchFirst(username, username_regex.regex)) {
+			output.status = 400;
+			mustache_context.addSubContext("error_messages")["error_message"] = "Username must match regex /" ~ username_regex ~ "/";
+			output ~= mustache.render("sign_up", mustache_context);
+			return;
+		}
+		if (!matchFirst(password, password_regex.regex)) {
+			output.status = 400;
+			mustache_context.addSubContext("error_messages")["error_message"] = "Password must match regex /" ~ password_regex ~"/";
+			mustache_context.useSection("password_xkcd");
+			output ~= mustache.render("sign_up", mustache_context);
+			return;
+		}
 
 	  scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE);
     if (db.query!(int)(db.prepare_bind!(string)("
@@ -93,6 +111,7 @@ void login(Request request, Output output){
     }
     string username = request.post.read("username");
     string password = request.post.read("password");
+
 
 	  scope Database db = new Database(environment["db_filename"], OpenFlags.READONLY);
     auto query_result = db.query!(int, string, int)(db.prepare_bind!(string)("
