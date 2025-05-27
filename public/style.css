@@ -22,6 +22,10 @@ p {
 h1,h2,h3,h4,h5,h6 {
     color: var(--accent);
 }
+.scroll-enabled {
+		overflow: auto;
+		padding-bottom: 5rem;
+}
 
 header {
     background: var(--accent);
@@ -29,12 +33,38 @@ header {
 		max-width: 100%;
     padding: 0.5rem;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-wrap: wrap;
+	  align-items: center;
+	  position: relative;
 }
-.scroll-enabled {
-		overflow: auto;
-		padding-bottom: 5rem;
+.hamburger {
+	  display: none;
+    font-size: 1.5rem;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+}
+.right {
+        margin-left: auto;
+}
+@media (orientation: portrait) {
+    header {
+		    align-items: center;
+	  }
+    .hamburger {
+        display: block;
+        margin-left: auto;
+    }
+    .right {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+    .right.show {
+			  display:flex;
+	  }
 }
 .btn {
 		color: white;
@@ -244,7 +274,7 @@ img#disabled {
 		filter: grayscale(100%);
 }
 progress {
-		width: 50vh;
+		width: min(50vh, 80%);
 		heigth: 30px;
 		border-radius: 5px;
 		background-color: var(--background);
