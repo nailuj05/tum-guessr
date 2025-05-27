@@ -198,7 +198,7 @@ void about(Request request, Output output) {
 void router(Request request, Output output) {
 	string path = "public" ~ request.path;
 
-	// if we don't want to use serve File we will need to set the mime manually (check the code for serveFile for a good example on that)
+	// if we don't want to use serveFile we will need to set the mime manually (check the code for serveFile for a good example on that)
 	string[] ftypes = [".js", ".css", ".ico", ".png", ".jpg", ".jpeg", ".ico"];
 	if(exists(path) && ftypes.any!(suffix => path.endsWith(suffix))) {
 		if (environment["verbose"] == true.to!string)

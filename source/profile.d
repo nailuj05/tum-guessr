@@ -12,6 +12,7 @@ import serverino;
 import sqlite;
 import session;
 import logger;
+import header;
 
 alias MustacheEngine!(string) Mustache;
 
@@ -85,10 +86,8 @@ void profile_username(Request request, Output output) {
   mustache.path("public");
   scope auto mustache_context = new Mustache.Context;
   mustache_context["username"] = username;
-  if (session_user_id == user_id) {
-    mustache_context.useSection("logged_in");
-  }
-
+  set_header_context(mustache_context, request, output);
+  
   auto dateTime = SysTime.fromUnixTime(sign_up_time);
   mustache_context["join_date"] = format("%02d-%02d-%04d", dateTime.day, dateTime.month, dateTime.year);
 
