@@ -194,6 +194,7 @@ void round(Request request, Output output) {
 			double true_latitude = query_result[0][1];
 			double true_longitude = query_result[0][2];
 			// TODO: calculate score
+      double distance_meters = distance_between_coordinates_in_meters(guess_latitude, guess_longitude, true_latitude, true_longitude);
 			int score = 69;
 			// Insert round info
 			db.exec(db.prepare_bind!(float, float, int, int, int)("
@@ -368,3 +369,21 @@ int get_game_id(Request request, Output output, Database db) {
   return game_id;
 }
 
+double degrees_to_radians(double degrees) {
+  import std.math.constants : PI;
+  return degrees * PI / 180;
+}
+
+double distance_between_coordinates_in_meters(double latitude_1, double longitude_1, double latitude_2, double longitude_2) {
+  import std.math.exponential;
+  import std.math.trigonometry : sin, cos, atan2;
+  import core.math : sqrt;
+  double earth_radius_km = 6371;
+  double latitude_difference = degrees_to_radians(latitude_2 - latitude_1);
+  double longitude_difference = degrees_to_radians(longitude_2 - longitude_1);
+  latitude_1 = degrees_to_radians(latitude_1);
+  latitude_2 = degrees_to_radians(latitude_2);
+  double a = pow(sin(latitude_difference / 2), 2) + pow(sin(longitude_difference / 2), 2) * cos(latitude_1) * cos(latitude_2);
+  double c = 2 * atan2(sqrt(a), sqrt(1-a));
+  return earth_radius_km * c * 1000;
+}
