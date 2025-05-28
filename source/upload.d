@@ -81,7 +81,7 @@ void upload(Request request, Output output) {
         if(!isValidFilename(fd.filename)) {
           flogger.error("Suspicious file uploaded, aborting: ", temp_path);
         } else {
-          string cmd = "magick " ~ temp_path ~ " -resize 1200x800^ -gravity center -extent 1200x800 -quality 85 " ~ target_path;
+          string cmd = "convert " ~ temp_path ~ " -resize 1200x800^ -gravity center -extent 1200x800 -quality 85 " ~ target_path;
 
           auto result = executeShell(cmd);
           if (result.status != 0) {
