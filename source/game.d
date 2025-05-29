@@ -121,11 +121,12 @@ void round(Request request, Output output) {
 			output ~= "Missing or invalid game_id";
       return;
     }
+    int photo_id;
 		string photo_path;
 		try {
 			// Get photo path of next unfinished round
-			auto query_result = db.query!string(db.prepare_bind!(int, int)("
-				SELECT p.path
+			auto query_result = db.query!(int, string)(db.prepare_bind!(int, int)("
+				SELECT p.photo_id, p.path
 				FROM games g
           JOIN unfinished_rounds r
             ON g.game_id=r.game_id
@@ -140,12 +141,14 @@ void round(Request request, Output output) {
 				output ~= "No such unfinished game";
 				return;
 			}
-			photo_path = query_result[0][0];
+      photo_id = query_result[0][0];
+			photo_path = query_result[0][1];
 		} catch (Database.DBException e) {
 			flogger.warning("An error occured while retrieving round data: " ~ e.msg);
 			output.status = 500;
 			return;
 		}
+    output.setCookie(Cookie("photo_id", photo_id.to!string));
 		output.serveFile(photo_path);
 		return;
 	} else if (request.method == POST) {

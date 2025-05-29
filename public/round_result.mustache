@@ -9,6 +9,8 @@
 	</head>
 	<body>		
 		{{> header}}
+		<div style="position: relative;">
+		<button class="flagIcon" id="reportButton"></button>
 		<div id="resultMapContainer">
 			<div id="map"></div>
 			{{^final_round}}
@@ -18,7 +20,9 @@
 				<button id="gameSummaryButton" class="clickMeButton">Game Summary</button>
 			{{/final_round}}
 		</div>
+		</div>
 		<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+		<script src="/js/cookies.js"></script>
 		<script>
 		 const map = L.map('map').setView([({{true_latitude}} + {{guess_latitude}}) / 2, ({{true_longitude}} + {{guess_longitude}}) / 2], 16);
 		 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -66,6 +70,16 @@
 				 window.location.replace("/game/summary")
 			 })
 		 {{/final_round}}
+
+			const reportButton = document.getElementById("reportButton");
+			reportButton.addEventListener("click", function () {
+		      const photo_id = getCookie("photo_id");
+					if (!photo_id) {
+							console.error("cookie photo_id not found");
+							return;
+					}
+					window.location.replace(`/report?photo_id=${photo_id}`);
+			});
 		</script>
 	</body>
 </html>
