@@ -102,12 +102,33 @@ alias MustacheEngine!(string) Mustache;
       location STRING NOT NULL,
       uploader_id INTEGER NOT NULL, 
       upload_time INTEGER NOT NULL,
-      is_accepted INTEGER NOT NULL DEFAULT FALSE,
       FOREIGN KEY(uploader_id) 
         REFERENCES users(user_id) 
           ON DELETE CASCADE 
           ON UPDATE CASCADE
     )"); 
+    db.exec_imm("CREATE TABLE IF NOT EXISTS photo_acceptances (
+      photo_id INTEGER PRIMARY KEY,
+      acceptor_id INTEGER NOT NULL,
+      acceptance_time INTEGER NOT NULL,
+      FOREIGN KEY(photo_id)
+        REFERENCES photos(photo_id)
+          ON DELETE CASCADE 
+          ON UPDATE CASCADE,
+      FOREIGN KEY(acceptor_id)
+        REFERENCES users(user_id)
+          ON DELETE CASCADE 
+          ON UPDATE CASCADE
+    )");
+    db.exec_imm("CREATE VIEW photos_with_acceptance AS
+        SELECT p.*,
+            CASE
+                WHEN pa.photo_id IS NOT NULL THEN 1
+                ELSE 0
+            END AS is_accepted
+        FROM photos p
+        LEFT JOIN photo_acceptances pa ON p.photo_id=pa.photo_id
+    ");
 		db.exec_imm("CREATE TABLE IF NOT EXISTS games (
       game_id INTEGER PRIMARY KEY,
       user_id INTEGER NOT NULL,

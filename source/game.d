@@ -66,7 +66,7 @@ void game(Request request, Output output) {
 					  photo_id
 					FROM (
 					  SELECT photo_id
-					  FROM photos
+					  FROM photos_with_acceptance
 					  WHERE location=? AND is_accepted=TRUE
 					  ORDER BY RANDOM()
 					  LIMIT 5

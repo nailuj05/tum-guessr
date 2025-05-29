@@ -5,6 +5,7 @@ import std.algorithm;
 import std.conv;
 import std.stdio;
 import std.file;
+import std.datetime;
 
 import serverino;
 import mustache;
@@ -63,7 +64,7 @@ void photos_view(Request r, Output output) {
 		return;
 	}
 
-  Stmt stmt = db.prepare_bind!(int)("SELECT path, latitude, longitude, is_accepted FROM photos WHERE photo_id = ?", photo_id);
+  Stmt stmt = db.prepare_bind!(int)("SELECT path, latitude, longitude, is_accepted FROM photos_with_acceptance WHERE photo_id = ?", photo_id);
 	auto rows = db.query!(string, double, double, int)(stmt);
 	auto row = rows[0];
   
@@ -93,10 +94,10 @@ void photos_list(Request r, Output output) {
 
 	scope Database db = new Database(environment["db_filename"], OpenFlags.READONLY);
 
-  int num_photos = db.query_imm!int("SELECT count(*) FROM photos WHERE is_accepted = false")[0][0];
+  int num_photos = db.query_imm!int("SELECT count(*) FROM photos_with_acceptance WHERE is_accepted = false")[0][0];
   int max_pages = num_photos / limit;
 
-  Stmt stmt = db.prepare_bind!(int, int)("SELECT photo_id, path FROM photos WHERE is_accepted = false LIMIT ? OFFSET ?", limit, offset);
+  Stmt stmt = db.prepare_bind!(int, int)("SELECT photo_id, path FROM photos_with_acceptance WHERE is_accepted = false LIMIT ? OFFSET ?", limit, offset);
   auto rows = db.query!(int, string)(stmt);
   
 	Mustache mustache;
@@ -128,6 +129,7 @@ void photos_accept(Request r, Output output) {
 
 	int user_id = session_load(r, output);
 	int photo_id = to!int(r.post.read("photo_id", "-1"));
+  
 
   flogger.info("photo: ", photo_id, " accepted by ", user_id);
 
@@ -140,9 +142,26 @@ void photos_accept(Request r, Output output) {
 
 	scope(failure) output ~= "acception failed";
 	scope(failure) flogger.error("Photo: ", photo_id, " failed to be accepted");
-	Stmt stmt = db.prepare_bind!(int)("UPDATE photos SET is_accepted = NOT is_accepted WHERE photo_id = ?",
-																		photo_id);
-	db.exec(stmt);
+
+  bool is_accepted = db.query!int(db.prepare_bind!int("
+    SELECT is_accepted
+    FROM photos_with_acceptance
+    WHERE photo_id = ?
+  ", photo_id))[0][0].to!bool;
+  
+  if (is_accepted) {
+    db.exec(db.prepare_bind!int("
+      DELETE FROM photo_acceptances
+      WHERE photo_id = ?
+    ", photo_id));
+  } else {
+    long timestamp = Clock.currTime.toUnixTime;
+    Stmt stmt = db.prepare_bind!(int, int, long)("
+      INSERT INTO photo_acceptances (photo_id, acceptor_id, acceptance_time)
+      VALUES (?, ?, ?)
+    ", photo_id, user_id, timestamp);
+    db.exec(stmt);
+  }
 
 	output.status = 302;
 	output.addHeader("Location", "/photos/list");

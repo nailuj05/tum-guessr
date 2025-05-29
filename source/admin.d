@@ -135,7 +135,7 @@ void admin_photos(Request request, Output output) {
 
   Stmt stmt = db.prepare_bind!(int, int)("
 		SELECT p.photo_id, p.path, u.username, p.is_accepted
-		FROM photos p JOIN users u ON p.uploader_id == u.user_id
+		FROM photos_with_acceptance p JOIN users u ON p.uploader_id == u.user_id
 		ORDER BY " ~ order_option ~ " " ~ order ~ "
 		LIMIT ? OFFSET ?", limit, offset);
   auto query_result = db.query!(int, string, string, int)(stmt);
