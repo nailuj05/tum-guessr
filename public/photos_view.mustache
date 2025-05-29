@@ -43,11 +43,11 @@
 		 });
 		</script>
 		<div style="z-index: 9999; position: absolute; display: flex; width: 100%; bottom: 1rem;justify-content: center;">
-			<form action="/photos/accept" method="POST" style="outline: none";>
+			<form action="/photos/accept" method="POST" style="outline: none">
 				<input type="hidden" name="photo_id" value="{{photo_id}}">
 				<input type="submit" value="{{accept}} Photo"/>
 			</form>
-			<form action="/photos/delete" method="POST" style="outline: none";>
+			<form action="/photos/delete" method="POST" style="outline: none">
 				<input type="hidden" name="photo_id" value="{{photo_id}}">
 				<input type="submit" value="Delete Photo" />
 			</form>
