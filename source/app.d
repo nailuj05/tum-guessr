@@ -30,9 +30,10 @@ import profile;
 import game;
 import admin;
 import photos;
+import report;
 import header;
 
-mixin ServerinoMain!(upload, login, profile, game, admin, photos);
+mixin ServerinoMain!(upload, login, profile, game, admin, photos, report);
 
 alias MustacheEngine!(string) Mustache;
 
@@ -179,6 +180,19 @@ alias MustacheEngine!(string) Mustache;
         WHERE r.round_id=g.round_id AND r.game_id=g.game_id
       )
     ");
+    db.exec_imm("CREATE TABLE IF NOT EXISTS reports (
+      report_id INTEGER PRIMARY KEY,
+      user_id INTEGER NOT NULL,
+      report_text TEXT NOT NULL,
+      photo_id INTEGER NOT NULL,
+      FOREIGN KEY(user_id) 
+        REFERENCES users(user_id) 
+          ON UPDATE CASCADE
+      FOREIGN KEY(photo_id)
+        REFERENCES photos(photo_id)
+          ON DELETE CASCADE
+          ON UPDATE CASCADE
+    )");
 		db.exec_imm("
       INSERT OR IGNORE INTO users (user_id, username, password_hash, sign_up_time, is_deactivated)
       VALUES (0, 'unknown', '', 0, 1)

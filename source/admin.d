@@ -161,6 +161,49 @@ void admin_photos(Request request, Output output) {
 	output ~= mustache.render("admin_photos", mustache_context);
 }
 
+@endpoint @route!"/admin/reports"
+void admin_reports(Request request, Output output) {
+	if (request.method != Request.Method.Get) {
+		output.status = 405;
+	}
+
+  Mustache mustache;
+	mustache.path("public");
+	scope auto mustache_context = new Mustache.Context;
+
+  set_header_context(mustache_context, request, output);
+
+  scope Database db = new Database(environment["db_filename"], OpenFlags.READONLY);
+  auto rows = db.query_imm!(int, int, string, int, string)("SELECT r.report_id, r.user_id, r.report_text, r.photo_id, p.path
+    FROM reports r JOIN photos p ON r.photo_id = p.photo_id");
+
+  foreach(row; rows) {
+		auto mustache_subcontext = mustache_context.addSubContext("reports");
+    mustache_subcontext["report_id"] = row[0];
+    mustache_subcontext["user_id"]   = row[1];
+    mustache_subcontext["message"]   = row[2];
+    mustache_subcontext["photo_id"]  = row[3];
+    mustache_subcontext["path"]      = row[4];
+  }
+
+  output ~= mustache.render("admin_reports", mustache_context);
+}
+
+@endpoint @route!(r => r.path == "/admin/report-delete" && r.post.has("report_id"))
+void admin_report_delete(Request request, Output output) {
+	if (request.method != Request.Method.Post) {
+		output.status = 405;
+	}
+  
+  int report_id = to!int(request.post.read("report_id"));
+  scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE);
+  db.exec(db.prepare_bind!(int)("DELETE FROM reports WHERE report_id = ?", report_id));
+
+	output.status = 302;
+	output.addHeader("Location", "/admin/reports");
+	output ~= "You are being redirected.";
+}
+
 @endpoint @route!"/admin/log"
 void admin_log(Request request, Output output) {
 	if (request.method != Request.Method.Get) {

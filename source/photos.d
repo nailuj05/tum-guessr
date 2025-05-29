@@ -47,7 +47,7 @@ void photos_access_authorization(Request request, Output output) {
 	}
 }
 
-@endpoint @route!"/photos/view" @route!(r => r.get.has("photo_id"))
+@endpoint @route!"/photos/view"
 void photos_view(Request r, Output output) {
 	scope(failure) {
 		output.status = 404;

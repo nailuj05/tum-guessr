@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+	  <meta charset="UTF-8" />
+	  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	  <title>Admin Dashboard</title>
+	  <link rel="stylesheet" href="/style.css">	
+  </head>
+  <body class="scroll-enabled">
+	  {{> header}}
+	  {{> admin-nav}}
+	  <h1>Reports</h1>
+	  <div class="center" style="justify-content: normal">
+		  <table>
+			  <thead>
+				  <tr>
+					  <th>Photo</th>
+					  <th>Message</th>
+					  <th>User</th>
+            <th>Action</th>
+				  </tr>
+			  </thead>
+			  <tbody>
+				  {{#reports}}
+					  <tr>	
+						  <td>
+							  <a href="/photos/view?photo_id={{photo_id}}">
+								  <img src="/{{path}}" alt="{{path}}" width="200" height="200" style="object-fit: cover">
+							  </a>
+						  </td>
+              <td><p>{{message}}</p></td>
+						  <td><a href="/profile/{{user_id}}">{{user_id}}</a></td>
+						  <td>
+			          <form action="/admin/report-delete" method="POST" style="outline: none">
+				          <input type="hidden" name="report_id" value="{{report_id}}">
+				          <input type="submit" value="Delete Report" />
+			          </form>
+			          <form action="/photos/delete" method="POST" style="outline: none">
+				          <input type="hidden" name="photo_id" value="{{photo_id}}">
+				          <input type="submit" value="Delete Photo" style="border-color: red" />
+			          </form>
+              </td>
+					  </tr>
+				  {{/reports}}
+			  </tbody>
+		  </table>
+	  </div>
+  </body>
+</html>
