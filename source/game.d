@@ -34,8 +34,8 @@ void game(Request request, Output output) {
     try {
       int remaining_rounds = db.query!int(db.prepare_bind!int("
       SELECT count(*)
-      FROM rounds
-      WHERE game_id=? AND finished=FALSE
+      FROM unfinished_rounds
+      WHERE game_id=?
     ", game_id))[0][0];
       if (remaining_rounds < 1) {
         game_id = -1;
@@ -127,11 +127,11 @@ void round(Request request, Output output) {
 			auto query_result = db.query!string(db.prepare_bind!(int, int)("
 				SELECT p.path
 				FROM games g
-          JOIN rounds r
+          JOIN unfinished_rounds r
             ON g.game_id=r.game_id
           JOIN photos p
             ON r.photo_id=p.photo_id
-				WHERE g.game_id=? AND g.user_id=? AND r.finished=FALSE
+				WHERE g.game_id=? AND g.user_id=?
 				ORDER BY r.round_id ASC
 				LIMIT 1
 			", game_id, user_id));
@@ -179,9 +179,9 @@ void round(Request request, Output output) {
 			// Get coords of next unfinshed round of the game
 			auto query_result = db.query!(int, double, double)(db.prepare_bind!(int)("
 				SELECT r.round_id, p.latitude, p.longitude
-				FROM rounds r
+				FROM unfinished_rounds r
         JOIN photos p ON r.photo_id=p.photo_id
-        WHERE r.game_id=? AND r.finished=FALSE
+        WHERE r.game_id=?
         ORDER BY r.round_id ASC
         LIMIT 1
 			", game_id));
@@ -196,12 +196,11 @@ void round(Request request, Output output) {
 			// TODO: calculate score
       double distance_meters = distance_between_coordinates_in_meters(guess_latitude, guess_longitude, true_latitude, true_longitude);
 			int score = 69;
-			// Insert round info
-			db.exec(db.prepare_bind!(float, float, int, int, int)("
-				UPDATE rounds
-				SET guess_lat=?, guess_long=?, score=?, finished=TRUE
-				WHERE game_id=? AND round_id=?
-			", guess_latitude, guess_longitude, score, game_id, round_id));
+			// Insert guess
+			db.exec(db.prepare_bind!(int, int, float, float, int)("
+				INSERT INTO guesses (game_id, round_id, latitude, longitude, score)
+				VALUES (?, ?, ?, ?, ?)
+			", game_id, round_id, guess_latitude, guess_longitude, score));
 		} catch (Database.DBException e) {
 			flogger.warning("Failed to set finished round: " ~ e.msg);
 			output.status = 500;
@@ -238,9 +237,9 @@ void game_result(Request request, Output output) {
   try {
     auto query_result = db.query!(int, double, double, double, double)(db.prepare_bind!(int)("
       SELECT r.score, r.guess_lat, r.guess_long, p.latitude, p.longitude
-      FROM rounds r
+      FROM finished_rounds r
       JOIN photos p ON r.photo_id=p.photo_id
-      WHERE r.game_id=? AND r.finished=TRUE
+      WHERE r.game_id=?
       ORDER BY r.round_id DESC
       LIMIT 1
     ", game_id));
@@ -256,8 +255,8 @@ void game_result(Request request, Output output) {
     true_longitude = query_result[0][4];
     remaining_rounds = db.query!int(db.prepare_bind!int("
       SELECT count(*)
-      FROM rounds
-      WHERE game_id=? AND finished=FALSE
+      FROM unfinished_rounds
+      WHERE game_id=? 
     ", game_id))[0][0];
   } catch (Database.DBException e) {
     flogger.warning("Failed to set finished round: " ~ e.msg);
@@ -298,8 +297,8 @@ void game_summary(Request request, Output output) {
   try {
     int remaining_rounds = db.query!int(db.prepare_bind!int("
       SELECT count(*)
-      FROM rounds
-      WHERE game_id=? AND finished=FALSE
+      FROM unfinished_rounds
+      WHERE game_id=?
     ", game_id))[0][0];
     if (remaining_rounds > 0) {
       output.status = 400;
@@ -308,7 +307,7 @@ void game_summary(Request request, Output output) {
     }
     round_results = db.query!(int, double, double, double, double)(db.prepare_bind!int("
       SELECT r.score, r.guess_lat, r.guess_long, p.latitude, p.longitude
-      FROM rounds r JOIN photos p ON r.photo_id=p.photo_id 
+      FROM finished_rounds r JOIN photos p ON r.photo_id=p.photo_id 
       WHERE r.game_id=?
       ORDER BY r.round_id ASC
     ", game_id));
