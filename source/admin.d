@@ -174,13 +174,16 @@ void admin_reports(Request request, Output output) {
   set_header_context(mustache_context, request, output);
 
   scope Database db = new Database(environment["db_filename"], OpenFlags.READONLY);
-  auto rows = db.query_imm!(int, int, string, int, string)("SELECT r.report_id, r.user_id, r.report_text, r.photo_id, p.path
-    FROM reports r JOIN photos p ON r.photo_id = p.photo_id");
+  auto rows = db.query_imm!(int, string, string, int, string)("SELECT r.report_id, u.username, r.report_text, r.photo_id, p.path
+    FROM reports r
+    JOIN photos p ON r.photo_id = p.photo_id
+    JOIN users u ON r.user_id = u.user_id
+  ");
 
   foreach(row; rows) {
 		auto mustache_subcontext = mustache_context.addSubContext("reports");
     mustache_subcontext["report_id"] = row[0];
-    mustache_subcontext["user_id"]   = row[1];
+    mustache_subcontext["username"]   = row[1];
     mustache_subcontext["message"]   = row[2];
     mustache_subcontext["photo_id"]  = row[3];
     mustache_subcontext["path"]      = row[4];
