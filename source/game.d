@@ -31,12 +31,19 @@ void game(Request request, Output output) {
 
 		scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE);
 		int game_id = get_game_id(request, output, db);
+		int played_rounds;
+		int remaining_rounds;
+		int total_rounds;
     try {
-      int remaining_rounds = db.query!int(db.prepare_bind!int("
-      SELECT count(*)
-      FROM unfinished_rounds
-      WHERE game_id=?
-    ", game_id))[0][0];
+      auto query_result = db.query!(int, int)(db.prepare_bind!int("
+				SELECT count(r.round_id), count(g.round_id)
+				FROM rounds r
+				LEFT JOIN guesses g ON r.round_id = g.round_id AND r.game_id = g.game_id
+        WHERE r.game_id = ?
+		  ", game_id));
+			total_rounds = query_result[0][0];
+			played_rounds = query_result[0][1];
+			remaining_rounds = total_rounds - played_rounds;
       if (remaining_rounds < 1) {
         game_id = -1;
       }
@@ -86,12 +93,16 @@ void game(Request request, Output output) {
           return;
         }
         db.exec_imm("COMMIT");
+				total_rounds = num_created_rounds;
+				remaining_rounds = num_created_rounds;
+				played_rounds = 0;
 			} catch (Database.DBException e) {
         flogger.warning("Failed to insert new game in db: " ~ e.msg);
         output.status = 400;
         output ~= "Failed to start game";
         return;
 			}
+
 
 			// TODO: set as cookie with hmac instead
 			output.setCookie(Cookie("game_id", game_id.to!string));
@@ -102,6 +113,8 @@ void game(Request request, Output output) {
 		scope auto mustache_context = new Mustache.Context;
 		
     set_header_context(mustache_context, request, output);
+		mustache_context["current_round"] = played_rounds + 1;
+		mustache_context["total_rounds"] = total_rounds;
 		output ~= mustache.render("game", mustache_context);
 	}
 }
