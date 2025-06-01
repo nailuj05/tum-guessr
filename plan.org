@@ -15,7 +15,7 @@
 * TODO Game Page
   - Add return to game / abandon game button (?)
   - Add timer
-  - Add (round number / total rounds) on game page and result page
+  - DONE Add (round number / total rounds) on game page and result page
   - DONE Add Game summary page
   - Results page
     - Set correct map zoom level
