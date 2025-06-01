@@ -52,7 +52,7 @@ alias MustacheEngine!(string) Mustache;
     writeln("Options:");
     writeln("  --help                       Show this help message.");
     writeln("  --verbose                    Enable verbose output.");
-    writeln("  --unsafe                     Enable unsafe static cookie hmac (useful for debugging)");
+    writeln("  --unsafe                     Enable unsafe static cookie hmac, less strict pwds, no captchas (for debugging)");
     writeln("  --populate_users=NUM_USERS   Populate table users with NUM_USERS random generated users. Password is set to 'pw'.");
     writeln("  --database=FILE              Path to database file.");
 		ServerinoConfig.create().setReturnCode(1);

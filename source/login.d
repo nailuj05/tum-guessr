@@ -24,6 +24,7 @@ alias MustacheEngine!(string) Mustache;
 void sign_up(Request request, Output output) {
   Mustache mustache;
   mustache.path("public");
+  bool unsafe = to!bool(environment["unsafe"]);
   scope auto mustache_context = new Mustache.Context;
   if (request.method == Request.Method.Get) {
     output ~= mustache.render("sign_up", mustache_context);
@@ -31,7 +32,7 @@ void sign_up(Request request, Output output) {
   } else if (request.method == Request.Method.Post){
     if (!request.post.has("username") ||
         !request.post.has("password") ||
-        !request.post.has("h-captcha-response")) {
+        !(request.post.has("h-captcha-response") || unsafe)) {
       output.status = 400;
       output ~= "Missing argument";
       return;
@@ -58,23 +59,24 @@ void sign_up(Request request, Output output) {
 		}
 
     // Verify Captcha Response
-    import std.net.curl;
-    auto url = "https://api.hcaptcha.com/siteverify";
-    auto postData = "secret=" ~ environment["CAPTCHA_SECRET_KEY"] ~ "&response=" ~ captcha;
+    if (!unsafe) {
+      import std.net.curl;
+      auto url = "https://api.hcaptcha.com/siteverify";
+      auto postData = "secret=" ~ environment["CAPTCHA_SECRET_KEY"] ~ "&response=" ~ captcha;
 
-    auto response = post(url, postData);
+      auto response = post(url, postData);
     
-    import std.json;
-    JSONValue json = parseJSON(response);
-    if(json["success"].type == JSON_TYPE.FALSE) {
-      flogger.warning("Sign up captcha failed for user: ", username, " with ", response);
+      import std.json;
+      JSONValue json = parseJSON(response);
+      if(json["success"].type == JSONType.FALSE) {
+        flogger.warning("Sign up captcha failed for user: ", username, " with ", response);
 
-      output.status = 400;
-			mustache_context.addSubContext("error_messages")["error_message"] = "Captcha failed";
-			output ~= mustache.render("sign_up", mustache_context);
-			return;
+        output.status = 400;
+        mustache_context.addSubContext("error_messages")["error_message"] = "Captcha failed";
+        output ~= mustache.render("sign_up", mustache_context);
+        return;
+      }
     }
-
     
     // Add to DB
 	  scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE);
