@@ -127,7 +127,7 @@ alias MustacheEngine!(string) Mustache;
           ON DELETE CASCADE 
           ON UPDATE CASCADE
     )");
-    db.exec_imm("CREATE VIEW photos_with_acceptance AS
+    db.exec_imm("CREATE VIEW IF NOT EXISTS photos_with_acceptance AS
         SELECT p.*,
             CASE
                 WHEN pa.photo_id IS NOT NULL THEN 1
@@ -172,12 +172,12 @@ alias MustacheEngine!(string) Mustache;
           ON DELETE CASCADE
           ON UPDATE CASCADE
     )");
-    db.exec_imm("CREATE VIEW finished_rounds AS
+    db.exec_imm("CREATE VIEW IF NOT EXISTS finished_rounds AS
       SELECT r.round_id, r.game_id, r.photo_id, g.latitude AS guess_lat, g.longitude AS guess_long, g.score
       FROM rounds r
       JOIN guesses g ON r.round_id=g.round_id AND r.game_id=g.game_id
     ");
-    db.exec_imm("CREATE VIEW unfinished_rounds AS
+    db.exec_imm("CREATE VIEW IF NOT EXISTS unfinished_rounds AS
       SELECT *
       FROM rounds r
       WHERE NOT EXISTS (
@@ -207,7 +207,9 @@ alias MustacheEngine!(string) Mustache;
       populate_users(num_populate_users);
     }
   } catch (Database.DBException e){
-    flogger.error("An exception occurred during database initialization: ", e.msg);
+    string error = "An exception occurred during database initialization: "~e.msg;
+    flogger.error(error);
+    writeln(error);
   }
 
   flogger.info("SERVER STARTED");

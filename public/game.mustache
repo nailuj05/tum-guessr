@@ -63,7 +63,7 @@
 							console.error("cookie photo_id not found");
 							return;
 					}
-					window.location.replace(`/report?photo_id=${photo_id}`);
+					window.open(`/report?photo_id=${photo_id}`, "_blank");
 			});
 		 
 		 map.on('click', function(e) {

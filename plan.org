@@ -1,10 +1,10 @@
 * TODO Admin / Security
   - option to disable new sign ups
   - ensure public/ escape safety
-  - report image button
-  - sign up
-    - captcha
-    - repeat password
+  - DONE report image button
+  - DONE sign up
+    - DONE captcha
+    - DONE repeat password
   - DONE sign up timestamp
   - DONE Photos View
   - DONE Photos List
