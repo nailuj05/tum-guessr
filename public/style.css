@@ -403,3 +403,26 @@ progress {
 		font-size: 16px;
 		cursor: pointer;
 }
+.flagIcon {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' fill-rule='evenodd' d='M5 4.797c1.517-.312 2.67-.33 3.626-.211c1.119.14 2.018.473 3.023.85l.03.012c.987.37 2.08.78 3.447.95c1.104.139 2.355.118 3.874-.158v8.963c-1.517.312-2.67.33-3.626.211c-1.119-.14-2.018-.473-3.023-.85l-.03-.012c-.987-.37-2.08-.78-3.447-.95c-1.104-.139-2.355-.118-3.874.158zm14.758-.767c-1.9.475-3.275.523-4.384.384c-1.119-.14-2.018-.473-3.023-.85l-.03-.012c-.987-.37-2.08-.78-3.447-.95c-1.387-.174-3.006-.098-5.096.423A1 1 0 0 0 3 4v17a1 1 0 1 0 2 0v-5.203c1.517-.312 2.67-.33 3.626-.211c1.119.14 2.018.473 3.023.85l.03.012c.987.37 2.08.78 3.447.95c1.391.174 3.017.097 5.117-.428A1 1 0 0 0 21 16V5a1 1 0 0 0-1.242-.97' clip-rule='evenodd'/%3E%3C/svg%3E");
+  background-color: currentColor;
+  -webkit-mask-image: var(--svg);
+  mask-image: var(--svg);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+}
+#reportButton {
+		position: absolute;
+		top: 1rem;
+		left: 1rem;
+}
+#roundCounter {
+		position: absolute;
+		top: 1rem;
+		right: 1rem;
+}

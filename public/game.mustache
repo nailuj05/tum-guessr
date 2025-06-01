@@ -10,6 +10,8 @@
 	<body>		
     {{> header}}
 		<div id="photoContainer">
+			<p id="roundCounter">{{current_round}} / {{total_rounds}}</p>
+			<button class="flagIcon" id="reportButton"></button>
 			<div class="image-wrapper">
 				<img id="photo" src="/game/round">
 			</div>
@@ -20,6 +22,7 @@
 		</div>
 	  <script src="/js/dragimage.js"></script>
 		<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+		<script src="/js/cookies.js"></script>
 		<script>
 		 const map = L.map('map').setView([48.2621, 11.6676], 16);
 		 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -52,6 +55,16 @@
 					 console.error('There was a problem with the fetch operation:', error);
 				 });
 		 });
+
+			const reportButton = document.getElementById("reportButton");
+			reportButton.addEventListener("click", function () {
+		      const photo_id = getCookie("photo_id");
+					if (!photo_id) {
+							console.error("cookie photo_id not found");
+							return;
+					}
+					window.location.replace(`/report?photo_id=${photo_id}`);
+			});
 		 
 		 map.on('click', function(e) {
 			 const lat = e.latlng.lat.toFixed(6);

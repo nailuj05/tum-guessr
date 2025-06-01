@@ -147,10 +147,6 @@ alias MustacheEngine!(string) Mustache;
       round_id INTEGER NOT NULL,
       game_id INTEGER NOT NULL,
       photo_id INTEGER NOT NULL,
-      guess_lat REAL DEFAULT 0,
-      guess_long REAL DEFAULT 0,
-      score INTEGER NOT NULL DEFAULT 0,
-      finished INTEGER NOT NULL DEFAULT FALSE,
       PRIMARY KEY (round_id, game_id),
       FOREIGN KEY(game_id) 
         REFERENCES games(game_id) 
@@ -161,6 +157,32 @@ alias MustacheEngine!(string) Mustache;
           ON DELETE CASCADE
           ON UPDATE CASCADE
     )");
+    db.exec_imm("CREATE TABLE IF NOT EXISTS guesses (
+      round_id INTEGER NOT NULL,
+      game_id INTEGER NOT NULL,
+      latitude REAL NOT NULL,
+      longitude REAL NOT NULL,
+      score INTEGER NOT NULL,
+      PRIMARY KEY (round_id, game_id),
+      FOREIGN KEY(round_id, game_id) 
+        REFERENCES rounds(round_id, game_id) 
+          ON DELETE CASCADE
+          ON UPDATE CASCADE
+    )");
+    db.exec_imm("CREATE VIEW finished_rounds AS
+      SELECT r.round_id, r.game_id, r.photo_id, g.latitude AS guess_lat, g.longitude AS guess_long, g.score
+      FROM rounds r
+      JOIN guesses g ON r.round_id=g.round_id AND r.game_id=g.game_id
+    ");
+    db.exec_imm("CREATE VIEW unfinished_rounds AS
+      SELECT *
+      FROM rounds r
+      WHERE NOT EXISTS (
+        SELECT 1
+        FROM guesses g
+        WHERE r.round_id=g.round_id AND r.game_id=g.game_id
+      )
+    ");
     db.exec_imm("CREATE TABLE IF NOT EXISTS reports (
       report_id INTEGER PRIMARY KEY,
       user_id INTEGER NOT NULL,

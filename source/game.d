@@ -31,12 +31,19 @@ void game(Request request, Output output) {
 
 		scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE);
 		int game_id = get_game_id(request, output, db);
+		int played_rounds;
+		int remaining_rounds;
+		int total_rounds;
     try {
-      int remaining_rounds = db.query!int(db.prepare_bind!int("
-      SELECT count(*)
-      FROM rounds
-      WHERE game_id=? AND finished=FALSE
-    ", game_id))[0][0];
+      auto query_result = db.query!(int, int)(db.prepare_bind!int("
+				SELECT count(r.round_id), count(g.round_id)
+				FROM rounds r
+				LEFT JOIN guesses g ON r.round_id = g.round_id AND r.game_id = g.game_id
+        WHERE r.game_id = ?
+		  ", game_id));
+			total_rounds = query_result[0][0];
+			played_rounds = query_result[0][1];
+			remaining_rounds = total_rounds - played_rounds;
       if (remaining_rounds < 1) {
         game_id = -1;
       }
@@ -86,12 +93,16 @@ void game(Request request, Output output) {
           return;
         }
         db.exec_imm("COMMIT");
+				total_rounds = num_created_rounds;
+				remaining_rounds = num_created_rounds;
+				played_rounds = 0;
 			} catch (Database.DBException e) {
         flogger.warning("Failed to insert new game in db: " ~ e.msg);
         output.status = 400;
         output ~= "Failed to start game";
         return;
 			}
+
 
 			// TODO: set as cookie with hmac instead
 			output.setCookie(Cookie("game_id", game_id.to!string));
@@ -102,6 +113,8 @@ void game(Request request, Output output) {
 		scope auto mustache_context = new Mustache.Context;
 		
     set_header_context(mustache_context, request, output);
+		mustache_context["current_round"] = played_rounds + 1;
+		mustache_context["total_rounds"] = total_rounds;
 		output ~= mustache.render("game", mustache_context);
 	}
 }
@@ -121,17 +134,18 @@ void round(Request request, Output output) {
 			output ~= "Missing or invalid game_id";
       return;
     }
+    int photo_id;
 		string photo_path;
 		try {
 			// Get photo path of next unfinished round
-			auto query_result = db.query!string(db.prepare_bind!(int, int)("
-				SELECT p.path
+			auto query_result = db.query!(int, string)(db.prepare_bind!(int, int)("
+				SELECT p.photo_id, p.path
 				FROM games g
-          JOIN rounds r
+          JOIN unfinished_rounds r
             ON g.game_id=r.game_id
           JOIN photos p
             ON r.photo_id=p.photo_id
-				WHERE g.game_id=? AND g.user_id=? AND r.finished=FALSE
+				WHERE g.game_id=? AND g.user_id=?
 				ORDER BY r.round_id ASC
 				LIMIT 1
 			", game_id, user_id));
@@ -140,12 +154,14 @@ void round(Request request, Output output) {
 				output ~= "No such unfinished game";
 				return;
 			}
-			photo_path = query_result[0][0];
+      photo_id = query_result[0][0];
+			photo_path = query_result[0][1];
 		} catch (Database.DBException e) {
 			flogger.warning("An error occured while retrieving round data: " ~ e.msg);
 			output.status = 500;
 			return;
 		}
+    output.setCookie(Cookie("photo_id", photo_id.to!string));
 		output.serveFile(photo_path);
 		return;
 	} else if (request.method == POST) {
@@ -179,9 +195,9 @@ void round(Request request, Output output) {
 			// Get coords of next unfinshed round of the game
 			auto query_result = db.query!(int, double, double)(db.prepare_bind!(int)("
 				SELECT r.round_id, p.latitude, p.longitude
-				FROM rounds r
+				FROM unfinished_rounds r
         JOIN photos p ON r.photo_id=p.photo_id
-        WHERE r.game_id=? AND r.finished=FALSE
+        WHERE r.game_id=?
         ORDER BY r.round_id ASC
         LIMIT 1
 			", game_id));
@@ -196,12 +212,11 @@ void round(Request request, Output output) {
 			// TODO: calculate score
       double distance_meters = distance_between_coordinates_in_meters(guess_latitude, guess_longitude, true_latitude, true_longitude);
 			int score = 69;
-			// Insert round info
-			db.exec(db.prepare_bind!(float, float, int, int, int)("
-				UPDATE rounds
-				SET guess_lat=?, guess_long=?, score=?, finished=TRUE
-				WHERE game_id=? AND round_id=?
-			", guess_latitude, guess_longitude, score, game_id, round_id));
+			// Insert guess
+			db.exec(db.prepare_bind!(int, int, float, float, int)("
+				INSERT INTO guesses (game_id, round_id, latitude, longitude, score)
+				VALUES (?, ?, ?, ?, ?)
+			", game_id, round_id, guess_latitude, guess_longitude, score));
 		} catch (Database.DBException e) {
 			flogger.warning("Failed to set finished round: " ~ e.msg);
 			output.status = 500;
@@ -238,9 +253,9 @@ void game_result(Request request, Output output) {
   try {
     auto query_result = db.query!(int, double, double, double, double)(db.prepare_bind!(int)("
       SELECT r.score, r.guess_lat, r.guess_long, p.latitude, p.longitude
-      FROM rounds r
+      FROM finished_rounds r
       JOIN photos p ON r.photo_id=p.photo_id
-      WHERE r.game_id=? AND r.finished=TRUE
+      WHERE r.game_id=?
       ORDER BY r.round_id DESC
       LIMIT 1
     ", game_id));
@@ -256,8 +271,8 @@ void game_result(Request request, Output output) {
     true_longitude = query_result[0][4];
     remaining_rounds = db.query!int(db.prepare_bind!int("
       SELECT count(*)
-      FROM rounds
-      WHERE game_id=? AND finished=FALSE
+      FROM unfinished_rounds
+      WHERE game_id=? 
     ", game_id))[0][0];
   } catch (Database.DBException e) {
     flogger.warning("Failed to set finished round: " ~ e.msg);
@@ -298,8 +313,8 @@ void game_summary(Request request, Output output) {
   try {
     int remaining_rounds = db.query!int(db.prepare_bind!int("
       SELECT count(*)
-      FROM rounds
-      WHERE game_id=? AND finished=FALSE
+      FROM unfinished_rounds
+      WHERE game_id=?
     ", game_id))[0][0];
     if (remaining_rounds > 0) {
       output.status = 400;
@@ -308,7 +323,7 @@ void game_summary(Request request, Output output) {
     }
     round_results = db.query!(int, double, double, double, double)(db.prepare_bind!int("
       SELECT r.score, r.guess_lat, r.guess_long, p.latitude, p.longitude
-      FROM rounds r JOIN photos p ON r.photo_id=p.photo_id 
+      FROM finished_rounds r JOIN photos p ON r.photo_id=p.photo_id 
       WHERE r.game_id=?
       ORDER BY r.round_id ASC
     ", game_id));
