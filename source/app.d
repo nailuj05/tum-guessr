@@ -239,7 +239,8 @@ void index(Request request, Output output) {
 
 	int nextBigger(int[] arr, int num) {
 		int i = 0;
-		while (arr[i] < num && i < (arr.length - 1)) i++;
+    do i++;
+		while (arr[i] < num && i < (arr.length - 1));
 		return arr[i];
 	}
 	mustache_context["user_cur"] = users;
