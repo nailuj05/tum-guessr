@@ -30,13 +30,15 @@ void sign_up(Request request, Output output) {
     return;
   } else if (request.method == Request.Method.Post){
     if (!request.post.has("username") ||
-        !request.post.has("password")) {
+        !request.post.has("password") ||
+        !request.post.has("h-captcha-response")) {
       output.status = 400;
       output ~= "Missing argument";
       return;
     }
     const string username = request.post.read("username");
     const string password = request.post.read("password");
+    const string captcha  = request.post.read("h-captcha-response");
 
 		const string username_regex = `.+`;
 		const string password_regex = environment["unsafe"].to!bool ? `.+` : `.{16,}`;
@@ -55,6 +57,26 @@ void sign_up(Request request, Output output) {
 			return;
 		}
 
+    // Verify Captcha Response
+    import std.net.curl;
+    auto url = "https://api.hcaptcha.com/siteverify";
+    auto postData = "secret=" ~ environment["CAPTCHA_SECRET_KEY"] ~ "&response=" ~ captcha;
+
+    auto response = post(url, postData);
+    
+    import std.json;
+    JSONValue json = parseJSON(response);
+    if(json["success"].type == JSON_TYPE.FALSE) {
+      flogger.warning("Sign up captcha failed for user: ", username, " with ", response);
+
+      output.status = 400;
+			mustache_context.addSubContext("error_messages")["error_message"] = "Captcha failed";
+			output ~= mustache.render("sign_up", mustache_context);
+			return;
+    }
+
+    
+    // Add to DB
 	  scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE);
     if (db.query!(int)(db.prepare_bind!(string)("
       SELECT count(*) 

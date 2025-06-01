@@ -20,6 +20,7 @@ import std.datetime.systime;
 
 import serverino;
 import mustache;
+import dotenv;
 
 import sqlite;
 import logger;
@@ -68,7 +69,9 @@ alias MustacheEngine!(string) Mustache;
 	environment["unsafe"] = unsafe.to!string;
 	environment["db_filename"] = db_filename;
 
-
+  Env.load();
+  environment["CAPTCHA_SECRET_KEY"] = Env["CAPTCHA_SECRET_KEY"];
+  
 	if(!exists("photos"))
 		 mkdir("photos");
 
