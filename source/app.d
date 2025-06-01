@@ -85,7 +85,10 @@ alias MustacheEngine!(string) Mustache;
 		string timeStr = now.toISOString();
 		rename(original, "logs/log_" ~ timeStr ~ ".txt");
 	}
-	
+
+  // need to reload the file logger after moving file
+  flogger_reload();
+  
 	scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE
       | OpenFlags.CREATE);
   try {
@@ -206,7 +209,8 @@ alias MustacheEngine!(string) Mustache;
   } catch (Database.DBException e){
     flogger.error("An exception occurred during database initialization: ", e.msg);
   }
-      
+
+  flogger.info("SERVER STARTED");
 	return ServerinoConfig.create().addListener("0.0.0.0", 8080);
 }
 
