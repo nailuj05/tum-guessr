@@ -30,7 +30,7 @@ void report_post(Request r, Output output) {
   if(r.post.has("message")) {
     string report = r.post.read("message");
 
-		int user_id = session_load(request, output);
+		int user_id = session_load(r, output);
 		if (user_id < 0)
 			user_id = 0;
 
