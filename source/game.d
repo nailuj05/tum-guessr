@@ -209,9 +209,10 @@ void round(Request request, Output output) {
       int round_id = query_result[0][0];
 			double true_latitude = query_result[0][1];
 			double true_longitude = query_result[0][2];
-			// TODO: calculate score
       double distance_meters = distance_between_coordinates_in_meters(guess_latitude, guess_longitude, true_latitude, true_longitude);
-			int score = 69;
+			import std.algorithm.comparison : max, min;
+			import core.math : sqrt;
+			int score = max(0, min(2000, (2000 / ((distance_meters + 45) * 0.02)))).to!int;
 			// Insert guess
 			db.exec(db.prepare_bind!(int, int, float, float, int)("
 				INSERT INTO guesses (game_id, round_id, latitude, longitude, score)
@@ -337,7 +338,9 @@ void game_summary(Request request, Output output) {
   mustache.path("public");
   scope auto mustache_context = new Mustache.Context;
   
+	int total_score = 0;
   foreach (result; round_results) {
+		total_score += result[0];
     auto mustache_subcontext = mustache_context.addSubContext("rounds");
     mustache_subcontext["score"] = result[0];
     mustache_subcontext["guess_latitude"] = result[1];
@@ -345,6 +348,7 @@ void game_summary(Request request, Output output) {
     mustache_subcontext["true_latitude"] = result[3];
     mustache_subcontext["true_longitude"] = result[4];
   }
+	mustache_context["total_score"] = total_score;
 
   output ~= mustache.render("game_summary", mustache_context);
 }
