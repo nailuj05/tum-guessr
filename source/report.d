@@ -33,6 +33,8 @@ void report_post(Request r, Output output) {
     int user_id = to!int(r.post.read("user_id", "0"));
     int photo_id = to!int(r.post.read("photo_id", "0"));
 
+    if (user_id == -1) user_id = 0;
+    
     scope(failure) { output.status = 500; output ~= "reporting failed"; }
     scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE);
     
