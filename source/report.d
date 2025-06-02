@@ -21,7 +21,6 @@ void report_get(Request r, Output output) {
   
   int user_id = set_header_context(mustache_context, r, output);
   mustache_context["photo_id"] = r.get.read("photo_id");
-  mustache_context["user_id"] = user_id;
   
 	output ~= mustache.render("report", mustache_context);
 }
@@ -30,11 +29,13 @@ void report_get(Request r, Output output) {
 void report_post(Request r, Output output) {
   if(r.post.has("message")) {
     string report = r.post.read("message");
-    int user_id = to!int(r.post.read("user_id", "0"));
+
+		int user_id = session_load(request, output);
+		if (user_id < 0)
+			user_id = 0;
+
     int photo_id = to!int(r.post.read("photo_id", "0"));
 
-    if (user_id == -1) user_id = 0;
-    
     scope(failure) { output.status = 500; output ~= "reporting failed"; }
     scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE);
     
