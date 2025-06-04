@@ -74,7 +74,7 @@ public:
 		sqlite3_close(handle);
 		// flogger.info("Database closed");
 	}
-
+ 
 	// Execute a plain string SQL Query on the database
 	void exec_imm(string sql) {
     log_stmt(sql);
