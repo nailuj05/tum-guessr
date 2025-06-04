@@ -343,10 +343,11 @@ void game_summary(Request request, Output output) {
   scope auto mustache_context = new Mustache.Context;
   
 	int total_score = 0;
-  foreach (result; round_results) {
+  foreach (i, result; round_results) {
 		total_score += result[0];
     auto mustache_subcontext = mustache_context.addSubContext("rounds");
     mustache_subcontext["score"] = result[0];
+    mustache_subcontext["num"] = i + 1;
     mustache_subcontext["guess_latitude"] = result[1];
     mustache_subcontext["guess_longitude"] = result[2];
     mustache_subcontext["true_latitude"] = result[3];
