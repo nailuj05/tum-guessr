@@ -6,12 +6,43 @@
 		<title>TUM Guessr</title>
 		<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 		<link rel="stylesheet" href="/style.css">
+    <style> 
+     .progress-container {
+       width: 100%;
+       height: 20px;
+       background: #ddd;
+       border-radius: 10px;
+       overflow: hidden;
+       position: relative;
+     }
+     .progress-fill {
+       height: 100%;
+       width: 0%;
+       background: var(--accent);
+       border-radius: 10px;
+       position: relative;
+       animation: fill 2s forwards;
+     }
+     @keyframes fill {
+       to { width: {{width}}%; }
+     }
+    </style>
 	</head>
 	<body>		
 		{{> header}}
 		<div style="position: relative;">
 		<button class="flagIcon" id="reportButton"></button>
 		<div id="resultMapContainer">
+      <div class="distance">
+        <b>{{distance}}m</b>
+      </div>
+      <div class="progress-container">
+        <div class="progress-fill">
+        </div>
+      </div>
+      <div class="score-fade">
+        {{score}}/2000
+      </div>
 			<div id="map"></div>
 			{{^final_round}}
 				<button id="continueButton" class="clickMeButton">Continue</button>
@@ -19,7 +50,6 @@
 			{{#final_round}}
 				<button id="gameSummaryButton" class="clickMeButton">Game Summary</button>
 			{{/final_round}}
-			<div>{{score}}</div>
 		</div>
 		</div>
 		<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>

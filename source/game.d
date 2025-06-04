@@ -281,10 +281,14 @@ void game_result(Request request, Output output) {
     return;
   }
 
+  int distance = distance_between_coordinates_in_meters(guess_latitude, guess_longitude, true_latitude, true_longitude);
+  
   Mustache mustache;
   mustache.path("public");
   scope auto mustache_context = new Mustache.Context;
   mustache_context["score"] = score;
+  mustache_context["distance"] = distance;
+  mustache_context["width"] = cast(int)(score / 20);
   mustache_context["guess_latitude"] = guess_latitude;
   mustache_context["guess_longitude"] = guess_longitude;
   mustache_context["true_latitude"] = true_latitude;

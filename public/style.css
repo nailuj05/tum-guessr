@@ -429,3 +429,23 @@ progress {
 		top: 1rem;
 		right: 1rem;
 }
+
+/* Result Animation */
+.distance {
+    color: var(--accent);
+    font-size: 1.5rem;
+    margin-top: 10px;
+    text-align: center;
+}
+.score-fade {
+    opacity: 0;
+    color: var(--accent);
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    text-align: center;
+    animation: fadein 1s forwards;
+    animation-delay: 2s;
+}
+@keyframes fadein {
+    to { opacity: 1; }
+}
