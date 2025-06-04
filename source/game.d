@@ -281,7 +281,7 @@ void game_result(Request request, Output output) {
     return;
   }
 
-  int distance = distance_between_coordinates_in_meters(guess_latitude, guess_longitude, true_latitude, true_longitude);
+  int distance = cast(int)distance_between_coordinates_in_meters(guess_latitude, guess_longitude, true_latitude, true_longitude);
   
   Mustache mustache;
   mustache.path("public");
