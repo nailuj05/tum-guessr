@@ -28,42 +28,43 @@
      }
     </style>
 	</head>
-	<body>		
-		{{> header}}
-		<div style="position: relative;">
-		<button class="flagIcon" id="reportButton"></button>
-		<div id="resultMapContainer">
-      <div class="distance">
-        <b>{{distance}}m</b>
-      </div>
-      <div class="progress-container">
-        <div class="progress-fill">
+  <body>		
+    {{> header}}
+    <div style="position: relative;">
+      <button class="flagIcon" id="reportButton"></button>
+      <div id="resultMapContainer">
+        <div class="distance">
+          <b>{{distance}}m</b>
         </div>
+        <div class="progress-container">
+          <div class="progress-fill">
+          </div>
+        </div>
+        <div class="score">
+          <div id="number-anim">{{score}}</div>/2000
+        </div>
+        <script src="/js/number-anim.js"></script>
+        <div id="map"></div>
+        {{^final_round}}
+          <button id="continueButton" class="clickMeButton">Continue</button>
+        {{/final_round}}
+        {{#final_round}}
+          <button id="gameSummaryButton" class="clickMeButton">Game Summary</button>
+        {{/final_round}}
       </div>
-      <div class="score-fade">
-        {{score}}/2000
-      </div>
-			<div id="map"></div>
-			{{^final_round}}
-				<button id="continueButton" class="clickMeButton">Continue</button>
-			{{/final_round}}
-			{{#final_round}}
-				<button id="gameSummaryButton" class="clickMeButton">Game Summary</button>
-			{{/final_round}}
-		</div>
-		</div>
-		<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-		<script src="/js/cookies.js"></script>
-		<script>
-		 const map = L.map('map').setView([({{true_latitude}} + {{guess_latitude}}) / 2, ({{true_longitude}} + {{guess_longitude}}) / 2], 16);
-		 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-			 attribution: '© OpenStreetMap contributors'
-		 }).addTo(map);
+    </div>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="/js/cookies.js"></script>
+    <script>
+     const map = L.map('map').setView([({{true_latitude}} + {{guess_latitude}}) / 2, ({{true_longitude}} + {{guess_longitude}}) / 2], 16);
+     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+       attribution: '© OpenStreetMap contributors'
+     }).addTo(map);
 
-		 const guessLocation = L.latLng({{guess_latitude}}, {{guess_longitude}});
-		 const trueLocation = L.latLng({{true_latitude}}, {{true_longitude}});
+     const guessLocation = L.latLng({{guess_latitude}}, {{guess_longitude}});
+     const trueLocation = L.latLng({{true_latitude}}, {{true_longitude}});
 
-	 	 var greenIcon = L.icon({
+     var greenIcon = L.icon({
        iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png",
        iconSize: [25, 41],
        iconAnchor: [12, 41],
@@ -88,29 +89,29 @@
        dashArray: "5, 10"
      }).addTo(map);
 
-		 {{^final_round}}
-			 const continueButton = document.getElementById("continueButton");
-			 continueButton.addEventListener("click", function() {
-				 window.location.replace("/game");
-			 });
-		 {{/final_round}}
+     {{^final_round}}
+       const continueButton = document.getElementById("continueButton");
+       continueButton.addEventListener("click", function() {
+         window.location.replace("/game");
+       });
+     {{/final_round}}
 
-		 {{#final_round}}
-			 const gameSummaryButton = document.getElementById("gameSummaryButton");
-			 gameSummaryButton.addEventListener("click", function () {
-				 window.location.replace("/game/summary")
-			 })
-		 {{/final_round}}
+     {{#final_round}}
+       const gameSummaryButton = document.getElementById("gameSummaryButton");
+       gameSummaryButton.addEventListener("click", function () {
+         window.location.replace("/game/summary")
+       })
+     {{/final_round}}
 
-			const reportButton = document.getElementById("reportButton");
-			reportButton.addEventListener("click", function () {
-		      const photo_id = getCookie("photo_id");
-					if (!photo_id) {
-							console.error("cookie photo_id not found");
-							return;
-					}
-					window.location.replace(`/report?photo_id=${photo_id}`);
-			});
+     const reportButton = document.getElementById("reportButton");
+     reportButton.addEventListener("click", function () {
+		   const photo_id = getCookie("photo_id");
+			 if (!photo_id) {
+				 console.error("cookie photo_id not found");
+				 return;
+			 }
+			 window.location.replace(`/report?photo_id=${photo_id}`);
+		 });
 		</script>
 	</body>
 </html>
