@@ -129,9 +129,15 @@ void game(Request request, Output output) {
 		}
 
 		auto duration_query_result = db.query!int(db.prepare_bind!int("
-				SELECT duration
-				FROM unfinished_rounds
-				WHERE game_id = ?
+				SELECT
+          COALESCE(
+            (t.start_time + r.duration - CAST(strftime('%s', 'now') AS INTEGER)),
+            r.duration
+          )
+				FROM unfinished_rounds r
+        LEFT JOIN timing t
+        USING (game_id, round_id)
+				WHERE r.game_id = ?
 				ORDER BY round_id ASC
 				LIMIT 1
 		", game_id));
