@@ -22,12 +22,13 @@ alias Request.Method.Post POST;
 
 @endpoint @priority(10) @route!"/game"
 void game(Request request, Output output) {
+  string location;
   if (request.method == GET) {
 		int user_id = session_load(request, output);
 		if (user_id < 0)
 			user_id = 0;
- 
-		string location = request.get.read("location", "garching");
+
+		location = request.get.read("location");
     
 		long timestamp = Clock.currTime.toUnixTime;
 
@@ -113,8 +114,9 @@ void game(Request request, Output output) {
 			output.setCookie(Cookie("game_id", game_id.to!string));
 		}
 
-    // Read location from cookie
-		location = request.cookie.read("location");
+    if (location == "") {
+      location = request.cookie.read("location");
+    }
     
 		Mustache mustache;
 		mustache.path("public");
@@ -123,6 +125,7 @@ void game(Request request, Output output) {
     set_header_context(mustache_context, request, output);
 		mustache_context["current_round"] = played_rounds + 1;
 		mustache_context["total_rounds"] = total_rounds;
+    writeln(location);
     mustache_context.addSubContext(location);
 		output ~= mustache.render("game", mustache_context);
 	}
