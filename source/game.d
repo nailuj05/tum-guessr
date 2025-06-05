@@ -29,6 +29,10 @@ void game(Request request, Output output) {
 			user_id = 0;
 
 		location = request.get.read("location");
+    if (location == "" || location == null) {
+      location = request.cookie.read("location");
+    }
+    assert(location != "");
     
 		long timestamp = Clock.currTime.toUnixTime;
 
@@ -38,12 +42,13 @@ void game(Request request, Output output) {
 		int remaining_rounds;
 		int total_rounds;
     try {
-      auto query_result = db.query!(int, int)(db.prepare_bind!int("
+      auto query_result = db.query!(int, int)(db.prepare_bind!(int, string)("
 				SELECT count(r.round_id), count(g.round_id)
 				FROM rounds r
 				LEFT JOIN guesses g ON r.round_id = g.round_id AND r.game_id = g.game_id
-        WHERE r.game_id = ?
-		  ", game_id));
+        JOIN games ga USING(game_id)
+        WHERE r.game_id = ? AND ga.location = ?
+		  ", game_id, location));
 			total_rounds = query_result[0][0];
 			played_rounds = query_result[0][1];
 			remaining_rounds = total_rounds - played_rounds;
@@ -113,10 +118,6 @@ void game(Request request, Output output) {
 			// TODO: set as cookie with hmac instead
 			output.setCookie(Cookie("game_id", game_id.to!string));
 		}
-
-    if (location == "") {
-      location = request.cookie.read("location");
-    }
     
 		Mustache mustache;
 		mustache.path("public");
@@ -125,7 +126,6 @@ void game(Request request, Output output) {
     set_header_context(mustache_context, request, output);
 		mustache_context["current_round"] = played_rounds + 1;
 		mustache_context["total_rounds"] = total_rounds;
-    writeln(location);
     mustache_context.addSubContext(location);
 		output ~= mustache.render("game", mustache_context);
 	}
