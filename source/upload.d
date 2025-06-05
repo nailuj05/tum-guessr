@@ -60,6 +60,8 @@ void upload(Request request, Output output) {
 		const Request.FormData fd = request.form.read("image");
     const float latitude = to!float(request.form.read("lat").data);
     const float longitude = to!float(request.form.read("long").data);
+    const string location = to!string(request.form.read("location").data);
+    
 		if(fd.isFile() && (fd.path.endsWith(".png") || fd.path.endsWith(".jpg")) && request.form.read("agree").data == "on") {
 			flogger.info("File ", fd.filename, " uploaded at ", fd.path);
 
@@ -94,7 +96,7 @@ void upload(Request request, Output output) {
           try {
             db.exec(db.prepare_bind!(string, float, float, string, int, long)("
           INSERT INTO photos (path, latitude, longitude, location, uploader_id, upload_time)
-          VALUES (?, ?, ?, ?, ?, ?)", target_path, latitude, longitude, "garching", user_id, timestamp));
+          VALUES (?, ?, ?, ?, ?, ?)", target_path, latitude, longitude, location, user_id, timestamp));
             mustache_context.addSubContext("info_messages")["info_message"] = "Photo submitted for review.";
           } catch (Database.DBException e) {
             flogger.error("An exception occured during insertion of photo in database:

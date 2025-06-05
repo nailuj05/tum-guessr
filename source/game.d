@@ -26,7 +26,9 @@ void game(Request request, Output output) {
 		int user_id = session_load(request, output);
 		if (user_id < 0)
 			user_id = 0;
+ 
 		string location = request.get.read("location", "garching");
+    
 		long timestamp = Clock.currTime.toUnixTime;
 
 		scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE);
@@ -96,6 +98,9 @@ void game(Request request, Output output) {
 				total_rounds = num_created_rounds;
 				remaining_rounds = num_created_rounds;
 				played_rounds = 0;
+
+        // Update Cookie for new game
+        output.setCookie(Cookie("location", location.to!string));
 			} catch (Database.DBException e) {
         flogger.warning("Failed to insert new game in db: " ~ e.msg);
         output.status = 400;
@@ -107,7 +112,10 @@ void game(Request request, Output output) {
 			// TODO: set as cookie with hmac instead
 			output.setCookie(Cookie("game_id", game_id.to!string));
 		}
-		
+
+    // Read location from cookie
+		location = request.cookie.read("location");
+    
 		Mustache mustache;
 		mustache.path("public");
 		scope auto mustache_context = new Mustache.Context;
@@ -115,6 +123,7 @@ void game(Request request, Output output) {
     set_header_context(mustache_context, request, output);
 		mustache_context["current_round"] = played_rounds + 1;
 		mustache_context["total_rounds"] = total_rounds;
+    mustache_context.addSubContext(location);
 		output ~= mustache.render("game", mustache_context);
 	}
 }
@@ -286,6 +295,7 @@ void game_result(Request request, Output output) {
   Mustache mustache;
   mustache.path("public");
   scope auto mustache_context = new Mustache.Context;
+  set_header_context(mustache_context, request, output);
   mustache_context["score"] = score;
   mustache_context["distance"] = distance;
   mustache_context["width"] = cast(int)(score / 20);
@@ -341,6 +351,7 @@ void game_summary(Request request, Output output) {
   Mustache mustache;
   mustache.path("public");
   scope auto mustache_context = new Mustache.Context;
+  set_header_context(mustache_context, request, output);
   
 	int total_score = 0;
   foreach (i, result; round_results) {
@@ -353,7 +364,10 @@ void game_summary(Request request, Output output) {
     mustache_subcontext["true_latitude"] = result[3];
     mustache_subcontext["true_longitude"] = result[4];
   }
+  string location = request.cookie.read("location", "garching");
 	mustache_context["total_score"] = total_score;
+	mustache_context["location"] = location;
+  mustache_context.addSubContext(location);
 
   output ~= mustache.render("game_summary", mustache_context);
 }
