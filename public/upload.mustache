@@ -16,11 +16,16 @@
       {{>info_message}}
     {{/info_messages}}
 		<div class="center">
-			<p>Click on the map to select a coordinate</p>
+      <select name="location" id="dropdown">
+        <option value="garching">Garching</option>
+        <option value="heilbronn">Heilbronn</option>
+      </select>
+      <p>Click on the map to select a coordinate</p>
 			<div id="mapEmbed">
 				<div id="map"></div>
 			</div>
 			<form action="upload" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="location" value="garching" id="location">
 				<div style="text-align: right">
 					<label>Latitude:</label>
 					<input type="text" name="lat" placeholder="Latitude" id="lat"><br>
@@ -46,7 +51,18 @@
 		 const fileInput = document.querySelector('input[name="image"]');
 		 const submitButton = document.querySelector('input[type="submit"]');
      const agreed = document.querySelector('input[type="checkbox"]');
-
+     const dropdown = document.getElementById('dropdown');
+     const hidden = document.getElementById('location');
+     dropdown.addEventListener('change', () => {
+       hidden.value = dropdown.value;
+       if(dropdown.value == "heilbronn") {
+         map.panTo([49.1475, 9.2137]);
+       } else {
+         map.panTo([48.2621, 11.6676]);
+       }
+     });
+     hidden.value = dropdown.value;
+     
 		 function validateForm() {
 			 const lat = parseFloat(latitudeInput.value);
 			 const lng = parseFloat(longitudeInput.value);

@@ -19,10 +19,8 @@
   - DONE Add Game summary page
   - Results page
     - Set correct map zoom level
-    - Add score bar
-    - styling
-      - continue button
-      - icons
+    - DONE Add score bar
+    - DONE styling
 
 * TODO dragimage.js
   - zoom to mouse position instead of center

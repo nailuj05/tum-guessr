@@ -130,15 +130,15 @@ void admin_photos(Request request, Output output) {
   int num_photos = db.query_imm!int("SELECT count(*) FROM photos")[0][0];
   int max_pages = num_photos / limit;
   
-  string[] order_options = ["photo_id", "username", "is_accepted"];
+  string[] order_options = ["photo_id", "location", "username", "is_accepted"];
   string order_option = order_options.canFind(order_by) ? order_by : default_option;
 
   Stmt stmt = db.prepare_bind!(int, int)("
-		SELECT p.photo_id, p.path, u.username, p.is_accepted
+		SELECT p.photo_id, p.path, u.username, p.is_accepted, p.location
 		FROM photos_with_acceptance p JOIN users u ON p.uploader_id == u.user_id
 		ORDER BY " ~ order_option ~ " " ~ order ~ "
 		LIMIT ? OFFSET ?", limit, offset);
-  auto query_result = db.query!(int, string, string, int)(stmt);
+  auto query_result = db.query!(int, string, string, int, string)(stmt);
 	
 	Mustache mustache;
 	mustache.path("public");
@@ -156,6 +156,7 @@ void admin_photos(Request request, Output output) {
 		mustache_subcontext["path"] = row[1];
 		mustache_subcontext["user_id"] = row[2];
 		mustache_subcontext["is_accepted"] = is_accepted ? "checked" : "";
+    mustache_subcontext["location"] = row[4];
 	}
 	
 	output ~= mustache.render("admin_photos", mustache_context);

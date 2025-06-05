@@ -9,7 +9,6 @@ import std.regex;
 import serverino;
 import passwd;
 import passwd.bcrypt;
-import std.logger;
 import std.process : environment;
 
 import mustache;

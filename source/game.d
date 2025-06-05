@@ -22,11 +22,18 @@ alias Request.Method.Post POST;
 
 @endpoint @priority(10) @route!"/game"
 void game(Request request, Output output) {
+  string location;
   if (request.method == GET) {
 		int user_id = session_load(request, output);
 		if (user_id < 0)
 			user_id = 0;
-		string location = request.get.read("location", "garching");
+
+		location = request.get.read("location");
+    if (location == "" || location == null) {
+      location = request.cookie.read("location");
+    }
+    assert(location != "");
+    
 		long timestamp = Clock.currTime.toUnixTime;
 
 		scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE);
@@ -36,15 +43,19 @@ void game(Request request, Output output) {
 		int total_rounds;
 		int next_round_duration_seconds;
     try {
-      auto query_result = db.query!int(db.prepare_bind!(int, int)("
+      auto query_result = db.query!int(db.prepare_bind!(int, string, int, string)("
 				SELECT count(*)
-				FROM rounds
-        WHERE game_id = ?
+				FROM rounds r
+        LEFT JOIN games g
+        USING (game_id)
+        WHERE r.game_id = ? AND g.location = ?
         UNION ALL
         SELECT count(*)
-        from finished_rounds
-        WHERE game_id = ?
-		  ", game_id, game_id));
+        FROM finished_rounds r
+        LEFT JOIN games g
+        USING (game_id)
+        WHERE r.game_id = ? AND g.location = ?
+		  ", game_id, location, game_id, location));
 			total_rounds = query_result[0][0];
 			played_rounds = query_result[1][0];
 			remaining_rounds = total_rounds - played_rounds;
@@ -102,6 +113,9 @@ void game(Request request, Output output) {
 				total_rounds = num_created_rounds;
 				remaining_rounds = num_created_rounds;
 				played_rounds = 0;
+
+        // Update Cookie for new game
+        output.setCookie(Cookie("location", location.to!string));
 			} catch (Database.DBException e) {
         flogger.warning("Failed to insert new game in db: " ~ e.msg);
         output.status = 400;
@@ -131,6 +145,7 @@ void game(Request request, Output output) {
 		mustache_context["current_round"] = played_rounds + 1;
 		mustache_context["total_rounds"] = total_rounds;
 		mustache_context["total_round_time"] = next_round_duration_seconds;
+    mustache_context.addSubContext(location);
 		output ~= mustache.render("game", mustache_context);
 	}
 }
@@ -323,6 +338,7 @@ void game_result(Request request, Output output) {
   Mustache mustache;
   mustache.path("public");
   scope auto mustache_context = new Mustache.Context;
+  set_header_context(mustache_context, request, output);
   mustache_context["score"]							= score;
   mustache_context["width"]							= cast(int)(score / 20);
 	if (has_timed_out) {
@@ -387,6 +403,7 @@ void game_summary(Request request, Output output) {
   Mustache mustache;
   mustache.path("public");
   scope auto mustache_context = new Mustache.Context;
+  set_header_context(mustache_context, request, output);
   
 	int total_score = 0;
   foreach (i, result; round_results) {
@@ -407,7 +424,10 @@ void game_summary(Request request, Output output) {
 		mustache_subcontext["has_timed_out"]			= has_timed_out;
 
   }
+  string location = request.cookie.read("location", "garching");
 	mustache_context["total_score"] = total_score;
+	mustache_context["location"] = location;
+  mustache_context.addSubContext(location);
 
   output ~= mustache.render("game_summary", mustache_context);
 }

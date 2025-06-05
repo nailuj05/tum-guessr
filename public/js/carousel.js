@@ -26,7 +26,7 @@ cards.forEach((card, i) => {
 		} else if (card.classList.contains("cright")) {
 			rotateLeft();
 		} else {
-			if(["garching"].includes(card.dataset.name))
+			if(["garching", "heilbronn"].includes(card.dataset.name))
 				window.location.href = "/game?location="+card.dataset.name;
 		}
 	});

@@ -33,8 +33,9 @@ import admin;
 import photos;
 import report;
 import header;
+import stats;
 
-mixin ServerinoMain!(upload, login, profile, game, admin, photos, report);
+mixin ServerinoMain!(upload, login, profile, game, admin, photos, report, stats);
 
 alias MustacheEngine!(string) Mustache;
 
@@ -234,6 +235,17 @@ alias MustacheEngine!(string) Mustache;
       INSERT OR IGNORE INTO users (user_id, username, password_hash, sign_up_time, is_deactivated)
       VALUES (0, 'unknown', '', 0, 1)
     ");
+    db.exec_imm("CREATE TABLE IF NOT EXISTS statistic (
+      timestamp INTEGER NOT NULL,
+      user_id INTEGER,
+      device TEXT NOT NULL,
+      referrer TEXT NOT NULL,
+      FOREIGN KEY(user_id) 
+        REFERENCES users(user_id) 
+          ON UPDATE CASCADE
+          ON DELETE SET NULL
+    )");
+
     if (num_populate_users > 0) {
       populate_users(num_populate_users);
     }

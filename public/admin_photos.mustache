@@ -17,6 +17,7 @@
 				  <tr>
 					  <th>ID</th>
 					  <th>Photo</th>
+					  <th>Location</th>
 					  <th>Uploader</th>
 					  <th>Accepted</th>
 				  </tr>
@@ -30,6 +31,7 @@
 								  <img src="/{{path}}" alt="{{path}}" width="200" height="200" style="object-fit: cover">
 							  </a>
 						  </td>
+              <td>{{location}}</td>
 						  <td><a href="/profile/{{user_id}}">{{user_id}}</a></td>
 						  <td><input type="checkbox" disabled {{is_accepted}}/></td>
 					  </tr>
