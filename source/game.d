@@ -34,15 +34,19 @@ void game(Request request, Output output) {
 		int played_rounds;
 		int remaining_rounds;
 		int total_rounds;
+		int next_round_duration_seconds;
     try {
-      auto query_result = db.query!(int, int)(db.prepare_bind!int("
-				SELECT count(r.round_id), count(g.round_id)
-				FROM rounds r
-				LEFT JOIN guesses g ON r.round_id = g.round_id AND r.game_id = g.game_id
-        WHERE r.game_id = ?
-		  ", game_id));
+      auto query_result = db.query!int(db.prepare_bind!(int, int)("
+				SELECT count(*)
+				FROM rounds
+        WHERE game_id = ?
+        UNION ALL
+        SELECT count(*)
+        from finished_rounds
+        WHERE game_id = ?
+		  ", game_id, game_id));
 			total_rounds = query_result[0][0];
-			played_rounds = query_result[0][1];
+			played_rounds = query_result[1][0];
 			remaining_rounds = total_rounds - played_rounds;
       if (remaining_rounds < 1) {
         game_id = -1;
@@ -65,12 +69,14 @@ void game(Request request, Output output) {
         // Get game_id
         game_id = db.query_imm!int("SELECT last_insert_rowid()")[0][0];
         // Create 5 rounds with random photos
-        db.exec(db.prepare_bind!(int, string)("
-					INSERT INTO rounds (round_id, game_id, photo_id)
+				int duration = 60;
+        db.exec(db.prepare_bind!(int, int, string)("
+					INSERT INTO rounds (round_id, game_id, photo_id, duration)
 					SELECT
 					  ROW_NUMBER() OVER () AS round_id,
 					  ? AS game_id,
-					  photo_id
+					  photo_id,
+            ? AS duration
 					FROM (
 					  SELECT photo_id
 					  FROM photos_with_acceptance
@@ -78,7 +84,7 @@ void game(Request request, Output output) {
 					  ORDER BY RANDOM()
 					  LIMIT 5
 					)
-			  ", game_id, location));
+			  ", game_id, duration, location));
         // Check round creation
         int num_created_rounds = db.query!int(db.prepare_bind!int("
 					SELECT count(*)
@@ -107,6 +113,15 @@ void game(Request request, Output output) {
 			// TODO: set as cookie with hmac instead
 			output.setCookie(Cookie("game_id", game_id.to!string));
 		}
+
+		auto duration_query_result = db.query!int(db.prepare_bind!int("
+				SELECT duration
+				FROM unfinished_rounds
+				WHERE game_id = ?
+				ORDER BY round_id ASC
+				LIMIT 1
+		", game_id));
+		next_round_duration_seconds = duration_query_result[0][0];
 		
 		Mustache mustache;
 		mustache.path("public");
@@ -115,6 +130,7 @@ void game(Request request, Output output) {
     set_header_context(mustache_context, request, output);
 		mustache_context["current_round"] = played_rounds + 1;
 		mustache_context["total_rounds"] = total_rounds;
+		mustache_context["total_round_time"] = next_round_duration_seconds;
 		output ~= mustache.render("game", mustache_context);
 	}
 }
@@ -127,7 +143,7 @@ void round(Request request, Output output) {
 		user_id = 0;
 	
 	if (request.method == GET) {
-		scope Database db = new Database(environment["db_filename"], OpenFlags.READONLY);
+		scope Database db = new Database(environment["db_filename"], OpenFlags.READWRITE);
     int game_id = get_game_id(request, output, db);
     if (game_id < 0) {
 			output.status = 400;
@@ -136,15 +152,16 @@ void round(Request request, Output output) {
     }
     int photo_id;
 		string photo_path;
+		int round_id;
 		try {
 			// Get photo path of next unfinished round
-			auto query_result = db.query!(int, string)(db.prepare_bind!(int, int)("
-				SELECT p.photo_id, p.path
+			auto query_result = db.query!(int, string, int)(db.prepare_bind!(int, int)("
+				SELECT p.photo_id, p.path, r.round_id
 				FROM games g
-          JOIN unfinished_rounds r
-            ON g.game_id=r.game_id
-          JOIN photos p
-            ON r.photo_id=p.photo_id
+				JOIN unfinished_rounds r
+				USING (game_id)
+				JOIN photos p
+				USING (photo_id)
 				WHERE g.game_id=? AND g.user_id=?
 				ORDER BY r.round_id ASC
 				LIMIT 1
@@ -156,17 +173,23 @@ void round(Request request, Output output) {
 			}
       photo_id = query_result[0][0];
 			photo_path = query_result[0][1];
+			round_id = query_result[0][2];
+			db.exec(db.prepare_bind!(int, int)("
+        INSERT OR IGNORE INTO timing (round_id, game_id, start_time)
+        VALUES (?, ?, CAST(strftime('%s', 'now') AS INTEGER))
+      ", round_id, game_id));
 		} catch (Database.DBException e) {
 			flogger.warning("An error occured while retrieving round data: " ~ e.msg);
 			output.status = 500;
 			return;
 		}
     output.setCookie(Cookie("photo_id", photo_id.to!string));
+    output.setCookie(Cookie("round_id", round_id.to!string));
 		output.serveFile(photo_path);
 		return;
 	} else if (request.method == POST) {
 
-		if (!request.post.has("longitude") || !request.post.has("latitude")) {
+		if (!request.cookie.has("round_id") || !request.post.has("longitude") || !request.post.has("latitude")) {
 			output.status = 400;
 			output ~= "Missing argument";
 		  return;
@@ -180,9 +203,11 @@ void round(Request request, Output output) {
       return;
     }
 		
+		int given_round_id;
 		float guess_latitude;
 		float guess_longitude;
 		try {
+			given_round_id = request.cookie.read("round_id").to!int;
 		  guess_latitude = request.post.read("latitude").to!float;
 		  guess_longitude = request.post.read("longitude").to!float;
 		} catch (Exception e) {
@@ -196,17 +221,25 @@ void round(Request request, Output output) {
 			auto query_result = db.query!(int, double, double)(db.prepare_bind!(int)("
 				SELECT r.round_id, p.latitude, p.longitude
 				FROM unfinished_rounds r
-        JOIN photos p ON r.photo_id=p.photo_id
+        JOIN photos p 
+        USING (photo_id)
         WHERE r.game_id=?
         ORDER BY r.round_id ASC
         LIMIT 1
 			", game_id));
 			if (query_result.length < 1) {
 				output.status = 400;
-				output ~= "No such unfinished game";
+				output ~= "No such unfinished round";
 				return;
 			}
       int round_id = query_result[0][0];
+			if (given_round_id != round_id) {
+				info(given_round_id.to!string);
+				info(round_id.to!string);
+				output.status = 400;
+				output ~= "Round already timed out";
+				return;
+			}
 			double true_latitude = query_result[0][1];
 			double true_longitude = query_result[0][2];
       double distance_meters = distance_between_coordinates_in_meters(guess_latitude, guess_longitude, true_latitude, true_longitude);
@@ -249,13 +282,17 @@ void game_result(Request request, Output output) {
   double true_latitude;
   double true_longitude;
   int score;
+	bool has_timed_out;
   int remaining_rounds;
 
   try {
-    auto query_result = db.query!(int, double, double, double, double)(db.prepare_bind!(int)("
-      SELECT r.score, r.guess_lat, r.guess_long, p.latitude, p.longitude
+    auto query_result = db.query!(int, double, double, double, double, int)(db.prepare_bind!(int)("
+      SELECT r.score, g.latitude, g.longitude, p.latitude, p.longitude, r.has_timed_out
       FROM finished_rounds r
-      JOIN photos p ON r.photo_id=p.photo_id
+      LEFT JOIN guesses g
+      USING (round_id, game_id)
+      JOIN photos p
+      USING (photo_id)
       WHERE r.game_id=?
       ORDER BY r.round_id DESC
       LIMIT 1
@@ -265,12 +302,13 @@ void game_result(Request request, Output output) {
       output ~= "No such finished round";
       return;
     }
-    score = query_result[0][0];
-    guess_latitude = query_result[0][1];
-    guess_longitude = query_result[0][2];
-    true_latitude = query_result[0][3];
-    true_longitude = query_result[0][4];
-    remaining_rounds = db.query!int(db.prepare_bind!int("
+    score							= query_result[0][0];
+    guess_latitude		= query_result[0][1];
+    guess_longitude		= query_result[0][2];
+    true_latitude			= query_result[0][3];
+    true_longitude		= query_result[0][4];
+		has_timed_out			= query_result[0][5].to!bool;
+    remaining_rounds	= db.query!int(db.prepare_bind!int("
       SELECT count(*)
       FROM unfinished_rounds
       WHERE game_id=? 
@@ -281,18 +319,22 @@ void game_result(Request request, Output output) {
     return;
   }
 
-  int distance = cast(int)distance_between_coordinates_in_meters(guess_latitude, guess_longitude, true_latitude, true_longitude);
   
   Mustache mustache;
   mustache.path("public");
   scope auto mustache_context = new Mustache.Context;
-  mustache_context["score"] = score;
-  mustache_context["distance"] = distance;
-  mustache_context["width"] = cast(int)(score / 20);
-  mustache_context["guess_latitude"] = guess_latitude;
-  mustache_context["guess_longitude"] = guess_longitude;
-  mustache_context["true_latitude"] = true_latitude;
-  mustache_context["true_longitude"] = true_longitude;
+  mustache_context["score"]							= score;
+  mustache_context["width"]							= cast(int)(score / 20);
+	if (has_timed_out) {
+		mustache_context.useSection("timeout");
+	} else {
+		int distance = cast(int)distance_between_coordinates_in_meters(guess_latitude, guess_longitude, true_latitude, true_longitude);
+		mustache_context["distance"]					= distance;
+		mustache_context["guess_latitude"]	= guess_latitude;
+		mustache_context["guess_longitude"] = guess_longitude;
+	}
+  mustache_context["true_latitude"]			= true_latitude;
+  mustache_context["true_longitude"]		= true_longitude;
 
   if (remaining_rounds < 1) {
     mustache_context.useSection("final_round");
@@ -314,7 +356,7 @@ void game_summary(Request request, Output output) {
     output ~= "Missing or invalid game_id";
     return;
   }
-  Tuple!(int, double, double, double, double)[] round_results;
+  Tuple!(int, double, double, double, double, int)[] round_results;
   try {
     int remaining_rounds = db.query!int(db.prepare_bind!int("
       SELECT count(*)
@@ -326,9 +368,13 @@ void game_summary(Request request, Output output) {
       output ~= "Game not finished, how did you get here?";
       return;
     }
-    round_results = db.query!(int, double, double, double, double)(db.prepare_bind!int("
-      SELECT r.score, r.guess_lat, r.guess_long, p.latitude, p.longitude
-      FROM finished_rounds r JOIN photos p ON r.photo_id=p.photo_id 
+    round_results = db.query!(int, double, double, double, double, int)(db.prepare_bind!int("
+      SELECT r.score, g.latitude, g.longitude, p.latitude, p.longitude, r.has_timed_out
+      FROM finished_rounds r
+      LEFT JOIN guesses g
+      USING (round_id, game_id)
+      JOIN photos p
+      USING (photo_id)
       WHERE r.game_id=?
       ORDER BY r.round_id ASC
     ", game_id));
@@ -344,14 +390,22 @@ void game_summary(Request request, Output output) {
   
 	int total_score = 0;
   foreach (i, result; round_results) {
-		total_score += result[0];
+		int score = result[0];
+		bool has_timed_out = result[5].to!bool;
+		total_score += score;
     auto mustache_subcontext = mustache_context.addSubContext("rounds");
-    mustache_subcontext["score"] = result[0];
-    mustache_subcontext["num"] = i + 1;
-    mustache_subcontext["guess_latitude"] = result[1];
-    mustache_subcontext["guess_longitude"] = result[2];
-    mustache_subcontext["true_latitude"] = result[3];
-    mustache_subcontext["true_longitude"] = result[4];
+    mustache_subcontext["score"]							= score;
+    mustache_subcontext["num"]								= i + 1;
+		if (has_timed_out) {
+			mustache_subcontext.useSection("timeout");
+		} else {
+			mustache_subcontext["guess_latitude"]		= result[1];
+			mustache_subcontext["guess_longitude"]	= result[2];
+		}
+    mustache_subcontext["true_latitude"]			= result[3];
+    mustache_subcontext["true_longitude"]			= result[4];
+		mustache_subcontext["has_timed_out"]			= has_timed_out;
+
   }
 	mustache_context["total_score"] = total_score;
 

@@ -150,6 +150,7 @@ alias MustacheEngine!(string) Mustache;
       round_id INTEGER NOT NULL,
       game_id INTEGER NOT NULL,
       photo_id INTEGER NOT NULL,
+      duration INTEGER NOT NULL,
       PRIMARY KEY (round_id, game_id),
       FOREIGN KEY(game_id) 
         REFERENCES games(game_id) 
@@ -157,6 +158,16 @@ alias MustacheEngine!(string) Mustache;
           ON UPDATE CASCADE,
       FOREIGN KEY(photo_id)
         REFERENCES photos(photo_id)
+          ON DELETE CASCADE
+          ON UPDATE CASCADE
+    )");
+		db.exec_imm("CREATE TABLE IF NOT EXISTS timing (
+      round_id INTEGER NOT NULL,
+      game_id INTEGER NOT NULL,
+      start_time INTEGER NOT NULL,
+			PRIMARY KEY (round_id, game_id),
+      FOREIGN KEY(round_id, game_id) 
+        REFERENCES rounds(round_id, game_id) 
           ON DELETE CASCADE
           ON UPDATE CASCADE
     )");
@@ -172,19 +183,39 @@ alias MustacheEngine!(string) Mustache;
           ON DELETE CASCADE
           ON UPDATE CASCADE
     )");
-    db.exec_imm("CREATE VIEW IF NOT EXISTS finished_rounds AS
-      SELECT r.round_id, r.game_id, r.photo_id, g.latitude AS guess_lat, g.longitude AS guess_long, g.score
-      FROM rounds r
-      JOIN guesses g ON r.round_id=g.round_id AND r.game_id=g.game_id
-    ");
-    db.exec_imm("CREATE VIEW IF NOT EXISTS unfinished_rounds AS
+		db.exec_imm("CREATE VIEW IF NOT EXISTS started_rounds AS
       SELECT *
       FROM rounds r
-      WHERE NOT EXISTS (
-        SELECT 1
-        FROM guesses g
-        WHERE r.round_id=g.round_id AND r.game_id=g.game_id
-      )
+      JOIN timing t
+      USING (round_id, game_id)
+    ");
+		db.exec_imm("CREATE VIEW IF NOT EXISTS timed_out_rounds AS
+      SELECT s.*
+      FROM started_rounds s
+      LEFT JOIN guesses g
+      USING (round_id, game_id)
+      WHERE g.round_id IS NULL
+        AND (start_time + duration) <= CAST(strftime('%s', 'now') AS INTEGER)
+    ");
+		db.exec_imm("CREATE VIEW IF NOT EXISTS guessed_rounds AS
+      SELECT *
+      FROM rounds
+      JOIN guesses
+      USING (round_id, game_id)
+    ");
+    db.exec_imm("CREATE VIEW IF NOT EXISTS finished_rounds AS
+      SELECT r.round_id, r.game_id, r.photo_id, r.duration, r.score, FALSE AS has_timed_out 
+      FROM guessed_rounds r
+      UNION
+      SELECT r.round_id, r.game_id, r.photo_id, r.duration, 0 AS score, TRUE AS has_timed_out
+      FROM timed_out_rounds r
+    ");
+    db.exec_imm("CREATE VIEW IF NOT EXISTS unfinished_rounds AS
+      SELECT r.*
+      FROM rounds r
+      LEFT JOIN finished_rounds f
+      USING (round_id, game_id)
+      WHERE f.round_id IS NULL
     ");
     db.exec_imm("CREATE TABLE IF NOT EXISTS reports (
       report_id INTEGER PRIMARY KEY,

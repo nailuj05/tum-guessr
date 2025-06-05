@@ -10,6 +10,7 @@
 	<body>		
     {{> header}}
 		<div id="photoContainer">
+			<p id="timer"></p>
 			<p id="roundCounter">{{current_round}} / {{total_rounds}}</p>
 			<button class="flagIcon" id="reportButton"></button>
 			<div class="image-wrapper">
@@ -65,6 +66,24 @@
 					}
 					window.open(`/report?photo_id=${photo_id}`, "_blank");
 			});
+
+
+			let remaining_round_time = {{total_round_time}};
+			const timer = document.getElementById("timer");
+
+			function countDown() {
+					const minutes = Math.floor(remaining_round_time / 60);
+					const seconds = remaining_round_time % 60;
+				  timer.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+					remaining_round_time--;
+					if (remaining_round_time < 0) {
+							clearInterval(count_down);
+							window.location.replace("/game/result");
+					}
+			};
+
+			const count_down = setInterval(countDown, 1000);
+		  countDown();
 		 
 		 map.on('click', function(e) {
 			 const lat = e.latlng.lat.toFixed(6);

@@ -444,3 +444,7 @@ progress {
     margin-bottom: 10px;
     text-align: center;
 }
+#timer {
+		position: absolute;
+		top: 1rem;
+}

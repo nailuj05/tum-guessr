@@ -33,9 +33,11 @@
     <div style="position: relative;">
       <button class="flagIcon" id="reportButton"></button>
       <div id="resultMapContainer">
+			  {{^timeout}}
         <div class="distance">
           <b>{{distance}}m</b>
         </div>
+				{{/timeout}}
         <div class="progress-container">
           <div class="progress-fill">
           </div>
@@ -56,13 +58,12 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="/js/cookies.js"></script>
     <script>
-     const map = L.map('map').setView([({{true_latitude}} + {{guess_latitude}}) / 2, ({{true_longitude}} + {{guess_longitude}}) / 2], 16);
+			const view_center = {{#timeout}} [{{true_latitude}}, {{true_longitude}}] {{/timeout}} {{^timeout}} [({{true_latitude}} + {{guess_latitude}}) / 2, ({{true_longitude}} + {{guess_longitude}}) / 2] {{/timeout}};
+		 const map = L.map('map').setView(view_center, 16);
      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
        attribution: '© OpenStreetMap contributors'
      }).addTo(map);
 
-     const guessLocation = L.latLng({{guess_latitude}}, {{guess_longitude}});
-     const trueLocation = L.latLng({{true_latitude}}, {{true_longitude}});
 
      var greenIcon = L.icon({
        iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png",
@@ -79,8 +80,12 @@
      });
 
      // Add markers to the map
-     L.marker(guessLocation, {icon: blueIcon}).addTo(map).bindPopup("Guess Location");
+     const trueLocation = L.latLng({{true_latitude}}, {{true_longitude}});
      L.marker(trueLocation, {icon: greenIcon}).addTo(map).bindPopup("True Location");
+
+		 {{^timeout}}
+     const guessLocation = L.latLng({{guess_latitude}}, {{guess_longitude}});
+     L.marker(guessLocation, {icon: blueIcon}).addTo(map).bindPopup("Guess Location");
 
      // Draw a dotted line between the markers
      var dottedLine = L.polyline([guessLocation, trueLocation], {
@@ -88,6 +93,7 @@
        weight: 2,
        dashArray: "5, 10"
      }).addTo(map);
+		 {{/timeout}}
 
      {{^final_round}}
        const continueButton = document.getElementById("continueButton");
