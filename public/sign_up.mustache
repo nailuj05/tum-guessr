@@ -14,7 +14,12 @@
 	</head>
 	<body style="display: flex; flex-direction: column; height: 100%">
 		<header>
-			<div>TUM Guessr</div>
+			<div class="left">
+				<a class="home" href="/">TUM Guessr</a>
+			</div>
+			<div class="right">
+				<a class="btn" href="/login">Login</a>
+			</div>
 		</header>
     {{#error_messages}}
       {{>error_message}}
