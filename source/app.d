@@ -128,6 +128,7 @@ alias MustacheEngine!(string) Mustache;
           ON DELETE CASCADE 
           ON UPDATE CASCADE
     )");
+		db.exec_imm("DROP VIEW IF EXISTS photos_with_acceptance");
     db.exec_imm("CREATE VIEW IF NOT EXISTS photos_with_acceptance AS
         SELECT p.*,
             CASE
@@ -184,12 +185,14 @@ alias MustacheEngine!(string) Mustache;
           ON DELETE CASCADE
           ON UPDATE CASCADE
     )");
+		db.exec_imm("DROP VIEW IF EXISTS started_rounds");
 		db.exec_imm("CREATE VIEW IF NOT EXISTS started_rounds AS
       SELECT *
       FROM rounds r
       JOIN timing t
       USING (round_id, game_id)
     ");
+		db.exec_imm("DROP VIEW IF EXISTS timed_out_rounds");
 		db.exec_imm("CREATE VIEW IF NOT EXISTS timed_out_rounds AS
       SELECT s.*
       FROM started_rounds s
@@ -198,12 +201,14 @@ alias MustacheEngine!(string) Mustache;
       WHERE g.round_id IS NULL
         AND (start_time + duration) <= CAST(strftime('%s', 'now') AS INTEGER)
     ");
+		db.exec_imm("DROP VIEW IF EXISTS guessed_rounds");
 		db.exec_imm("CREATE VIEW IF NOT EXISTS guessed_rounds AS
       SELECT *
       FROM rounds
       JOIN guesses
       USING (round_id, game_id)
     ");
+		db.exec_imm("DROP VIEW IF EXISTS finished_rounds");
     db.exec_imm("CREATE VIEW IF NOT EXISTS finished_rounds AS
       SELECT r.round_id, r.game_id, r.photo_id, r.duration, r.score, FALSE AS has_timed_out 
       FROM guessed_rounds r
@@ -211,6 +216,7 @@ alias MustacheEngine!(string) Mustache;
       SELECT r.round_id, r.game_id, r.photo_id, r.duration, 0 AS score, TRUE AS has_timed_out
       FROM timed_out_rounds r
     ");
+		db.exec_imm("DROP VIEW IF EXISTS unfinished_rounds");
     db.exec_imm("CREATE VIEW IF NOT EXISTS unfinished_rounds AS
       SELECT r.*
       FROM rounds r
