@@ -66,7 +66,7 @@ int session_load(const Request request, ref Output output)
 		string hmac = cookie_info.representation.hmac!SHA256(hmac_key).toHexString!(LetterCase.lower).dup;
 
 		if (cookie_hmac != hmac) {
-			flogger.warning("Cookie " ~ session_cookie ~ " has invalid hmac: { expected: " ~ hmac ~ ", got: " ~ cookie_hmac ~ " }");
+			flogger.warning("Session cookie has invalid hmac");
 			session_remove(output);
 			return -1;
 		}
