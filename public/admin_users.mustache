@@ -35,7 +35,7 @@
           {{#users}}
             <tr>	
               <td>{{user_id}}</td>
-              <td>{{username}}</td>
+              <td><a href="/profile/{{username_uri_encoded}}">{{username}}</a></td>
               <td>{{sign_up_time}}</td>
               <td><input type="checkbox" onchange='changeUserStatus(this, "{{user_id}}", "is_admin", "{{admin_value}}")' {{admin_checked}}></td>
               <td><input type="checkbox" onchange='changeUserStatus(this, "{{user_id}}", "is_trusted", "{{trusted_value}}")' {{trusted_checked}}></td>

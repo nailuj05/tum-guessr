@@ -89,10 +89,12 @@ void admin_users(Request request, Output output) {
 
 	page_context(mustache_context, "/admin/users", page, max_pages, limit, order, order_option, order_options);
 
+	import std.uri;
 	foreach (ref row; query_result) {
 		auto mustache_subcontext = mustache_context.addSubContext("users");
 		mustache_subcontext["user_id"] = row[0];
 		mustache_subcontext["username"] = row[1];
+		mustache_subcontext["username_uri_encoded"] = row[1].encodeComponent;
 		mustache_subcontext["sign_up_time"] = SysTime.fromUnixTime(row[2]).toString;
 		mustache_subcontext["admin_value"] = 1 - row[3];
 		mustache_subcontext["admin_checked"] = row[3] == 1 ? "checked" : "";
@@ -148,13 +150,15 @@ void admin_photos(Request request, Output output) {
 	
 	page_context(mustache_context, "/admin/photos", page, max_pages, limit, order, order_option, order_options);
 
+	import std.uri;
 	foreach (ref row; query_result) {
 		auto mustache_subcontext = mustache_context.addSubContext("photos");
     bool is_accepted = row[3] == 1;
     
 		mustache_subcontext["photo_id"] = row[0];
 		mustache_subcontext["path"] = row[1];
-		mustache_subcontext["user_id"] = row[2];
+		mustache_subcontext["username"] = row[2];
+		mustache_subcontext["username_uri_encoded"] = row[2].encodeComponent;
 		mustache_subcontext["is_accepted"] = is_accepted ? "checked" : "";
     mustache_subcontext["location"] = row[4];
 	}

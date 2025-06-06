@@ -43,9 +43,10 @@ void profile(Request request, Output output) {
     return;
   }
 
+	import std.uri;
   string username = query_result[0][0];
   output.status = 302;
-  output.addHeader("Location", "/profile/" ~ username);
+  output.addHeader("Location", "/profile/" ~ username.encodeComponent);
 }
 
 @endpoint @route!(request => request.path.startsWith("/profile/"))
@@ -55,14 +56,15 @@ void profile_username(Request request, Output output) {
     return;
   }
 
-  auto username_match = matchFirst(request.path, ctRegex!(`^/profile/(\w+)$`));
+	import std.uri;
+  auto username_match = matchFirst(request.path, ctRegex!(`^/profile/(.+)$`));
   if (username_match.empty) {
     output.status = 404;
     output ~= "Profile does not exist";
     return;
   }
 
-  string username = username_match[1];
+  string username = username_match[1].decodeComponent;
 
   scope Database db = new Database(environment["db_filename"], OpenFlags.READONLY);
   auto query_result = db.query!(int, int)(db.prepare_bind!(string)("
