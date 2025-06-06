@@ -61,7 +61,8 @@
 			const view_center = {{#timeout}} [{{true_latitude}}, {{true_longitude}}] {{/timeout}} {{^timeout}} [({{true_latitude}} + {{guess_latitude}}) / 2, ({{true_longitude}} + {{guess_longitude}}) / 2] {{/timeout}};
 		 const map = L.map('map').setView(view_center, 16);
      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-       attribution: '© OpenStreetMap contributors'
+			 attribution: '© OpenStreetMap contributors',
+       maxZoom: 22,
      }).addTo(map);
 
 
