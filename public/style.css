@@ -1,410 +1,430 @@
 /* Define Variables for consistent styling here */
 :root {
-		--background: #121416;
-		--accent: #2e6eb1;
-		--highlight: #3f7fef;
-		--error: #ee1111;
+	--background: #121416;
+	--accent: #2e6eb1;
+	--highlight: #3f7fef;
+	--error: #ee1111;
 }
 body {
-		font-family: sans-serif;
-		text-align: center;
-		background-color: var(--background);
-		color: var(--accent);
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    overflow: hidden;
-		overflow-x: hidden;
+	font-family: sans-serif;
+	text-align: center;
+	background-color: var(--background);
+	color: var(--accent);
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+	overflow-x: hidden;
 }
 p {
-		color: white;
+	color: white;
 }
 h1,h2,h3,h4,h5,h6 {
-    color: var(--accent);
+  color: var(--accent);
 }
 button {
-    cursor: pointer;
+  cursor: pointer;
 }
 .scroll-enabled {
-		overflow: auto;
-		padding-bottom: 5rem;
+	overflow: auto;
+	padding-bottom: 5rem;
 }
 
 header {
-    background: var(--accent);
-    color: white;
-		max-width: 100%;
-    padding: 0.5rem;
-    display: flex;
-    flex-wrap: wrap;
-	  align-items: center;
-	  position: relative;
+  background: var(--accent);
+  color: white;
+	max-width: 100%;
+  padding: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+	align-items: center;
+	position: relative;
 }
 .hamburger {
-	  display: none;
-    font-size: 1.5rem;
-    background: none;
-    border: none;
-    color: white;
-    cursor: pointer;
+	display: none;
+  font-size: 1.5rem;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
 }
 .right {
-        margin-left: auto;
+  margin-left: auto;
 }
 @media (orientation: portrait) {
-    header {
-		    align-items: center;
-	  }
-    .hamburger {
-        display: block;
-        margin-left: auto;
-    }
-    .right {
-        display: none;
-        flex-direction: column;
-        width: 100%;
-        margin-top: 0.5rem;
-    }
-    .right.show {
-			  display:flex;
-	  }
+  header {
+		align-items: center;
+	}
+  .hamburger {
+    display: block;
+    margin-left: auto;
+  }
+  .right {
+    display: none;
+    flex-direction: column;
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+  .right.show {
+		display:flex;
+	}
 }
 .btn {
-		color: white;
-    padding: 0.5rem 1rem;
-    margin: 0 0.25rem;
-    text-decoration: none;
-    border-radius: 5px;
-		border: 1px solid white;
-    display: inline-block;
+	color: white;
+  padding: 0.5rem 1rem;
+  margin: 0 0.25rem;
+  text-decoration: none;
+  border-radius: 5px;
+	border: 1px solid white;
+  display: inline-block;
 }
 .home {
-		color: white;
-		font-size: 1.5rem;
-    text-decoration: none;
+	color: white;
+	font-size: 1.5rem;
+  text-decoration: none;
 }
 .center {
-    display: flex;
-		flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    min-height: 80vh;
-    box-sizing: border-box;
-		padding: 1.5rem;
+  display: flex;
+	flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  box-sizing: border-box;
+	padding: 1.5rem;
 }
 .error {
-		color: var(--error);
-    justify-content: center;
-		display: flex;
-		padding: 5px;
-		margin: 5px;
-		font-size: 1.1em;
-		border: 1px solid var(--error);
-		border-radius: 5px;
+	color: var(--error);
+  justify-content: center;
+	display: flex;
+	padding: 5px;
+	margin: 5px;
+	font-size: 1.1em;
+	border: 1px solid var(--error);
+	border-radius: 5px;
 }
 .info {
-		color: var(--accent);
-    justify-content: center;
-		display: flex;
-		padding: 5px;
-		margin: 5px;
-		font-size: 1.1em;
-		border: 1px solid var(--accent);
-		border-radius: 5px;
-		animation:
-				fadeOut 2s 4s forwards,
-				hide 0s 4s forwards;
+	color: var(--accent);
+  justify-content: center;
+	display: flex;
+	padding: 5px;
+	margin: 5px;
+	font-size: 1.1em;
+	border: 1px solid var(--accent);
+	border-radius: 5px;
+	animation:
+		fadeOut 2s 4s forwards,
+		hide 0s 4s forwards;
 }
 @keyframes fadeOut {
-    to {
-        opacity: 0;
-    }
+  to {
+    opacity: 0;
+  }
 }
 @keyframes hide {
-    to {
-        display: none;
-    }
+  to {
+    display: none;
+  }
 }
 
 form {
-		padding: 10px;
-		outline: 2px solid var(--accent);
-		border-radius: 5px;
-		outline-offset: 4px;
-		text-align: center;
+	padding: 10px;
+	outline: 2px solid var(--accent);
+	border-radius: 5px;
+	outline-offset: 4px;
+	text-align: center;
+}
+@media (orientation: portrait) {
+  form {
+    padding: 2px;
+    outline-offset: 2px;
+  }
 }
 .form-decent {
-		padding: 0px;
-		outline: 0px;
-		border-radius: 0px;
-		outline-offset: 0px;
+	padding: 0px;
+	outline: 0px;
+	border-radius: 0px;
+	outline-offset: 0px;
 }
 input, textarea, button, select {
-		color: white;
-		padding: 5px;
-		margin: 5px;
-		font-size: 1.1em;
-		background-color: var(--background);
-		border: 1px solid var(--accent);
-		border-radius: 5px;
+	color: white;
+	padding: 5px;
+	margin: 5px;
+	font-size: 1.1em;
+	background-color: var(--background);
+	border: 1px solid var(--accent);
+	border-radius: 5px;
 }
 input.disabled {
-    pointer-events: none;
-    opacity: 0.5;
+  pointer-events: none;
+  opacity: 0.5;
 }
 input:hover .btn:hover {
-		border-color: var(--highlight) 
+	border-color: var(--highlight) 
 }
 input[type="submit"] {
-		cursor: pointer;
+	cursor: pointer;
 }
 input[type="submit"]:disabled {
-		border-color: var(--error);
-		cursor: not-allowed;
+	border-color: var(--error);
+	cursor: not-allowed;
 }
 .nav-bar {
-    display: flex;
-    background-color: var(--background);
-    padding: 0.5rem;
-    justify-content: center;
+  display: flex;
+  background-color: var(--background);
+  padding: 0.5rem;
+  justify-content: center;
 }
 .nav-bar .btn {
-    background: var(--accent);
+  background: var(--accent);
 }
 .page-select-bar {
-		display: flex;
-		align-items: center;
+	display: flex;
+	align-items: center;
 }
 .page-select-bar p,
 .page-select-bar a {
-    font-size: 1.3em;
-		padding: 8px;
+  font-size: 1.3em;
+	padding: 8px;
 }
 table {
-    border: 1px solid #fff;
-    border-collapse: collapse;
-    width: 60%;
-    margin: 20px 0;
-    font-family: Arial, sans-serif;
+  border: 1px solid #fff;
+  border-collapse: collapse;
+  width: 60%;
+  margin: 20px 0;
+  font-family: Arial, sans-serif;
 }
 th, td {
-    border: 1px solid #fff;
-    padding: 8px;
-    text-align: left;
+  border: 1px solid #fff;
+  padding: 8px;
+  text-align: left;
 }
 th {
-    border: 1px solid #fff;
-    background-color: var(--background);
-    cursor: pointer;
-    position: relative;
+  border: 1px solid #fff;
+  background-color: var(--background);
+  cursor: pointer;
+  position: relative;
 }
 th:hover {
-    border: 1px solid #fff;
+  border: 1px solid #fff;
 }
 th::after {
-    content: "";
-    position: absolute;
-    right: 8px;
-    color: #aaa;
+  content: "";
+  position: absolute;
+  right: 8px;
+  color: #aaa;
 }
 th.asc::after {
-    content: "▲";
+  content: "▲";
 } 
 th.desc::after {
-    content: "▼";
+  content: "▼";
 }
 tr:nth-child(even) {
-    border: 1px solid #fff;
-    background-color: var(--background);
+  border: 1px solid #fff;
+  background-color: var(--background);
 }
 
 /* Index Page */
 .carousel {
-    position: relative;
-    width: 100%;
-		aspect-ratio: 32/9;
-    display: flex;
-    justify-content: center;
-		margin-top: 2rem;
-    overflow: hidden;
+  position: relative;
+  width: 100%;
+	aspect-ratio: 32/9;
+  display: flex;
+  justify-content: center;
+	margin-top: 2rem;
+  overflow: hidden;
 }
 .card {
-    position: absolute;
-    width: 40%;
-    aspect-ratio: 16 / 10;
-    transition: transform 0.5s, z-index 0.25s;
-    border-radius: 5px;
-    overflow: hidden;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-		align-items: center;
+  position: absolute;
+  width: 40%;
+  aspect-ratio: 16 / 10;
+  transition: transform 0.5s, z-index 0.25s;
+  border-radius: 5px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+	align-items: center;
 }
 .card img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-		cursor: pointer;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+	cursor: pointer;
 }
 .card h2 {
-		position: absolute;
-		top: 70%;
-		left: 50%;
-		transform: translate(-50%, -50%);
-		color: white;
-		font-size: 2vw;
-		font-weight: bold;
-		text-shadow: 3px 3px 5px rgba(0,0,0,0.7);
-		z-index: 1;
+	position: absolute;
+	top: 70%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	color: white;
+	font-size: 2vw;
+	font-weight: bold;
+	text-shadow: 3px 3px 5px rgba(0,0,0,0.7);
+	z-index: 1;
 }
 @media (max-width: 600px) {
-		.card h2 {
-				top: 60%;
-				font-size: 4vw;
-		}
+  .carousel {
+    aspect-ratio: 24/9;
+  }
+  .card {
+    width: 60%;
+  }
+	.card h2 {
+		top: 60%;
+		font-size: 4vw;
+	}
 }
 .cleft {
-    transform: translateX(-70%) scale(0.8);
-    z-index: 1;
+  transform: translateX(-70%) scale(0.8);
+  z-index: 1;
 }
 .ccenter {
-    transform: translateX(0) scale(1);
-    z-index: 2;
+  transform: translateX(0) scale(1);
+  z-index: 2;
 }
 .cright {
-    transform: translateX(70%) scale(0.8);
-    z-index: 1;
+  transform: translateX(70%) scale(0.8);
+  z-index: 1;
 }
 img#disabled {
-		filter: grayscale(100%);
+	filter: grayscale(100%);
 }
 progress {
-		width: min(50vh, 80%);
-		heigth: 30px;
-		border-radius: 5px;
-		background-color: var(--background);
-		border: 1px solid var(--accent);
+	width: min(50vh, 80%);
+	heigth: 30px;
+	border-radius: 5px;
+	background-color: var(--background);
+	border: 1px solid var(--accent);
 }
 #spanprogress {
-    height: 100%;
-    display: block;
-    width: 0;
-    color: white;
-    line-height: 30px;
-    position: absolute;
-    text-align: end;
-    padding-right: 5px;
+  height: 100%;
+  display: block;
+  width: 0;
+  color: white;
+  line-height: 30px;
+  position: absolute;
+  text-align: end;
+  padding-right: 5px;
 }
 
 /* Photo View CSS */
+.game-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 5vh;
+}
 #photoContainer {
-		width: 100%;
-		height: 100vh;
-		overflow: hidden;
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+	width: 100%;
+	height: 90vh;
+	overflow: hidden;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 @media (orientation: portrait) {
-		#photoContainer {
-				height: 50vh;
-		}
+	#photoContainer {
+		height: 45vh;
+	}
 }
 .image-wrapper {
-    position: absolute;
-    cursor: grab;
+  position: absolute;
+  cursor: grab;
 }
 #photo {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-		user-drag: none;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+	user-drag: none;
 }
 
 /* Map CSS */
 #mapEmbed {
-		width: 100vw;
-		height: 55vh;
-		margin-bottom: 1em;
+	width: 100vw;
+	height: 45vh;
+	margin-bottom: 1em;
 }
 /* Do styling based on landscape/portrait modes using CSS media queries */
 #mapContainer {
-		position: fixed;
-		bottom: 20px;
-		right: 20px;
-		height: 30%;
-		max-width: 40%;
-		aspect-ratio: 4 / 3;
-		z-index: 999;
+	position: fixed;
+	bottom: 20px;
+	right: 20px;
+	height: 30%;
+	max-width: 40%;
+	aspect-ratio: 4 / 3;
+	z-index: 999;
 
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		cursor: crosshair;
-		opacity: 0.4;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	cursor: crosshair;
+	opacity: 0.4;
 
-		transition: all 0.1s ease;
+	transition: all 0.1s ease;
 }
 
 #resultMapContainer {
-		height: 60vh;
-		max-width: 80%;
-		aspect-ratio: 4/3;
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		margin: 0 auto;
-		padding: 1rem;
+	height: 60vh;
+	max-width: 80%;
+	aspect-ratio: 4/3;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	margin: 0 auto;
+	padding: 1rem;
 }
 
 @media (orientation: landscape) {
-		#mapContainer:hover {
-				height: 80%;
-				max-width: 80%;
-				aspect-ratio: 4 / 3;
-				opacity: 1.0;
-		}
+	#mapContainer:hover {
+		height: 80%;
+		max-width: 80%;
+		aspect-ratio: 4 / 3;
+		opacity: 1.0;
+	}
 }
 @media (orientation: portrait) {
-		#mapContainer {
-				bottom: 0px;
-				right: 0px;
-				width: 100%;
-				max-width: 100%;
-				height: 45%;
-				opacity: 1.0;
-		}
+	#mapContainer {
+		bottom: 0px;
+		right: 0px;
+		width: 100%;
+		max-width: 100%;
+		height: 45%;
+		opacity: 1.0;
+	}
 }
 #map {
-		width: 100%;
-		height: 100%;
+	width: 100%;
+	height: 100%;
 }
 #mapContainer #map {
-	  cursor: crosshair;
+	cursor: crosshair;
 }
 #mapEmbed #map {
-    cursor: crosshair;
+  cursor: crosshair;
 }
 #mapContainer .leaflet-marker-icon {
-    cursor: crosshair;
+  cursor: crosshair;
 }
 #guessButton {
-		color: white;
-    background-color: var(--accent);
-		width: 100%;
-		height: 10%;
-		font-size: 16px;
-		cursor: pointer;
+	color: white;
+  background-color: var(--accent);
+	width: 100%;
+	height: 10%;
+	font-size: 16px;
+	cursor: pointer;
 }
 .clickMeButton {
-		color: white;
-    background-color: var(--accent);
-		width: 100%;
-		height: 10%;
-		font-size: 16px;
-		cursor: pointer;
+	color: white;
+  background-color: var(--accent);
+	width: 100%;
+	height: 10%;
+	font-size: 16px;
+	cursor: pointer;
 }
 .flagIcon {
   display: inline-block;
@@ -420,31 +440,28 @@ progress {
   mask-size: 100% 100%;
 }
 #reportButton {
-		position: absolute;
-		top: 1rem;
-		left: 1rem;
+	position: absolute;
+	left: 1rem;
 }
 #roundCounter {
-		position: absolute;
-		top: 1rem;
-		right: 1rem;
+	position: absolute;
+	right: 1rem;
+}
+#timer {
+	position: absolute;
 }
 
 /* Result Animation */
 .distance {
-    color: var(--accent);
-    font-size: 1.5rem;
-    margin-top: 10px;
-    text-align: center;
+  color: var(--accent);
+  font-size: 1.5rem;
+  margin-top: 10px;
+  text-align: center;
 }
 .score {
-    display: flex;
-    color: var(--accent);
-    font-size: 1.5rem;
-    margin-bottom: 10px;
-    text-align: center;
-}
-#timer {
-		position: absolute;
-		top: 1rem;
+  display: flex;
+  color: var(--accent);
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+  text-align: center;
 }

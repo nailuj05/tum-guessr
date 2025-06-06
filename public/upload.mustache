@@ -26,18 +26,11 @@
 			</div>
       <form action="upload" method="POST" enctype="multipart/form-data">
         <input type="hidden" name="location" value="garching" id="location">
+        <input type="hidden" name="lat" id="lat">
+        <input type="hidden" name="long" id="long">
 
-        <div style="text-align: right">
-          <label>Latitude:</label>
-          <input type="text" name="lat" placeholder="Latitude" id="lat"><br>
-          <label>Longitude:</label>
-          <input type="text" name="long" placeholder="Longitude" id="long"><br>
-        </div>
-
-        <label class="btn">
-          <button type="button" onclick="triggerInput(true)">📷 Take Picture</button>
-          <button type="button" onclick="triggerInput(false)">🖼️ Select Picture</button>
-        </label>
+        <button type="button" onclick="triggerInput(true)">📷 Take Picture</button>
+        <button type="button" onclick="triggerInput(false)">🖼️ Select Picture</button>
         <input id="imageInput" name="image" type="file" accept="image/jpeg,image/png" required hidden>
 
         <hr>

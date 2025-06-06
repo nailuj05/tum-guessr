@@ -9,18 +9,22 @@
 	</head>
 	<body>		
     {{> header}}
-		<div id="photoContainer">
-			<p id="timer"></p>
-			<p id="roundCounter">{{current_round}} / {{total_rounds}}</p>
-			<button class="flagIcon" id="reportButton"></button>
-			<div class="image-wrapper">
-				<img id="photo" src="/game/round">
-			</div>
-		</div>
-		<div id="mapContainer">
-			<div id="map"></div>
-			<button id="guessButton" disabled>Guess</button>
-		</div>
+    <div style="display: flex; flex-direction: column">
+      <div class="game-bar">
+        <p id="timer"></p>
+        <p id="roundCounter">{{current_round}} / {{total_rounds}}</p>
+        <button class="flagIcon" id="reportButton"></button>
+      </div>
+      <div id="photoContainer">
+        <div class="image-wrapper">
+          <img id="photo" src="/game/round">
+        </div>
+      </div>
+      <div id="mapContainer">
+        <div id="map"></div>
+        <button id="guessButton" disabled>Guess</button>
+		  </div>
+    </div>
 	  <script src="/js/dragimage.js"></script>
 		<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 		<script src="/js/cookies.js"></script>
