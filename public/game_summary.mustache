@@ -11,13 +11,22 @@
     {{> header}}
     <h2>Game Finished</h2>
 		<div id="resultMapContainer">
-			<div style="text-align: left; font-size: 1.2rem; margin-bottom: 20px">
-        {{#rounds}}
-          Round {{num}}: {{score}}<br>
-        {{/rounds}}
-        <hr>
-        Total: {{total_score}}
-      </div>
+			<table>
+			<tr>
+				<th>Round</th>
+				<th>Score</th>
+			</tr>
+      {{#rounds}}
+			<tr>
+				<td>{{num}}</td>
+				<td>{{score}}</td>
+			</tr>
+      {{/rounds}}
+			<tr>
+				<td>Total</td>
+				<td>{{total_score}}</td>
+			</tr>
+			</table>
 			<div id="map"></div>
 			<button id="newGameButton" class="clickMeButton">New Game</button>
 		</div>
