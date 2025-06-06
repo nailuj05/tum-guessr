@@ -344,8 +344,13 @@ progress {
 /* Map CSS */
 #mapEmbed {
 	width: 100vw;
-	height: 45vh;
+	height: 65vh;
 	margin-bottom: 1em;
+}
+@media (orientation: portrait) {
+  #mapEmbed {
+    height: 45vh;
+  }
 }
 /* Do styling based on landscape/portrait modes using CSS media queries */
 #mapContainer {
