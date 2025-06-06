@@ -22,7 +22,8 @@
 		<script>
 		 const map = L.map('map').setView([48.2621, 11.6676], 16);
 		 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-			 attribution: '© OpenStreetMap contributors'
+			 attribution: '© OpenStreetMap contributors',
+       maxZoom: 22,
 		 }).addTo(map);
 		 
 		 const latlng = L.latLng({{lat}}, {{long}});
