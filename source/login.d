@@ -41,7 +41,7 @@ void sign_up(Request request, Output output) {
     const string captcha  = request.post.read("h-captcha-response");
 
 		const string username_regex = `.+`;
-		const string password_regex = environment["unsafe"].to!bool ? `.+` : `.{16,}`;
+		const string password_regex = environment["unsafe"].to!bool ? `.+` : `.{8,}`;
 		
 		if (!matchFirst(username, username_regex.regex)) {
 			output.status = 400;
