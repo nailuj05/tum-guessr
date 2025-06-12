@@ -1,15 +1,73 @@
 /* Define Vaiables for consistent styling here */
 :root {
-	--background: #121416;
-	--accent: #2e6eb1;
-	--highlight: #3f7fef;
-	--error: #ee1111;
+	--tum-blue-brand				: #3070B3;
+	--tum-blue-dark					: #072140;
+	--tum-blue-dark-1				: #0A2D57;
+	--tum-blue-dark-2				: #0E396E;
+	--tum-blue-dark-3				: #114584;
+	--tum-blue-dark-4				: #14519A;
+	--tum-blue-dark-5				: #165DB1;
+	--tum-blue-light				: #5E94D4;
+	--tum-blue-light-dark		: #9ABCE4;
+	--tum-blue-light-2			: #C2D7EF;
+	--tum-blue-light-3			: #D7E4F4;
+	--tum-blue-light-4			: #E3EEFA;
+	--tum-blue-light-5			: #F0F5FA;
+	--tum-yellow						: #FED702;
+	--tum-yellow-dark				: #CBAB01;
+	--tum-yellow-1					: #FEDE34;
+	--tum-yellow-2					: #FEE667;
+	--tum-yellow-3					: #FEEE9A;
+	--tum-yellow-4					: #FEF6CD;
+	--tum-orange						: #F7811E;
+	--tum-orange-dark				: #D99208;
+	--tum-orange-1					: #F9BF4E;
+	--tum-orange-2					: #FAD080;
+	--tum-orange-3					: #FCE2B0;
+	--tum-orange-4					: #FEF4E1;
+	--tum-pink							: #B55CA5;
+	--tum-pink-dark					: #9B468D;
+	--tum-pink-1						: #C680BB;
+	--tum-pink-2						: #D6A4CE;
+	--tum-pink-3						: #E6C7E1;
+	--tum-pink-4						: #F6EAF4;
+	--tum-blue-bright				: #8F81EA;
+	--tum-blue-bright-dark	: #6955E2;
+	--tum-blue-bright-1			: #B6ACF1;
+	--tum-blue-bright-2			: #C9C2F5;
+	--tum-blue-bright-3			: #DCD8F9;
+	--tum-blue-bright-4			: #EFEDFC;
+	--tum-red								: #EA7237;
+	--tum-red-dark					: #D95117;
+	--tum-red-1							: #EF9067;
+	--tum-red-2							: #F3B295;
+	--tum-red-3							: #F6C2AC;
+	--tum-red-4							: #FBEADA;
+	--tum-green							: #9FBA36;
+	--tum-green-dark				: #7D922A;
+	--tum-green-1						: #B6CE55;
+	--tum-green-2						: #C7D97D;
+	--tum-green-3						: #D8E5A4;
+	--tum-green-4						: #E9F1CB;
+	--tum-grey-1						: #20252A;
+	--tum-grey-2						: #333A41;
+	--tum-grey-3						: #475058;
+	--tum-grey-4						: #6A757E;
+	--tum-grey-7						: #DDE2E6;
+	--tum-grey-8						: #EBECEF;
+	--tum-grey-9						: #FBF9FA;
+	--tum-white							: #FFFFFF;
+
+	--background						: #121416;
+	--accent								: var(--tum-blue-dark-3);
+	--highlight							: var(--tum-blue-light);
+	--error									: #ee1111;
 }
 body {
 	font-family: sans-serif;
 	text-align: center;
 	background-color: var(--background);
-	color: var(--accent);
+	color: var(--highlight);
   margin: 0;
   padding: 0;
   height: 100%;
@@ -20,7 +78,7 @@ p {
 	color: white;
 }
 h1,h2,h3,h4,h5,h6 {
-  color: var(--accent);
+  color: var(--highlight);
 }
 button {
   cursor: pointer;
@@ -70,22 +128,23 @@ header {
 	}
 }
 .btn {
-	color: var(--accent);
-	background-color: white;
-	border: 1px solid white;
-  padding: 0.3rem 0.8rem;
-  margin: 0 0.25rem;
-  text-decoration: none;
-  border-radius: 20px;
-  display: inline-block;
-  transition: transform 0.5s, background-color 0.05s ease, color 0.05s ease, border 0.05s ease;
-	transparency: 0.5;
+		--idle-color: white;
+		--idle-text-color: var(--accent);
+		--hover-color: var(--accent);
+		--hover-text-color: white;
+		color: var(--idle-text-color);
+		background-color: var(--idle-color);
+		padding: 0.3rem 0.8rem;
+		margin: 0 0.25rem;
+		text-decoration: none;
+		border-radius: 20px;
+		display: inline-block;
+		transition: transform 0.5s, background-color 0.05s ease, color 0.05s ease, border 0.05s ease;
+		transparency: 0.5;
 }
 .btn:hover {
-		--hover-color: var(--accent);
 		background-color: var(--hover-color);
-	  border: 1px solid var(--hover-color);
-		color: white;
+		color: var(--hover-text-color);
 }
 .home {
 	color: white;
