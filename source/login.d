@@ -193,6 +193,9 @@ void logout(Request request, Output output) {
 // TODO: Debug endpoint, remove before production
 @endpoint @route!"/delete_me"
 void delete_user(Request request, Output output) {
+	if (!environment["unsafe"].to!bool) {
+		return;
+	}
 	int user_id = session_load(request, output);
 	if (user_id < 0) {
 		output.status = 302;
