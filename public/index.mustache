@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Tum Guessr is a guessing game, in which you are somewhere on a TUM campus, you'll be shown a picture and need to find out where you are.">
     <title>TUM Guessr</title>
 	  <link rel="stylesheet" href="style.css">	
 	  <script src="/js/tracking.js"></script>
@@ -11,7 +12,17 @@
     {{> header}}
 		<div class="content">
 			<h1>Welcome to TUM Guessr</h1>
-			<div class="wip">🚧 This website is a work in progress 🚧</div>
+			<div class="wip">
+        <p>
+          Choose a campus below to start a game. Create an account or login for Uploading your own pictures and more!
+        </p>
+        <p>
+          Each round of a game you will be shown a random picture from somewhere on the campus.
+          Your goal is to guess the location the picture was taken in.
+          You can pan around and zoom in to find details that might help you find the location and then select it on the map.
+          The closer you get, the more points you'll earn. Good luck!
+        </p>
+      </div>
 			<div class="carousel" id="carousel">
 				<div class="card" data-name="muenchen">
 					<h2>Campus Munich</h2>
