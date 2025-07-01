@@ -80,6 +80,12 @@ p {
 h1,h2,h3,h4,h5,h6 {
   color: var(--highlight);
 }
+a {
+		color: var(--tum-blue-light);
+}
+a:visited {
+		color: var(--tum-blue-bright);
+}
 button {
   cursor: pointer;
 }
@@ -127,13 +133,13 @@ header {
 		display:flex;
 	}
 }
-.btn {
+.btn, .btn:visited {
 		--idle-color: white;
 		--idle-text-color: var(--accent);
 		--hover-color: var(--accent);
 		--hover-text-color: white;
-		color: var(--idle-text-color);
 		background-color: var(--idle-color);
+		color: var(--idle-text-color);
 		padding: 0.3rem 0.8rem;
 		margin: 0 0.25rem;
 		text-decoration: none;
@@ -146,7 +152,7 @@ header {
 		background-color: var(--hover-color);
 		color: var(--hover-text-color);
 }
-.home {
+.home, .home:visited {
 	color: white;
 	font-size: 1.5rem;
   text-decoration: none;
@@ -239,11 +245,9 @@ input[type="submit"]:disabled {
 .nav-bar {
   display: flex;
   background-color: var(--background);
+	align-items: center;
   padding: 0.5rem;
   justify-content: center;
-}
-.nav-bar .btn {
-  background: var(--accent);
 }
 .page-select-bar {
 	display: flex;
