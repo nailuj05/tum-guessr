@@ -61,6 +61,8 @@ void upload(Request request, Output output) {
     const float latitude = to!float(request.form.read("lat").data);
     const float longitude = to!float(request.form.read("long").data);
     const string location = to!string(request.form.read("location").data);
+
+    scope(failure) flogger.error("upload error");
     
 		if(fd.isFile() && (fd.path.endsWith(".png") || fd.path.endsWith(".jpg")) && request.form.read("agree").data == "on") {
 			flogger.info("File ", fd.filename, " uploaded at ", fd.path);
