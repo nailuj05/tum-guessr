@@ -262,7 +262,11 @@ alias MustacheEngine!(string) Mustache;
   }
 
   flogger.info("SERVER STARTED");
-	return ServerinoConfig.create().addListener("0.0.0.0", 8080);
+	return ServerinoConfig.create()
+    .addListener("0.0.0.0", 8080)
+    .setHttpTimeout(1.seconds)
+		.setMaxRequestTime(1.seconds)
+		.setMaxRequestSize(1024*1024*32); // 1 MB
 }
 
 @onDaemonStart
