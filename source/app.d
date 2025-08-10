@@ -303,16 +303,18 @@ void index(Request request, Output output) {
 	mustache_context["photo_max"] = nextBigger(milestones, photos);
 
   // Elo Calc: Sum all best scores per image
-  auto rows = db.query_imm!(int, string, int, double)("SELECT e.user_id, u.username, rg.rounds_guessed, SUM(e.max_score)
+  auto rows = db.query_imm!(int, string, int, double)("SELECT e.user_id, u.username, rg.rounds_guessed, SUM(e.max_score) AS elo
     FROM (SELECT g.user_id, gr.photo_id,  MAX(gr.score) AS max_score
       FROM guessed_rounds gr JOIN games g USING (game_id)
-      GROUP BY gr.photo_id) e
+      GROUP BY g.user_id, gr.photo_id) e
     JOIN (SELECT g.user_id, COUNT(*) AS rounds_guessed
       FROM guessed_rounds gr JOIN games g USING (game_id)
       GROUP BY g.user_id) rg ON e.user_id = rg.user_id
     JOIN users u USING (user_id)
+    WHERE u.user_id <> 0
     GROUP BY e.user_id
-    ORDER BY e.max_score
+    ORDER BY elo DESC
+    LIMIT 10
   ");
 
   foreach (row; rows) {
