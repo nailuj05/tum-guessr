@@ -55,5 +55,25 @@
 			<br>
 			<progress id="user_goal" value="{{user_cur}}" max="{{user_max}}">{{user_cur}}</progress>
 		</div>
+    <div style="padding: 1.5rem; align-items: center;display: flex;flex-direction: column">
+      <h2>Leaderboard</h2>
+			<table>
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Rounds Played</th>
+            <th>Elo</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#users}}
+            <tr>	
+              <td><a href="/profile/{{username_uri_encoded}}">{{username}}</a></td>
+              <td>{{rounds_played}}</td>
+              <td>{{elo}}</td>
+            </tr>
+          {{/users}}
+        </tbody>
+    </div>
   </body>
 </html>

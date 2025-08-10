@@ -1,6 +1,7 @@
 module app;
 
 import std.ascii : LetterCase;
+import std.uri;
 import std.stdio;
 import std.format;
 import std.algorithm;
@@ -301,7 +302,28 @@ void index(Request request, Output output) {
 	mustache_context["photo_cur"] = photos;
 	mustache_context["photo_max"] = nextBigger(milestones, photos);
 
-	output ~= mustache.render("index", mustache_context);
+  // Elo Calc: Sum all best scores per image
+  auto rows = db.query_imm!(int, string, int, double)("SELECT e.user_id, u.username, rg.rounds_guessed, SUM(e.max_score)
+    FROM (SELECT g.user_id, gr.photo_id,  MAX(gr.score) AS max_score
+      FROM guessed_rounds gr JOIN games g USING (game_id)
+      GROUP BY gr.photo_id) e
+    JOIN (SELECT g.user_id, COUNT(*) AS rounds_guessed
+      FROM guessed_rounds gr JOIN games g USING (game_id)
+      GROUP BY g.user_id) rg ON e.user_id = rg.user_id
+    JOIN users u USING (user_id)
+    GROUP BY e.user_id
+    ORDER BY e.max_score
+  ");
+
+  foreach (row; rows) {
+		auto mustache_subcontext = mustache_context.addSubContext("users");
+		mustache_subcontext["username"] = row[1];
+		mustache_subcontext["username_uri_encoded"] = row[1].encodeComponent;
+    mustache_subcontext["rounds_played"] = row[2];
+		mustache_subcontext["elo"] = row[3];
+  }
+
+  output ~= mustache.render("index", mustache_context);
 }
 
 @endpoint @route!("/about")
