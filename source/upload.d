@@ -64,16 +64,15 @@ void upload(Request request, Output output) {
 
     scope(failure) flogger.error("upload error");
     
-		if(fd.isFile() && (fd.path.endsWith(".png") || fd.path.endsWith(".jpg")) && request.form.read("agree").data == "on") {
-			flogger.info("File ", fd.filename, " uploaded at ", fd.path);
+    // make sure only these files can be uploaded
+    string[] ftypes = [".png", ".jpg", ".jpeg"];
+    if(!ftypes.canFind(extension(fd.filename))) {
+      flogger.error("image type ", fd.filename, " not supported");
+      mustache_context.addSubContext("error_messages")["info_message"] = "Image file not supported.";
+    } else {
+      if(fd.isFile() && request.form.read("agree").data == "on") {
+        flogger.info("File ", fd.filename, " uploaded at ", fd.path);
 
-      // make sure only these files can be uploaded
-      string[] ftypes = [".png", ".jpg", ".jpeg"];
-      if(!ftypes.canFind(extension(fd.filename))) {
-        flogger.error("image type ", fd.filename, " not supported");
-        mustache_context.addSubContext("error_messages")["info_message"] = "Image file not supported.";
-      }
-      else {
         // make sure file doesnt override (even if 2 files are uploaded the same second)
         string temp_path = fd.path;
         string target_path;
@@ -107,9 +106,9 @@ void upload(Request request, Output output) {
           }
         }
       }
-		}
-	}
-	output ~= mustache.render("upload", mustache_context);
+    }
+  }
+  output ~= mustache.render("upload", mustache_context);
   output.status = 200;
 }
 
