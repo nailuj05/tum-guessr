@@ -3,6 +3,7 @@ module photos;
 import std.process : environment;
 import std.algorithm;
 import std.conv;
+import std.uri;
 import std.stdio;
 import std.file;
 import std.datetime;
@@ -64,8 +65,8 @@ void photos_view(Request r, Output output) {
 		return;
 	}
 
-  Stmt stmt = db.prepare_bind!(int)("SELECT path, latitude, longitude, is_accepted FROM photos_with_acceptance WHERE photo_id = ?", photo_id);
-	auto rows = db.query!(string, double, double, int)(stmt);
+  Stmt stmt = db.prepare_bind!(int)("SELECT path, latitude, longitude, is_accepted, u.username FROM photos_with_acceptance JOIN users u ON uploader_id = u.user_id WHERE photo_id = ?", photo_id);
+	auto rows = db.query!(string, double, double, int, string)(stmt);
 	auto row = rows[0];
   
 	Mustache mustache;
@@ -79,6 +80,8 @@ void photos_view(Request r, Output output) {
 	mustache_context["long"] = row[2];
 	mustache_context["photo_id"] = photo_id;
   mustache_context["accept"] = row[3] == 1 ? "Unaccept" : "Accept";
+  mustache_context["uploader"] = row[4];
+  mustache_context["uploader_url"] = row[4].encodeComponent;
 
 	output ~= mustache.render("photos_view", mustache_context);
 }
