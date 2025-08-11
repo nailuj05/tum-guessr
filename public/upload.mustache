@@ -19,6 +19,7 @@
       <select name="location" id="dropdown">
         <option value="garching">Garching</option>
         <option value="heilbronn">Heilbronn</option>
+        <option value="muenchen">Stammgelände</option>
       </select>
       <p>Click on the map to select a coordinate</p>
 			<div id="mapEmbed">
@@ -67,6 +68,8 @@
        hidden.value = dropdown.value;
        if(dropdown.value == "heilbronn") {
          map.panTo([49.1475, 9.2137]);
+       } else if(dropdown.value == "muenchen") {
+         map.panTo([48.149184, 11.566742]);
        } else {
          map.panTo([48.2621, 11.6676]);
        }
