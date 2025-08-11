@@ -291,12 +291,11 @@ void index(Request request, Output output) {
 	int users = db.query_imm!(int)("SELECT COUNT(*) FROM users")[0][0];
 	int photos = db.query_imm!(int)("SELECT COUNT(*) FROM photos")[0][0];
 
-	int nextBigger(int[] arr, int num) {
-		int i = 0;
-    do i++;
-		while (arr[i] < num && i < (arr.length - 1));
-		return arr[i];
-	}
+  int nextBigger(int[] arr, int num) {
+    int i = 0;
+    while (i < arr.length && arr[i] <= num) i++;
+    return arr[i < arr.length ? i : arr.length - 1];
+  }
 	mustache_context["user_cur"] = users;
 	mustache_context["user_max"] = nextBigger(milestones, users);
 	mustache_context["photo_cur"] = photos;
