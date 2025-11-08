@@ -14,9 +14,20 @@
     {{#logged_in}}
     {{/logged_in}}
     <hr>
-    <p>Joined: {{join_date}}</p>
-    <p>Played Games: {{games_played}}</p>
-    <p>Uploaded Photos: {{photos_uploaded}}</p>
+		<table>
+			<tr>
+				<td>Joined</td>
+				<td>{{join_date}}</td>
+			</tr>
+			<tr>
+				<td>Played Games</td>
+				<td>{{games_played}}</td>
+			</tr>
+			<tr>
+				<td>Uploaded Photos</td>
+				<td>{{photos_uploaded}}</td>
+			</tr>
+		</table>
   </div>
 </body>
 </html>
